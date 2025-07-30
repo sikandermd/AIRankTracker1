@@ -1,0 +1,102 @@
+# AI Ranking Tracker
+
+## Overview
+
+This is a full-stack web application that monitors brand visibility across popular AI search engines like ChatGPT, Claude, Gemini, and Perplexity. The application provides an interactive dashboard for tracking brand mentions in AI responses, analyzing competitor presence, and managing keyword tracking campaigns.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite for fast development and optimized builds
+- **Routing**: Wouter for lightweight client-side routing
+- **State Management**: TanStack Query (React Query) for server state management
+- **UI Framework**: Radix UI components with shadcn/ui styling system
+- **Styling**: Tailwind CSS with CSS variables for theming
+- **Form Handling**: React Hook Form with Zod validation
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js REST API
+- **Language**: TypeScript with ES modules
+- **Database ORM**: Drizzle ORM for type-safe database operations
+- **Database**: PostgreSQL (configured for Neon serverless)
+- **Session Storage**: PostgreSQL-based sessions with connect-pg-simple
+- **AI Integration**: OpenAI GPT-4o for analyzing AI responses
+
+## Key Components
+
+### Database Schema
+The application uses a relational database with the following main entities:
+- **Users**: Authentication and user management
+- **Brands**: Companies/products being tracked
+- **Keywords**: Search terms to monitor across AI platforms
+- **Tracking Results**: Historical data of brand mentions in AI responses
+- **Competitor Analysis**: Comparative brand performance data
+- **Alerts**: Notification system for significant changes
+
+### Core Services
+- **Tracking Service**: Orchestrates keyword monitoring across multiple AI platforms
+- **AI Analyzer**: Uses OpenAI GPT-4o to analyze AI responses for brand mentions, position, and competitor presence
+- **Storage Layer**: Abstracted data access layer with comprehensive CRUD operations
+
+### Frontend Components
+- **Dashboard**: Main interface showing stats overview, recent activity, and competitor analysis
+- **Search Filters**: Multi-platform keyword submission with brand and date filtering
+- **Results Table**: Displays tracking results with detailed breakdown by AI platform
+- **Detail Modal**: Deep-dive analysis for individual keyword performance
+
+## Data Flow
+
+1. **Keyword Submission**: Users input keywords and select AI platforms to monitor
+2. **AI Platform Querying**: System queries each selected AI platform with the keywords
+3. **Response Analysis**: OpenAI GPT-4o analyzes responses for brand mentions, position, and competitors
+4. **Data Storage**: Results are stored with metadata including confidence scores and analysis data
+5. **Dashboard Updates**: Real-time updates to the dashboard showing latest tracking results
+6. **Competitor Tracking**: Automatic identification and tracking of competitor brand mentions
+
+## External Dependencies
+
+### Database
+- **Neon PostgreSQL**: Serverless PostgreSQL database
+- **Connection Pooling**: Built-in connection pooling for optimal performance
+
+### AI Services
+- **OpenAI API**: GPT-4o model for intelligent analysis of AI responses
+- **Multi-platform Support**: Designed to integrate with ChatGPT, Claude, Gemini, and Perplexity APIs
+
+### Development Tools
+- **Drizzle Kit**: Database migrations and schema management
+- **ESBuild**: Production bundling for server-side code
+- **PostCSS**: CSS processing with Tailwind CSS
+
+### UI Libraries
+- **Radix UI**: Accessible, unstyled UI primitives
+- **Lucide React**: Icon library
+- **Date-fns**: Date manipulation utilities
+- **Class Variance Authority**: Utility for managing component variants
+
+## Deployment Strategy
+
+### Development
+- **Hot Reloading**: Vite development server with Express middleware
+- **Type Checking**: Real-time TypeScript compilation
+- **Database Migrations**: Drizzle push for schema changes
+
+### Production
+- **Build Process**: Vite builds the client, ESBuild bundles the server
+- **Static Assets**: Client build served from Express static middleware
+- **Environment Variables**: Database URL and API keys via environment configuration
+- **Session Management**: Persistent sessions using PostgreSQL storage
+
+### Architecture Benefits
+- **Type Safety**: End-to-end TypeScript ensures compile-time error catching
+- **Performance**: Optimized builds with code splitting and tree shaking
+- **Scalability**: Serverless database with connection pooling
+- **Maintainability**: Clear separation of concerns with service layer abstraction
+- **Real-time Updates**: React Query provides automatic data synchronization
+
+The application is structured as a monorepo with shared schemas between client and server, ensuring consistent data types across the full stack.
