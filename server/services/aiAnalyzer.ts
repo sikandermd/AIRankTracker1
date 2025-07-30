@@ -1,9 +1,17 @@
 import OpenAI from "openai";
+import { apiUsageLogger } from "../apiUsageLogger";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
 });
+
+const API_KEY_STATUS = {
+  openai: !!process.env.OPENAI_API_KEY,
+  claude: false, // Would be !!process.env.ANTHROPIC_API_KEY
+  gemini: false, // Would be !!process.env.GOOGLE_AI_API_KEY  
+  perplexity: false // Would be !!process.env.PERPLEXITY_API_KEY
+};
 
 export interface AnalysisResult {
   mentioned: boolean;
@@ -104,6 +112,19 @@ Respond only with valid JSON.
 
   private async getChatGPTResponse(keyword: string): Promise<string> {
     try {
+      if (!API_KEY_STATUS.openai) {
+        apiUsageLogger.logAPICall({
+          timestamp: new Date(),
+          service: 'OpenAI',
+          platform: 'ChatGPT',
+          keyword,
+          brand: 'N/A',
+          success: false,
+          error: 'API key not configured'
+        });
+        return `[SIMULATED ChatGPT RESPONSE] - Your OpenAI API key is configured but this is demo data. Real API responses for "${keyword}" would appear here.`;
+      }
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -115,8 +136,31 @@ Respond only with valid JSON.
         max_tokens: 1000,
       });
 
+      const tokensUsed = response.usage?.total_tokens || 0;
+      const estimatedCost = (tokensUsed * 0.00003); // Rough estimate for GPT-4o
+
+      apiUsageLogger.logAPICall({
+        timestamp: new Date(),
+        service: 'OpenAI',
+        platform: 'ChatGPT',
+        keyword,
+        brand: 'N/A',
+        tokensUsed,
+        cost: estimatedCost,
+        success: true
+      });
+
       return response.choices[0].message.content || "No response generated";
     } catch (error) {
+      apiUsageLogger.logAPICall({
+        timestamp: new Date(),
+        service: 'OpenAI',
+        platform: 'ChatGPT',
+        keyword,
+        brand: 'N/A',
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       throw new Error(`ChatGPT API error: ${error}`);
     }
   }

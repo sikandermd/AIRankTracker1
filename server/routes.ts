@@ -5,6 +5,7 @@ import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema } fr
 import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
 import { z } from "zod";
+import { apiUsageLogger } from "./apiUsageLogger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Brand routes
@@ -127,6 +128,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // API Usage Stats route
+  app.get("/api/usage/stats", async (req, res) => {
+    try {
+      const usageStats = apiUsageLogger.getUsageStats();
+      const apiKeyStatus = apiUsageLogger.getAPIKeyStatus();
+      res.json({
+        usage: usageStats,
+        apiKeys: apiKeyStatus,
+        dataSource: {
+          openai: process.env.OPENAI_API_KEY ? 'Using your OpenAI API key for real ChatGPT responses' : 'Simulated responses - API key missing',
+          claude: 'Simulated responses - Anthropic API key needed for real Claude integration',
+          gemini: 'Simulated responses - Google AI API key needed for real Gemini integration', 
+          perplexity: 'Simulated responses - Perplexity API key needed for real integration'
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch usage stats" });
     }
   });
 

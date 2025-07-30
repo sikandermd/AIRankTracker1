@@ -15,6 +15,7 @@ import AddKeywordModal from "./AddKeywordModal";
 import CSVImportModal from "./CSVImportModal";
 import GoogleSheetsImportModal from "./GoogleSheetsImportModal";
 import AlertSetupModal from "./AlertSetupModal";
+import APIUsageIndicator from "./APIUsageIndicator";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 
@@ -132,6 +133,9 @@ const Navigation = () => {
           
           {/* API Toggle and Quick Actions */}
           <div className="flex items-center space-x-4">
+            {/* API Usage Indicator */}
+            <APIUsageIndicator />
+            
             {/* OpenAI API Toggle */}
             <Tooltip>
               <TooltipTrigger asChild>
