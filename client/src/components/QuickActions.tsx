@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Plus, FileText, Bell, BarChart3, FileSpreadsheet } from "lucide-react";
+import { Plus, FileText, Bell, BarChart3, FileSpreadsheet, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AddKeywordModal from "./AddKeywordModal";
 import BulkUploadModal from "./BulkUploadModal";
 import AlertSetupModal from "./AlertSetupModal";
 import GoogleSheetsImportModal from "./GoogleSheetsImportModal";
+import CSVImportModal from "./CSVImportModal";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
@@ -15,6 +16,7 @@ export default function QuickActions() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [showSheetsModal, setShowSheetsModal] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -85,6 +87,11 @@ export default function QuickActions() {
       onClick: () => setShowAddModal(true),
     },
     {
+      icon: Upload,
+      label: "Import CSV File",
+      onClick: () => setShowCSVModal(true),
+    },
+    {
       icon: FileSpreadsheet,
       label: "Import from Sheets",
       onClick: () => setShowSheetsModal(true),
@@ -140,6 +147,16 @@ export default function QuickActions() {
       <AlertSetupModal 
         isOpen={showAlertModal} 
         onClose={() => setShowAlertModal(false)} 
+      />
+
+      <CSVImportModal 
+        isOpen={showCSVModal} 
+        onClose={() => setShowCSVModal(false)}
+        onImportComplete={() => {
+          // Refresh keywords data
+          queryClient.invalidateQueries({ queryKey: ['/api/keywords'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/tracking-results/latest'] });
+        }}
       />
 
       <GoogleSheetsImportModal 
