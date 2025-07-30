@@ -1,4 +1,4 @@
-import { Eye, Download, RefreshCw, Check, X } from "lucide-react";
+import { Eye, Download, RefreshCw, Check, X, Info } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PlatformIcon, getPlatformName, getPlatformColor } from "./PlatformIcons";
 import type { EnrichedTrackingResult } from "@/lib/types";
 
@@ -130,7 +136,8 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
   };
 
   return (
-    <Card>
+    <TooltipProvider>
+      <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
@@ -164,8 +171,47 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
                 <TableHead>Keyword</TableHead>
                 <TableHead>Brand</TableHead>
                 <TableHead className="text-center">AI Platforms & Results</TableHead>
-                <TableHead className="text-center">Best Position</TableHead>
-                <TableHead className="text-center">Total Mentions</TableHead>
+                <TableHead className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    Best Position
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-3 h-3 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="text-sm">
+                            <p><strong>Position</strong> में आपका brand कहाँ दिखता है:</p>
+                            <p>• <strong>Top:</strong> पहले 3 results में</p>
+                            <p>• <strong>Middle:</strong> 4-7 results में</p>
+                            <p>• <strong>Bottom:</strong> 8+ results में</p>
+                            <p>• <strong>None:</strong> Mention नहीं मिला</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </TableHead>
+                <TableHead className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    Total Mentions
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-3 h-3 text-gray-400" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="text-sm">
+                            <p><strong>Mentions</strong> का मतलब:</p>
+                            <p>• AI response में आपके brand का नाम कितनी बार आया</p>
+                            <p>• ज्यादा mentions = बेहतर visibility</p>
+                            <p>• 0 mentions = brand का जिक्र नहीं</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -263,5 +309,6 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
         </div>
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }
