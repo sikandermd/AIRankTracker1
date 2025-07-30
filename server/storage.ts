@@ -92,9 +92,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBrand(brand: InsertBrand): Promise<Brand> {
+    // Generate slug from name
+    const slug = brand.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    
     const [newBrand] = await db
       .insert(brands)
-      .values(brand)
+      .values({ ...brand, slug })
       .returning();
     return newBrand;
   }

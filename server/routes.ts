@@ -20,11 +20,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/brands", async (req, res) => {
     try {
+      console.log('Creating brand with data:', req.body);
       const validatedData = insertBrandSchema.parse(req.body);
+      console.log('Validated data:', validatedData);
       const brand = await storage.createBrand(validatedData);
       res.status(201).json(brand);
     } catch (error) {
-      res.status(400).json({ message: "Invalid brand data" });
+      console.error('Brand creation error:', error);
+      res.status(400).json({ message: "Invalid brand data", error: error.message });
     }
   });
 

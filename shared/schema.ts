@@ -161,6 +161,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertBrandSchema = createInsertSchema(brands).omit({
   id: true,
   createdAt: true,
+  slug: true, // Auto-generated from name
 });
 
 export const insertKeywordSchema = createInsertSchema(keywords).omit({

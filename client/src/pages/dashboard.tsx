@@ -9,6 +9,7 @@ import RecentActivity from "@/components/RecentActivity";
 import DetailModal from "@/components/DetailModal";
 import BulkUploadModal from "@/components/BulkUploadModal";
 import AlertSetupModal from "@/components/AlertSetupModal";
+import InitialSetup from "@/components/InitialSetup";
 import { Bell, ChartLine } from "lucide-react";
 import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 import { useLocation } from "wouter";
@@ -34,6 +35,14 @@ export default function Dashboard() {
     return () => window.removeEventListener('openBulkUpload', handleBulkUpload);
   }, []);
 
+  const { data: brands } = useQuery({
+    queryKey: ["/api/brands"],
+  });
+
+  const { data: keywords } = useQuery({
+    queryKey: ["/api/keywords"],
+  });
+
   const { data: stats } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
@@ -41,6 +50,15 @@ export default function Dashboard() {
   const { data: trackingResults, refetch: refetchResults } = useQuery({
     queryKey: ["/api/tracking-results/latest"],
   });
+
+  // Show initial setup if no brands exist
+  if (brands && brands.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <InitialSetup />
+      </div>
+    );
+  }
 
   const handleSearch = (filters: SearchFiltersType) => {
     setSearchFilters(filters);
