@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { PlatformIcon, getPlatformName, getPlatformColor } from "./PlatformIcons";
 import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 
 const searchSchema = z.object({
@@ -27,10 +28,10 @@ interface SearchFiltersProps {
 }
 
 const AI_PLATFORMS = [
-  { id: 'gpt', name: 'ChatGPT', icon: '🤖', color: 'bg-blue-100 text-blue-800' },
-  { id: 'claude', name: 'Claude', icon: '🧠', color: 'bg-purple-100 text-purple-800' },
-  { id: 'gemini', name: 'Gemini', icon: '💎', color: 'bg-green-100 text-green-800' },
-  { id: 'perplexity', name: 'Perplexity', icon: '🔍', color: 'bg-orange-100 text-orange-800' },
+  { id: 'gpt', name: 'ChatGPT' },
+  { id: 'claude', name: 'Claude' },
+  { id: 'gemini', name: 'Gemini' },
+  { id: 'perplexity', name: 'Perplexity' },
 ];
 
 export default function SearchFilters({ onSearch }: SearchFiltersProps) {
@@ -187,8 +188,9 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
                                     onCheckedChange={() => handlePlatformToggle(platform.id)}
                                   />
                                 </FormControl>
-                                <FormLabel className="text-sm font-normal cursor-pointer">
-                                  {platform.icon} {platform.name}
+                                <FormLabel className="text-sm font-normal cursor-pointer flex items-center space-x-2">
+                                  <PlatformIcon platform={platform.id} className="w-4 h-4" />
+                                  <span>{getPlatformName(platform.id)}</span>
                                 </FormLabel>
                               </FormItem>
                             )}
@@ -258,13 +260,13 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
         {selectedPlatforms.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedPlatforms.map((platformId) => {
-              const platform = AI_PLATFORMS.find(p => p.id === platformId);
               return (
-                <Badge key={platformId} variant="secondary" className={platform?.color}>
-                  {platform?.icon} {platform?.name}
+                <Badge key={platformId} variant="secondary" className={`${getPlatformColor(platformId)} flex items-center gap-2`}>
+                  <PlatformIcon platform={platformId} className="w-3 h-3" />
+                  <span>{getPlatformName(platformId)}</span>
                   <button
                     onClick={() => removePlatform(platformId)}
-                    className="ml-2 hover:text-gray-800"
+                    className="ml-1 hover:text-red-600"
                   >
                     <X className="w-3 h-3" />
                   </button>

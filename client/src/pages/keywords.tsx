@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import AddKeywordModal from "@/components/AddKeywordModal";
+import { PlatformIcon, getPlatformName, getPlatformColor } from "@/components/PlatformIcons";
 import { useToast } from "@/hooks/use-toast";
 
 interface Keyword {

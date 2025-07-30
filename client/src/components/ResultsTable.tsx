@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PlatformIcon, getPlatformName, getPlatformColor } from "./PlatformIcons";
 import type { EnrichedTrackingResult } from "@/lib/types";
 
 interface ResultsTableProps {
@@ -66,21 +67,15 @@ export default function ResultsTable({ results, onViewDetails }: ResultsTablePro
   };
 
   const getPlatformBadge = (platform: any) => {
-    const colors = {
-      gpt: "bg-blue-100 text-blue-800",
-      claude: "bg-purple-100 text-purple-800", 
-      gemini: "bg-green-100 text-green-800",
-      perplexity: "bg-orange-100 text-orange-800",
-    };
-
     return (
-      <Badge className={`${colors[platform.platform as keyof typeof colors]} mr-1 mb-1`}>
+      <Badge className={`${getPlatformColor(platform.platform)} mr-1 mb-1 flex items-center gap-1`}>
+        <PlatformIcon platform={platform.platform} className="w-3 h-3" />
         {platform.mentioned ? (
-          <Check className="w-3 h-3 mr-1" />
+          <Check className="w-3 h-3" />
         ) : (
-          <X className="w-3 h-3 mr-1" />
+          <X className="w-3 h-3" />
         )}
-        {platform.platform.toUpperCase()}
+        <span>{getPlatformName(platform.platform)}</span>
       </Badge>
     );
   };

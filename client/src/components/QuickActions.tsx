@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, FileText, Bell, BarChart3, FileSpreadsheet, Upload } from "lucide-react";
+import { Plus, FileText, Bell, BarChart3, FileSpreadsheet, Upload, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AddKeywordModal from "./AddKeywordModal";
@@ -112,7 +112,7 @@ export default function QuickActions() {
       onClick: () => setLocation("/analytics"),
     },
     {
-      icon: Plus,
+      icon: Tag,
       label: "Keywords Library",
       onClick: () => setLocation("/keywords"),
     },
