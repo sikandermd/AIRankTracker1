@@ -138,12 +138,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API Usage Stats route
+  // API Usage Stats route with caching
+  let usageStatsCache: any = null;
+  let usageStatsCacheTime = 0;
+  const USAGE_CACHE_TTL = 60000; // 1 minute cache
+
   app.get("/api/usage/stats", async (req, res) => {
     try {
+      const now = Date.now();
+      
+      // Return cached data if still fresh
+      if (usageStatsCache && (now - usageStatsCacheTime) < USAGE_CACHE_TTL) {
+        return res.json(usageStatsCache);
+      }
+      
       const usageStats = apiUsageLogger.getUsageStats();
       const apiKeyStatus = apiUsageLogger.getAPIKeyStatus();
-      res.json({
+      const result = {
         usage: usageStats,
         apiKeys: apiKeyStatus,
         dataSource: {
@@ -152,7 +163,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           gemini: 'Simulated responses - Google AI API key needed for real Gemini integration', 
           perplexity: 'Simulated responses - Perplexity API key needed for real integration'
         }
-      });
+      };
+      
+      // Cache the result
+      usageStatsCache = result;
+      usageStatsCacheTime = now;
+      
+      res.json(result);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch usage stats" });
     }

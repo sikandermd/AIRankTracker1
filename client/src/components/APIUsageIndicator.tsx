@@ -17,7 +17,8 @@ export default function APIUsageIndicator() {
 
   const { data: usageData } = useQuery({
     queryKey: ["/api/usage/stats"],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: showDialog ? 5000 : false, // Only refresh when dialog is open
+    enabled: showDialog, // Only fetch when dialog is open
   });
 
   const getKeyStatusIcon = (status: string) => {
