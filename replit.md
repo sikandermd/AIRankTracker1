@@ -134,6 +134,21 @@ The application is structured as a monorepo with shared schemas between client a
 - Delete functionality for keyword management
 - Navigation integration with main app structure
 
+### Platform Icons & Branding
+- Added authentic AI platform icons using react-icons package
+- OpenAI (ChatGPT), Anthropic (Claude), Google (Gemini) official icons
+- Custom Perplexity icon with brand colors
+- Platform badges with proper color schemes throughout the app
+- Consistent icon usage in search filters, results tables, and navigation
+
+### Navigation & Quick Actions
+- Moved Quick Actions from homepage to navigation dropdown menu
+- Clean navigation bar with Dashboard, Keywords, and Analytics tabs
+- Quick Actions dropdown includes: Add Keywords, Import CSV, Import from Sheets, Generate Report, Setup Alerts
+- All modals accessible from navigation menu with proper icons
+- Removed QuickActions component from dashboard for cleaner layout
+- Welcome message on dashboard when no search performed
+
 ### Setup Requirements
 To use Google Sheets import:
 1. Create Google Cloud project and enable Google Sheets API

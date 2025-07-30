@@ -6,7 +6,6 @@ import StatsOverview from "@/components/StatsOverview";
 import ResultsTable from "@/components/ResultsTable";
 import CompetitorAnalysis from "@/components/CompetitorAnalysis";
 import RecentActivity from "@/components/RecentActivity";
-import QuickActions from "@/components/QuickActions";
 import DetailModal from "@/components/DetailModal";
 import BulkUploadModal from "@/components/BulkUploadModal";
 import AlertSetupModal from "@/components/AlertSetupModal";
@@ -152,17 +151,20 @@ export default function Dashboard() {
               <div className="lg:col-span-1 space-y-6">
                 <CompetitorAnalysis />
                 <RecentActivity />
-                <QuickActions />
               </div>
             </div>
           </>
         )}
 
-        {/* Quick Actions - Show when no search has been performed */}
+        {/* Welcome Message - Show when no search has been performed */}
         {!hasSearched && !isSearching && (
           <div className="mt-8 flex justify-center">
-            <div className="max-w-md">
-              <QuickActions />
+            <div className="max-w-lg text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to AI Ranking Tracker</h2>
+              <p className="text-gray-600 mb-6">Start tracking your brand visibility across AI search engines by entering keywords above.</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">💡 Tip: Use the "Quick Actions" menu in the top navigation to add keywords, import data, or generate reports.</p>
+              </div>
             </div>
           </div>
         )}
