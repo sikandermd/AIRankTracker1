@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { BarChart3, Home, Tag, Plus, Upload, FileSpreadsheet, Bell, FileText, ChevronDown } from "lucide-react";
+import { BarChart3, Home, Tag, Plus, Upload, FileSpreadsheet, Bell, FileText, ChevronDown, Key, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import AddKeywordModal from "./AddKeywordModal";
 import CSVImportModal from "./CSVImportModal";
 import GoogleSheetsImportModal from "./GoogleSheetsImportModal";
@@ -16,7 +24,16 @@ const Navigation = () => {
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [showSheetsModal, setShowSheetsModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [apiEnabled, setApiEnabled] = useState(true);
   const { toast } = useToast();
+
+  // Load API toggle state from localStorage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('openai-api-enabled');
+    if (savedState !== null) {
+      setApiEnabled(savedState === 'true');
+    }
+  }, []);
 
   const navItems = [
     { path: "/", label: "Dashboard", icon: Home },
@@ -77,8 +94,23 @@ const Navigation = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/keywords'] });
   };
 
+  const handleApiToggle = (enabled: boolean) => {
+    setApiEnabled(enabled);
+    
+    // Store in localStorage for persistence
+    localStorage.setItem('openai-api-enabled', enabled.toString());
+    
+    toast({
+      title: enabled ? "OpenAI API Enabled" : "OpenAI API Disabled",
+      description: enabled 
+        ? "AI analysis will be performed during tracking" 
+        : "Tracking will continue without AI analysis",
+      variant: enabled ? "default" : "destructive",
+    });
+  };
+
   return (
-    <>
+    <TooltipProvider>
       <nav className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
@@ -98,8 +130,40 @@ const Navigation = () => {
             </div>
           </div>
           
-          {/* Quick Actions Dropdown */}
-          <DropdownMenu>
+          {/* API Toggle and Quick Actions */}
+          <div className="flex items-center space-x-4">
+            {/* OpenAI API Toggle */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex items-center space-x-2 px-3 py-2 border rounded-lg bg-gray-50">
+                    <Key className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">OpenAI API</span>
+                    <Switch
+                      checked={apiEnabled}
+                      onCheckedChange={handleApiToggle}
+                      className="data-[state=checked]:bg-green-600"
+                    />
+                    <Badge variant={apiEnabled ? "success" : "secondary"} className={`text-xs ${
+                      apiEnabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {apiEnabled ? "ON" : "OFF"}
+                    </Badge>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">
+                    {apiEnabled 
+                      ? "OpenAI API is active - AI analysis enabled" 
+                      : "OpenAI API is disabled - tracking without AI analysis"
+                    }
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {/* Quick Actions Dropdown */}
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center space-x-2">
                 <Plus className="w-4 h-4" />
@@ -137,7 +201,8 @@ const Navigation = () => {
                 Setup Alerts
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
+          </div>
         </div>
       </nav>
 
@@ -164,7 +229,7 @@ const Navigation = () => {
         isOpen={showAlertModal} 
         onClose={() => setShowAlertModal(false)}
       />
-    </>
+    </TooltipProvider>
   );
 };
 
