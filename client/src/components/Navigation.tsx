@@ -133,34 +133,32 @@ const Navigation = () => {
           {/* API Toggle and Quick Actions */}
           <div className="flex items-center space-x-4">
             {/* OpenAI API Toggle */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex items-center space-x-2 px-3 py-2 border rounded-lg bg-gray-50">
-                    <Key className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">OpenAI API</span>
-                    <Switch
-                      checked={apiEnabled}
-                      onCheckedChange={handleApiToggle}
-                      className="data-[state=checked]:bg-green-600"
-                    />
-                    <Badge variant={apiEnabled ? "success" : "secondary"} className={`text-xs ${
-                      apiEnabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                    }`}>
-                      {apiEnabled ? "ON" : "OFF"}
-                    </Badge>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-sm">
-                    {apiEnabled 
-                      ? "OpenAI API is active - AI analysis enabled" 
-                      : "OpenAI API is disabled - tracking without AI analysis"
-                    }
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center space-x-2 px-3 py-2 border rounded-lg bg-gray-50 cursor-pointer">
+                  <Key className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-medium text-gray-700">OpenAI API</span>
+                  <Switch
+                    checked={apiEnabled}
+                    onCheckedChange={handleApiToggle}
+                    className="data-[state=checked]:bg-green-600"
+                  />
+                  <Badge variant={apiEnabled ? "success" : "secondary"} className={`text-xs ${
+                    apiEnabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                  }`}>
+                    {apiEnabled ? "ON" : "OFF"}
+                  </Badge>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-sm">
+                  {apiEnabled 
+                    ? "OpenAI API is active - AI analysis enabled" 
+                    : "OpenAI API is disabled - tracking without AI analysis"
+                  }
+                </p>
+              </TooltipContent>
+            </Tooltip>
 
             {/* Quick Actions Dropdown */}
             <DropdownMenu>

@@ -24,6 +24,7 @@ interface ResultsTableProps {
   onViewDetails: (keywordId: string) => void;
   searchFilters?: {
     brandId?: string;
+    brandIds?: string[];
     platforms?: string[];
     keywords?: string[];
   };
@@ -35,8 +36,12 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
   
   if (searchFilters) {
     filteredResults = results.filter(result => {
-      // Filter by brand if specified
-      if (searchFilters.brandId && result.brand?.id !== searchFilters.brandId) {
+      // Filter by brand if specified (support both single and multiple brands)
+      if (searchFilters.brandIds && searchFilters.brandIds.length > 0) {
+        if (!searchFilters.brandIds.includes(result.brand?.id || "")) {
+          return false;
+        }
+      } else if (searchFilters.brandId && result.brand?.id !== searchFilters.brandId) {
         return false;
       }
       
@@ -181,11 +186,11 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className="text-sm">
-                            <p><strong>Position</strong> में आपका brand कहाँ दिखता है:</p>
-                            <p>• <strong>Top:</strong> पहले 3 results में</p>
-                            <p>• <strong>Middle:</strong> 4-7 results में</p>
-                            <p>• <strong>Bottom:</strong> 8+ results में</p>
-                            <p>• <strong>None:</strong> Mention नहीं मिला</p>
+                            <p><strong>Position</strong> shows where your brand appears:</p>
+                            <p>• <strong>Top:</strong> First 3 results</p>
+                            <p>• <strong>Middle:</strong> 4-7 results</p>
+                            <p>• <strong>Bottom:</strong> 8+ results</p>
+                            <p>• <strong>None:</strong> Not mentioned</p>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -202,10 +207,10 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className="text-sm">
-                            <p><strong>Mentions</strong> का मतलब:</p>
-                            <p>• AI response में आपके brand का नाम कितनी बार आया</p>
-                            <p>• ज्यादा mentions = बेहतर visibility</p>
-                            <p>• 0 mentions = brand का जिक्र नहीं</p>
+                            <p><strong>Mentions</strong> explained:</p>
+                            <p>• How many times your brand appeared in AI response</p>
+                            <p>• More mentions = better visibility</p>
+                            <p>• 0 mentions = brand not mentioned</p>
                           </div>
                         </TooltipContent>
                       </Tooltip>

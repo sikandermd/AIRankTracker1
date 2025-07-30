@@ -67,10 +67,11 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
         });
       }
 
-      // Prepare search filters for parent component (use first brand for compatibility)
+      // Prepare search filters for parent component with multiple brands
       const searchFilters: SearchFiltersType = {
         keywords,
         brandId: data.brandIds[0] || "",
+        brandIds: data.brandIds,
         platforms: data.platforms,
         dateRange: data.dateRange,
       };

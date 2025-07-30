@@ -47,6 +47,7 @@ export interface ActivityItem {
 export interface SearchFilters {
   keywords: string[];
   brandId: string;
+  brandIds?: string[];
   platforms: string[];
   dateRange: string;
 }
