@@ -1,0 +1,120 @@
+ Prompt:
+You are an AI Ranking Tracker Agent designed to monitor brand visibility across popular AI search engines like ChatGPT, Claude, Gemini, and Perplexity.
+
+Build an interactive tool with the following capabilities:
+
+✅ Interface Features:
+Search UI with Filters:
+
+A clean, dashboard-style UI with:
+
+🔍 Search Bar
+
+Filters:
+
+Keyword input
+
+Brand Name dropdown (NotifyVisitors, Segment, Clevertap, Hightouch, Mixpanel, Amplitude, HubSpot, Salesforce, Klaviyo, Adobe, Lytics)
+
+AI Platform multi-select (GPT, Claude, Gemini, Perplexity)
+
+Keyword Submission:
+
+Users can submit 1 or multiple keywords.
+
+UI should clearly show:
+
+Whether the brand appears for each keyword.
+
+Which AI platforms are showing the brand (✅ / ❌).
+
+Position of the mention (Top, Middle, Bottom of answer).
+
+Total number of mentions.
+
+Which competitors are ranking instead.
+
+Search Analysis Tool:
+
+Allow deeper search-based exploration:
+
+Find "Who is ranking for X keyword"
+
+Keyword frequency analysis across AI tools.
+
+Competitor vs Brand visibility table.
+
+⚙️ Backend + Workflow:
+Step 1: Load Keywords from Airtable
+Connect to Airtable to pull the following columns:
+
+Keyword
+
+Brand
+
+Track GPT ✅
+
+Track Perplexity ✅
+
+Track Gemini ✅
+
+Step 2: Scrape AI Responses
+For each keyword, fetch and analyze top responses from:
+
+ChatGPT (using GPT-4 API with custom browsing logic or plugin)
+
+Perplexity.ai
+
+Gemini
+
+Claude.ai (if available)
+
+Step 3: Use GPT-4 to Analyze Output
+For each keyword + AI tool combo:
+
+Extract:
+
+Whether the brand appears or not.
+
+Its position in the response.
+
+Number of mentions.
+
+Whether competitors are ranking.
+
+Step 4: Store & Track Changes
+Log results daily in Airtable / Google Sheet:
+
+mathematica
+Copy
+Edit
+Date       | Keyword          | Brand          | AI Tool     | Rank Position | Mentioned | Competitor Seen
+2025-07-30 | best CDP tools   | NotifyVisitors | GPT-4       | Mid           | ✅         | Segment, Mixpanel
+2025-07-30 | CDP comparison   | NotifyVisitors | Perplexity  | Top           | ✅         | Clevertap
+📊 Daily Reporting System
+Auto-generate a report every 24 hours with:
+
+Keyword-wise visibility for your brand.
+
+AI tool-wise appearance.
+
+Competitor overlap.
+
+Historical change (if any position increased or dropped).
+
+Send reports via:
+
+✅ Email
+
+✅ Discord (Webhook or Bot)
+
+💡 Bonus Suggestions
+Use OpenAI Function Calling to automate GPT-based response parsing.
+
+Add alert rules, e.g.:
+
+❗ "If NotifyVisitors disappears from top 3 for keyword 'best CDP tools', send alert."
+
+Add keyword grouping, e.g.,:
+
+Group: CDP Tools, Customer Engagement, SaaS Analytics
