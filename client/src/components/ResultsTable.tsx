@@ -107,15 +107,25 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
 
   const getPlatformBadge = (platform: any) => {
     return (
-      <Badge className={`${getPlatformColor(platform.platform)} mr-1 mb-1 flex items-center gap-1`}>
-        <PlatformIcon platform={platform.platform} className="w-3 h-3" />
-        {platform.mentioned ? (
-          <Check className="w-3 h-3" />
-        ) : (
-          <X className="w-3 h-3" />
-        )}
-        <span>{getPlatformName(platform.platform)}</span>
-      </Badge>
+      <div className="flex flex-col items-center gap-1 p-2 border rounded-lg bg-white shadow-sm">
+        <Badge className={`${getPlatformColor(platform.platform)} flex items-center gap-1`}>
+          <PlatformIcon platform={platform.platform} className="w-3 h-3" />
+          {platform.mentioned ? (
+            <Check className="w-3 h-3" />
+          ) : (
+            <X className="w-3 h-3" />
+          )}
+          <span>{getPlatformName(platform.platform)}</span>
+        </Badge>
+        <div className="text-xs text-center">
+          <div className="font-medium text-gray-700">
+            Position: {platform.position || 'None'}
+          </div>
+          <div className="text-gray-500">
+            Mentions: {platform.mentionCount || 0}
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -153,9 +163,9 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
               <TableRow>
                 <TableHead>Keyword</TableHead>
                 <TableHead>Brand</TableHead>
-                <TableHead className="text-center">AI Platforms</TableHead>
-                <TableHead className="text-center">Position</TableHead>
-                <TableHead className="text-center">Mentions</TableHead>
+                <TableHead className="text-center">AI Platforms & Results</TableHead>
+                <TableHead className="text-center">Best Position</TableHead>
+                <TableHead className="text-center">Total Mentions</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -197,7 +207,7 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="flex justify-center flex-wrap gap-1">
+                      <div className="flex justify-center flex-wrap gap-2">
                         {data.platforms.map((platform: any, idx: number) => (
                           <div key={idx}>
                             {getPlatformBadge(platform)}
