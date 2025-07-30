@@ -25,6 +25,7 @@ const searchSchema = z.object({
 
 interface SearchFiltersProps {
   onSearch: (filters: SearchFiltersType) => void;
+  isSearching?: boolean;
 }
 
 const AI_PLATFORMS = [
@@ -34,7 +35,7 @@ const AI_PLATFORMS = [
   { id: 'perplexity', name: 'Perplexity' },
 ];
 
-export default function SearchFilters({ onSearch }: SearchFiltersProps) {
+export default function SearchFilters({ onSearch, isSearching = false }: SearchFiltersProps) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -230,9 +231,22 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
               {/* Action Buttons */}
               <div className="flex justify-between items-center">
                 <div className="flex space-x-3">
-                  <Button type="submit" className="bg-primary hover:bg-blue-700">
-                    <Search className="w-4 h-4 mr-2" />
-                    Search & Track
+                  <Button 
+                    type="submit" 
+                    className="bg-primary hover:bg-blue-700"
+                    disabled={isSearching}
+                  >
+                    {isSearching ? (
+                      <>
+                        <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Tracking...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4 mr-2" />
+                        Search & Track
+                      </>
+                    )}
                   </Button>
                   <Button 
                     type="button" 

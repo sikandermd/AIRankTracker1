@@ -108,21 +108,37 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Filters - Always visible */}
-        <SearchFilters onSearch={handleSearch} />
+        <SearchFilters onSearch={handleSearch} isSearching={isSearching} />
 
         {/* Progress Bar - Show when searching */}
         {isSearching && (
           <div className="mt-8">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center space-x-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-medium text-gray-900">Tracking Keywords...</h3>
-                  <p className="text-sm text-gray-500">Analyzing across AI platforms (ChatGPT, Claude, Gemini, Perplexity)</p>
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                  <p className="text-sm text-gray-500">Analyzing across AI platforms</p>
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span>Progress</span>
+                      <span>Estimated time: 30-45 seconds</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-blue-600 h-2 rounded-full transition-all duration-1000 animate-pulse" style={{width: '60%'}}></div>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center space-x-4 text-xs text-gray-500">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                      Querying AI platforms
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-1 animate-pulse"></div>
+                      Analyzing responses
+                    </div>
                   </div>
                 </div>
               </div>
