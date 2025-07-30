@@ -166,21 +166,51 @@ Respond only with valid JSON.
   }
 
   private async getClaudeResponse(keyword: string): Promise<string> {
-    // Placeholder for Claude API integration
-    // Would require Anthropic API key and SDK
-    return `Claude response for "${keyword}" - API integration needed with ANTHROPIC_API_KEY`;
+    // IMPORTANT: This is currently simulated data
+    // Real Claude integration would require Anthropic API key
+    apiUsageLogger.logAPICall({
+      timestamp: new Date(),
+      service: 'Anthropic',
+      platform: 'Claude',
+      keyword,
+      brand: 'N/A',
+      success: false,
+      error: 'API key not configured - using simulated response'
+    });
+    
+    return `[SIMULATED CLAUDE RESPONSE] For "${keyword}": This is demo data. Real Claude responses would require ANTHROPIC_API_KEY. Current analysis is based on simulated competitive landscape.`;
   }
 
   private async getGeminiResponse(keyword: string): Promise<string> {
-    // Placeholder for Gemini API integration
-    // Would require Google AI API key and SDK
-    return `Gemini response for "${keyword}" - API integration needed with GOOGLE_AI_API_KEY`;
+    // IMPORTANT: This is currently simulated data
+    // Real Gemini integration would require Google AI API key
+    apiUsageLogger.logAPICall({
+      timestamp: new Date(),
+      service: 'Google',
+      platform: 'Gemini',
+      keyword,
+      brand: 'N/A',
+      success: false,
+      error: 'API key not configured - using simulated response'
+    });
+    
+    return `[SIMULATED GEMINI RESPONSE] For "${keyword}": This is demo data. Real Gemini responses would require GOOGLE_AI_API_KEY. Current analysis is based on simulated competitive landscape.`;
   }
 
   private async getPerplexityResponse(keyword: string): Promise<string> {
-    // Placeholder for Perplexity API integration
-    // Would require Perplexity API key and SDK
-    return `Perplexity response for "${keyword}" - API integration needed with PERPLEXITY_API_KEY`;
+    // IMPORTANT: This is currently simulated data
+    // Real Perplexity integration would require Perplexity API key
+    apiUsageLogger.logAPICall({
+      timestamp: new Date(),
+      service: 'Perplexity',
+      platform: 'Perplexity',
+      keyword,
+      brand: 'N/A',
+      success: false,
+      error: 'API key not configured - using simulated response'
+    });
+    
+    return `[SIMULATED PERPLEXITY RESPONSE] For "${keyword}": This is demo data. Real Perplexity responses would require PERPLEXITY_API_KEY. Current analysis is based on simulated competitive landscape.`;
   }
 }
 

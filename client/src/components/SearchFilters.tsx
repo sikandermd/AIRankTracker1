@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { PlatformIcon, getPlatformName, getPlatformColor } from "./PlatformIcons";
+import DataSourceWarning from "./DataSourceWarning";
 import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 
 const searchSchema = z.object({
@@ -255,6 +256,9 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
                   )}
                 />
               </div>
+
+              {/* Data Source Warning */}
+              <DataSourceWarning platforms={selectedPlatforms} />
 
               {/* Action Buttons */}
               <div className="flex justify-between items-center">
