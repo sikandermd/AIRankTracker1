@@ -119,6 +119,21 @@ The application is structured as a monorepo with shared schemas between client a
 - Error handling for invalid sheets or API issues
 - Integration with QuickActions component for easy access
 
+### CSV Import Alternative
+- Created CSVImportModal component as Google Sheets alternative
+- Direct file upload without external API dependencies
+- Downloadable CSV template for proper formatting
+- Real-time preview of uploaded data
+- Batch processing with error handling and progress reporting
+
+### Keywords Library Page
+- Dedicated /keywords route for comprehensive keyword management
+- Search and filter functionality by keyword text, brand, and category
+- Statistics overview showing total keywords, brands, and categories
+- Individual keyword details with platform tracking settings
+- Delete functionality for keyword management
+- Navigation integration with main app structure
+
 ### Setup Requirements
 To use Google Sheets import:
 1. Create Google Cloud project and enable Google Sheets API

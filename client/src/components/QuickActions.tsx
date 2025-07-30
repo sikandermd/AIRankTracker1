@@ -111,6 +111,11 @@ export default function QuickActions() {
       label: "View Analytics",
       onClick: () => setLocation("/analytics"),
     },
+    {
+      icon: Plus,
+      label: "Keywords Library",
+      onClick: () => setLocation("/keywords"),
+    },
   ];
 
   return (

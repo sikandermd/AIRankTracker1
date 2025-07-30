@@ -166,6 +166,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/keywords/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteKeyword(id);
+      res.json({ message: "Keyword deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete keyword" });
+    }
+  });
+
   // Keyword detail with full analysis
   app.get("/api/keywords/:id/analysis", async (req, res) => {
     try {

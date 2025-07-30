@@ -26,9 +26,10 @@ const addKeywordSchema = z.object({
 interface AddKeywordModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onKeywordAdded?: () => void;
 }
 
-export default function AddKeywordModal({ isOpen, onClose }: AddKeywordModalProps) {
+export default function AddKeywordModal({ isOpen, onClose, onKeywordAdded }: AddKeywordModalProps) {
   const { toast } = useToast();
 
   const { data: brands } = useQuery({

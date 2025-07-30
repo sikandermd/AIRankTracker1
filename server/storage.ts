@@ -119,6 +119,10 @@ export class DatabaseStorage implements IStorage {
     return updatedKeyword;
   }
 
+  async deleteKeyword(id: string): Promise<void> {
+    await db.delete(keywords).where(eq(keywords.id, id));
+  }
+
   async getTrackingResults(filters?: {
     keywordId?: string;
     brandId?: string;
