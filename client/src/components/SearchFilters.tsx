@@ -18,7 +18,7 @@ import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 
 const searchSchema = z.object({
   keywords: z.string().min(1, "Please enter at least one keyword"),
-  brandId: z.string().min(1, "Please select a brand"),
+  brandIds: z.array(z.string()).min(1, "Please select at least one brand"),
   platforms: z.array(z.string()).min(1, "Please select at least one platform"),
   dateRange: z.string(),
 });
@@ -37,6 +37,7 @@ const AI_PLATFORMS = [
 
 export default function SearchFilters({ onSearch, isSearching = false }: SearchFiltersProps) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const { toast } = useToast();
 
   const { data: brands } = useQuery({
@@ -47,7 +48,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
     resolver: zodResolver(searchSchema),
     defaultValues: {
       keywords: "",
-      brandId: "",
+      brandIds: [],
       platforms: [],
       dateRange: "7",
     },
@@ -57,17 +58,19 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
     try {
       const keywords = data.keywords.split(',').map(k => k.trim()).filter(k => k);
       
-      // Track keywords
-      await apiRequest("POST", "/api/keywords/track", {
-        keywords,
-        brandId: data.brandId,
-        platforms: data.platforms,
-      });
+      // Track keywords for each selected brand
+      for (const brandId of data.brandIds) {
+        await apiRequest("POST", "/api/keywords/track", {
+          keywords,
+          brandId: brandId,
+          platforms: data.platforms,
+        });
+      }
 
-      // Prepare search filters for parent component
+      // Prepare search filters for parent component (use first brand for compatibility)
       const searchFilters: SearchFiltersType = {
         keywords,
-        brandId: data.brandId,
+        brandId: data.brandIds[0] || "",
         platforms: data.platforms,
         dateRange: data.dateRange,
       };
@@ -76,7 +79,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
       
       toast({
         title: "Search Started",
-        description: `Tracking ${keywords.length} keywords across ${data.platforms.length} platforms`,
+        description: `Tracking ${keywords.length} keywords for ${data.brandIds.length} brands across ${data.platforms.length} platforms`,
       });
     } catch (error) {
       toast({
@@ -102,9 +105,19 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
     form.setValue('platforms', newPlatforms);
   };
 
+  const handleBrandToggle = (brandId: string) => {
+    const newBrands = selectedBrands.includes(brandId)
+      ? selectedBrands.filter(b => b !== brandId)
+      : [...selectedBrands, brandId];
+    
+    setSelectedBrands(newBrands);
+    form.setValue('brandIds', newBrands);
+  };
+
   const clearFilters = () => {
     form.reset();
     setSelectedPlatforms([]);
+    setSelectedBrands([]);
   };
 
   return (
@@ -140,31 +153,45 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
               {/* Filters Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Brand Selection */}
-                <FormField
-                  control={form.control}
-                  name="brandId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">
-                        Brand
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Brand" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {(brands as any)?.map((brand: any) => (
-                            <SelectItem key={brand.id} value={brand.id}>
-                              {brand.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
+                <div>
+                  <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Brands</FormLabel>
+                  <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                    {brands?.map((brand: any) => (
+                      <div key={brand.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`brand-${brand.id}`}
+                          checked={selectedBrands.includes(brand.id)}
+                          onCheckedChange={() => handleBrandToggle(brand.id)}
+                        />
+                        <label
+                          htmlFor={`brand-${brand.id}`}
+                          className="text-sm font-medium text-gray-900 cursor-pointer flex-1"
+                        >
+                          {brand.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedBrands.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {selectedBrands.map((brandId) => {
+                        const brand = brands?.find((b: any) => b.id === brandId);
+                        return (
+                          <Badge key={brandId} variant="secondary" className="text-xs">
+                            {brand?.name}
+                            <button
+                              type="button"
+                              onClick={() => handleBrandToggle(brandId)}
+                              className="ml-1 hover:text-red-500"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        );
+                      })}
+                    </div>
                   )}
-                />
+                </div>
 
                 {/* AI Platforms */}
                 <FormField
