@@ -50,7 +50,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const keyword = await storage.createKeyword(validatedData);
       res.status(201).json(keyword);
     } catch (error) {
-      res.status(400).json({ message: "Invalid keyword data" });
+      if (error.message && error.message.includes('already exists')) {
+        res.status(409).json({ message: error.message });
+      } else {
+        res.status(400).json({ message: "Invalid keyword data" });
+      }
     }
   });
 

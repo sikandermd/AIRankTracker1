@@ -124,6 +124,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createKeyword(keyword: InsertKeyword): Promise<Keyword> {
+    // Check for duplicate keyword for the same brand
+    const existing = await db
+      .select()
+      .from(keywords)
+      .where(and(
+        eq(keywords.keyword, keyword.keyword),
+        eq(keywords.brandId, keyword.brandId!)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      throw new Error(`Keyword "${keyword.keyword}" already exists for this brand`);
+    }
+
     const [newKeyword] = await db
       .insert(keywords)
       .values(keyword)
