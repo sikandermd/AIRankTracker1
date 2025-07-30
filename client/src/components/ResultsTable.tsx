@@ -16,11 +16,47 @@ import type { EnrichedTrackingResult } from "@/lib/types";
 interface ResultsTableProps {
   results: EnrichedTrackingResult[];
   onViewDetails: (keywordId: string) => void;
+  searchFilters?: {
+    brandId?: string;
+    platforms?: string[];
+    keywords?: string[];
+  };
 }
 
-export default function ResultsTable({ results, onViewDetails }: ResultsTableProps) {
+export default function ResultsTable({ results, onViewDetails, searchFilters }: ResultsTableProps) {
+  // Filter results based on search criteria
+  let filteredResults = results;
+  
+  if (searchFilters) {
+    filteredResults = results.filter(result => {
+      // Filter by brand if specified
+      if (searchFilters.brandId && result.brand?.id !== searchFilters.brandId) {
+        return false;
+      }
+      
+      // Filter by platforms if specified
+      if (searchFilters.platforms && searchFilters.platforms.length > 0) {
+        if (!searchFilters.platforms.includes(result.aiPlatform)) {
+          return false;
+        }
+      }
+      
+      // Filter by keywords if specified
+      if (searchFilters.keywords && searchFilters.keywords.length > 0) {
+        const keywordMatch = searchFilters.keywords.some(keyword => 
+          result.keyword?.keyword?.toLowerCase().includes(keyword.toLowerCase())
+        );
+        if (!keywordMatch) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }
+
   // Group results by keyword for better display
-  const groupedResults = results.reduce((acc, result) => {
+  const groupedResults = filteredResults.reduce((acc, result) => {
     const keywordId = result.keywordId;
     if (!acc[keywordId]) {
       acc[keywordId] = {
@@ -31,14 +67,17 @@ export default function ResultsTable({ results, onViewDetails }: ResultsTablePro
       };
     }
     
-    acc[keywordId].platforms.push({
-      platform: result.aiPlatform,
-      mentioned: result.mentioned,
-      position: result.position,
-      mentionCount: result.mentionCount,
-    });
-    
-    acc[keywordId].totalMentions += result.mentionCount;
+    // Check if this platform already exists for this keyword
+    const existingPlatform = acc[keywordId].platforms.find(p => p.platform === result.aiPlatform);
+    if (!existingPlatform) {
+      acc[keywordId].platforms.push({
+        platform: result.aiPlatform,
+        mentioned: result.mentioned,
+        position: result.position,
+        mentionCount: result.mentionCount,
+      });
+      acc[keywordId].totalMentions += result.mentionCount;
+    }
     
     return acc;
   }, {} as Record<string, any>);
@@ -84,9 +123,16 @@ export default function ResultsTable({ results, onViewDetails }: ResultsTablePro
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Keyword Tracking Results
-          </h3>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Keyword Tracking Results
+            </h3>
+            {searchFilters && (
+              <p className="text-sm text-gray-500 mt-1">
+                Showing results for selected brand and platforms only
+              </p>
+            )}
+          </div>
           <div className="flex space-x-2">
             <Button variant="ghost" size="sm">
               <Download className="w-4 h-4 mr-1" />
@@ -184,7 +230,8 @@ export default function ResultsTable({ results, onViewDetails }: ResultsTablePro
 
         {Object.keys(groupedResults).length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            No tracking results found. Start by searching for keywords above.
+            <p>No tracking results found for the selected criteria.</p>
+            <p className="text-xs mt-1">Try adjusting your search filters or start a new tracking session.</p>
           </div>
         )}
 

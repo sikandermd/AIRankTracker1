@@ -160,6 +160,7 @@ export default function Dashboard() {
                 <ResultsTable 
                   results={(trackingResults as any) || []} 
                   onViewDetails={handleViewDetails}
+                  searchFilters={searchFilters}
                 />
               </div>
 
