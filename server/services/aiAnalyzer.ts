@@ -122,7 +122,7 @@ Respond only with valid JSON.
           success: false,
           error: 'API key not configured'
         });
-        return `[SIMULATED ChatGPT RESPONSE] - Your OpenAI API key is configured but this is demo data. Real API responses for "${keyword}" would appear here.`;
+        return `[SIMULATED ChatGPT RESPONSE] - API key missing. Real ChatGPT response for "${keyword}" would appear here.`;
       }
 
       const response = await openai.chat.completions.create({
@@ -130,7 +130,7 @@ Respond only with valid JSON.
         messages: [
           {
             role: "user",
-            content: `What are the best solutions for "${keyword}"? Please provide a comprehensive list with explanations.`
+            content: keyword
           }
         ],
         max_tokens: 1000,

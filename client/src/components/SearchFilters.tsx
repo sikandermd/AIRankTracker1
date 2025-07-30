@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { PlatformIcon, getPlatformName, getPlatformColor } from "./PlatformIcons";
 import DataSourceWarning from "./DataSourceWarning";
+import QueryWarning from "./QueryWarning";
 import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 
 const searchSchema = z.object({
@@ -256,6 +257,11 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
                   )}
                 />
               </div>
+
+              {/* Query Information */}
+              {form.getValues('keywords') && form.getValues('keywords').trim() && (
+                <QueryWarning keyword={form.getValues('keywords')} />
+              )}
 
               {/* Data Source Warning */}
               <DataSourceWarning platforms={selectedPlatforms} />
