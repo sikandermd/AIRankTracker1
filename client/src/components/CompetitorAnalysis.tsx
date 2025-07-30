@@ -8,41 +8,15 @@ export default function CompetitorAnalysis() {
     queryKey: ["/api/competitor-analysis"],
   });
 
-  // Mock data for demonstration since we don't have real competitor data yet
-  const mockCompetitors = [
-    {
-      name: "Segment",
-      mentions: 12,
-      visibility: 85,
-      change: 12,
-      initial: "S",
-      color: "bg-red-100 text-red-600",
-    },
-    {
-      name: "Mixpanel", 
-      mentions: 8,
-      visibility: 72,
-      change: -3,
-      initial: "M",
-      color: "bg-purple-100 text-purple-600",
-    },
-    {
-      name: "Amplitude",
-      mentions: 6,
-      visibility: 68,
-      change: 0,
-      initial: "A", 
-      color: "bg-green-100 text-green-600",
-    },
-    {
-      name: "HubSpot",
-      mentions: 4,
-      visibility: 45,
-      change: 8,
-      initial: "H",
-      color: "bg-orange-100 text-orange-600",
-    },
-  ];
+  // Process real competitor data from API
+  const processedCompetitors = competitorData ? competitorData.map((comp: any) => ({
+    name: comp.competitorBrand,
+    mentions: comp.mentionCount,
+    visibility: comp.visibilityScore,
+    change: 0, // Would be calculated from historical data
+    initial: comp.competitorBrand.charAt(0),
+    color: "bg-gray-100 text-gray-600",
+  })) : [];
 
   const getChangeIcon = (change: number) => {
     if (change > 0) {
@@ -67,28 +41,35 @@ export default function CompetitorAnalysis() {
         <p className="text-sm text-gray-500 mt-1">Who's ranking instead</p>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="space-y-4">
-          {mockCompetitors.map((competitor, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={`w-8 h-8 ${competitor.color} rounded-lg flex items-center justify-center`}>
-                  <span className="text-xs font-medium">{competitor.initial}</span>
+        {processedCompetitors.length > 0 ? (
+          <div className="space-y-4">
+            {processedCompetitors.map((competitor, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className={`w-8 h-8 ${competitor.color} rounded-lg flex items-center justify-center`}>
+                    <span className="text-xs font-medium">{competitor.initial}</span>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-900">{competitor.name}</p>
+                    <p className="text-xs text-gray-500">{competitor.mentions} mentions</p>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">{competitor.name}</p>
-                  <p className="text-xs text-gray-500">{competitor.mentions} mentions</p>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-gray-900">{competitor.visibility}%</p>
+                  <p className={`text-xs ${getChangeColor(competitor.change)} flex items-center`}>
+                    {getChangeIcon(competitor.change)}
+                    {competitor.change > 0 ? '+' : ''}{competitor.change}%
+                  </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">{competitor.visibility}%</p>
-                <p className={`text-xs ${getChangeColor(competitor.change)} flex items-center`}>
-                  {getChangeIcon(competitor.change)}
-                  {competitor.change > 0 ? '+' : ''}{competitor.change}%
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-sm">No competitor data available.</p>
+            <p className="text-xs mt-1">Start tracking keywords to see competitor analysis.</p>
+          </div>
+        )}
         
         <Button 
           variant="ghost" 

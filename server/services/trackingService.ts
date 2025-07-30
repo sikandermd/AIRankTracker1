@@ -146,18 +146,57 @@ export class TrackingService {
   }
 
   async getRecentActivity(limit: number = 10) {
-    const results = await storage.getLatestResults();
-    
-    return results.slice(0, limit).map(result => ({
-      id: result.id,
-      type: result.mentioned ? 'mention_detected' : 'visibility_lost',
-      message: result.mentioned 
-        ? `New mention detected on ${result.aiPlatform}`
-        : `Lost visibility on ${result.aiPlatform}`,
-      timestamp: result.trackedAt,
-      platform: result.aiPlatform,
-      keywordId: result.keywordId,
-    }));
+    try {
+      const results = await storage.getLatestResults();
+      
+      return results.slice(0, limit).map((result: any) => {
+        let message = "";
+        let type = "tracking";
+        let color = "bg-blue-400";
+
+        if (result.mentioned) {
+          if (result.position && result.position <= 3) {
+            message = `Ranked #${result.position} for keyword on ${result.aiPlatform}`;
+            type = "improvement";
+            color = "bg-green-400";
+          } else {
+            message = `Mentioned on ${result.aiPlatform}`;
+            type = "mention";
+            color = "bg-yellow-400";
+          }
+        } else {
+          message = `Not mentioned on ${result.aiPlatform}`;
+          type = "loss";
+          color = "bg-red-400";
+        }
+
+        return {
+          id: `activity-${result.id}`,
+          type,
+          message,
+          timestamp: this.formatTimeAgo(new Date(result.trackedAt)),
+          color,
+        };
+      });
+    } catch (error) {
+      console.error("Error in getRecentActivity:", error);
+      return [];
+    }
+  }
+
+  private formatTimeAgo(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else {
+      return 'Just now';
+    }
   }
 }
 

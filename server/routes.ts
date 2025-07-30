@@ -129,6 +129,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recent activity
+  app.get("/api/dashboard/recent-activity", async (req, res) => {
+    try {
+      const activity = await trackingService.getRecentActivity(10);
+      res.json(activity);
+    } catch (error) {
+      console.error("Recent activity error:", error);
+      res.status(500).json({ message: "Failed to fetch recent activity" });
+    }
+  });
+
+  // Keywords management
+  app.post("/api/keywords", async (req, res) => {
+    try {
+      const { keyword, brandId, category } = req.body;
+      const newKeyword = await storage.createKeyword({
+        keyword,
+        brandId,
+        category: category || 'General',
+      });
+      res.json(newKeyword);
+    } catch (error) {
+      console.error("Create keyword error:", error);
+      res.status(500).json({ message: "Failed to create keyword" });
+    }
+  });
+
+  app.get("/api/keywords", async (req, res) => {
+    try {
+      const keywords = await storage.getAllKeywords();
+      res.json(keywords);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch keywords" });
+    }
+  });
+
   // Keyword detail with full analysis
   app.get("/api/keywords/:id/analysis", async (req, res) => {
     try {

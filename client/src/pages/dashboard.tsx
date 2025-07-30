@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SearchFilters from "@/components/SearchFilters";
 import StatsOverview from "@/components/StatsOverview";
@@ -7,17 +7,26 @@ import CompetitorAnalysis from "@/components/CompetitorAnalysis";
 import RecentActivity from "@/components/RecentActivity";
 import QuickActions from "@/components/QuickActions";
 import DetailModal from "@/components/DetailModal";
+import BulkUploadModal from "@/components/BulkUploadModal";
 import { Bell, ChartLine } from "lucide-react";
 import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 
 export default function Dashboard() {
   const [selectedKeywordId, setSelectedKeywordId] = useState<string | null>(null);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFiltersType>({
     keywords: [],
     brandId: "",
     platforms: [],
     dateRange: "7",
   });
+
+  // Listen for bulk upload events from SearchFilters
+  useEffect(() => {
+    const handleBulkUpload = () => setShowBulkModal(true);
+    window.addEventListener('openBulkUpload', handleBulkUpload);
+    return () => window.removeEventListener('openBulkUpload', handleBulkUpload);
+  }, []);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/dashboard/stats"],
@@ -111,6 +120,12 @@ export default function Dashboard() {
           onClose={() => setSelectedKeywordId(null)}
         />
       )}
+
+      {/* Bulk Upload Modal */}
+      <BulkUploadModal 
+        isOpen={showBulkModal} 
+        onClose={() => setShowBulkModal(false)} 
+      />
     </div>
   );
 }

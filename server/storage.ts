@@ -160,7 +160,7 @@ export class DatabaseStorage implements IStorage {
   async createTrackingResult(result: InsertTrackingResult): Promise<TrackingResult> {
     const [newResult] = await db
       .insert(trackingResults)
-      .values([result])
+      .values(result)
       .returning();
     return newResult;
   }

@@ -232,7 +232,15 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
                     <Search className="w-4 h-4 mr-2" />
                     Search & Track
                   </Button>
-                  <Button type="button" variant="outline">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      // Access parent's bulk upload modal
+                      const event = new CustomEvent('openBulkUpload');
+                      window.dispatchEvent(event);
+                    }}
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Bulk Upload
                   </Button>
