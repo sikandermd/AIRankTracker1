@@ -8,15 +8,17 @@ export default function CompetitorAnalysis() {
     queryKey: ["/api/competitor-analysis"],
   });
 
-  // Process real competitor data from API
-  const processedCompetitors = competitorData ? competitorData.map((comp: any) => ({
-    name: comp.competitorBrand,
-    mentions: comp.mentionCount,
-    visibility: comp.visibilityScore,
-    change: 0, // Would be calculated from historical data
-    initial: comp.competitorBrand.charAt(0),
-    color: "bg-gray-100 text-gray-600",
-  })) : [];
+  // Process real competitor data from API - limit to top 3
+  const processedCompetitors = competitorData ? competitorData
+    .slice(0, 3) // Only show top 3 competitors
+    .map((comp: any) => ({
+      name: comp.competitorBrand,
+      mentions: comp.mentionCount,
+      visibility: comp.visibilityScore,
+      change: 0, // Would be calculated from historical data
+      initial: comp.competitorBrand.charAt(0),
+      color: "bg-gray-100 text-gray-600",
+    })) : [];
 
   const getChangeIcon = (change: number) => {
     if (change > 0) {

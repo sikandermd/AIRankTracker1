@@ -4,11 +4,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AddKeywordModal from "./AddKeywordModal";
 import BulkUploadModal from "./BulkUploadModal";
+import AlertSetupModal from "./AlertSetupModal";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function QuickActions() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const generateReport = async () => {
@@ -85,18 +89,12 @@ export default function QuickActions() {
     {
       icon: Bell,
       label: "Setup Alerts",
-      onClick: () => toast({
-        title: "Coming Soon",
-        description: "Alert setup functionality will be available soon",
-      }),
+      onClick: () => setShowAlertModal(true),
     },
     {
       icon: BarChart3,
       label: "View Analytics",
-      onClick: () => toast({
-        title: "Coming Soon", 
-        description: "Advanced analytics dashboard will be available soon",
-      }),
+      onClick: () => setLocation("/analytics"),
     },
   ];
 
@@ -129,6 +127,11 @@ export default function QuickActions() {
       <BulkUploadModal 
         isOpen={showBulkModal} 
         onClose={() => setShowBulkModal(false)} 
+      />
+
+      <AlertSetupModal 
+        isOpen={showAlertModal} 
+        onClose={() => setShowAlertModal(false)} 
       />
     </>
   );
