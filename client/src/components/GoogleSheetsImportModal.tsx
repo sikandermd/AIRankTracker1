@@ -145,6 +145,8 @@ export default function GoogleSheetsImportModal({
             <Info className="h-4 w-4" />
             <AlertDescription>
               <strong>Expected format:</strong> Column A: Keywords, Column B: Category, Column C: Brand, Column D: Platforms (optional)
+              <br />
+              <strong>Note:</strong> Google Service Account authentication must be configured first.
             </AlertDescription>
           </Alert>
 

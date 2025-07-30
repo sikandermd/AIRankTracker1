@@ -35,8 +35,8 @@ export class GoogleSheetsService {
     skipped: number;
     errors: string[];
   }> {
-    if (!this.sheets) {
-      throw new Error('Google Sheets service not initialized. Please configure GOOGLE_SERVICE_ACCOUNT_KEY.');
+    if (!this.sheets || !this.auth) {
+      throw new Error('Google Sheets service not configured. Please add your GOOGLE_SERVICE_ACCOUNT_KEY to the environment variables.');
     }
 
     try {
@@ -149,8 +149,8 @@ export class GoogleSheetsService {
     title: string;
     sheets: Array<{ title: string; rowCount: number; columnCount: number }>;
   }> {
-    if (!this.sheets) {
-      throw new Error('Google Sheets service not initialized');
+    if (!this.sheets || !this.auth) {
+      throw new Error('Google Sheets service not configured. Please add your GOOGLE_SERVICE_ACCOUNT_KEY to the environment variables.');
     }
 
     try {
