@@ -48,6 +48,7 @@ The application uses a relational database with the following main entities:
 - **Search Filters**: Multi-platform keyword submission with brand and date filtering
 - **Results Table**: Displays tracking results with detailed breakdown by AI platform
 - **Detail Modal**: Deep-dive analysis for individual keyword performance
+- **Google Sheets Import**: Modal for importing keywords directly from Google Sheets with validation and error handling
 
 ## Data Flow
 
@@ -67,6 +68,10 @@ The application uses a relational database with the following main entities:
 ### AI Services
 - **OpenAI API**: GPT-4o model for intelligent analysis of AI responses
 - **Multi-platform Support**: Designed to integrate with ChatGPT, Claude, Gemini, and Perplexity APIs
+
+### Google Services
+- **Google Sheets API**: For importing keywords directly from spreadsheets
+- **Service Account Authentication**: Secure API access without manual login
 
 ### Development Tools
 - **Drizzle Kit**: Database migrations and schema management
@@ -100,3 +105,23 @@ The application uses a relational database with the following main entities:
 - **Real-time Updates**: React Query provides automatic data synchronization
 
 The application is structured as a monorepo with shared schemas between client and server, ensuring consistent data types across the full stack.
+
+## Recent Changes (January 2025)
+
+### Google Sheets Integration
+- Added Google Sheets API integration using googleapis package
+- Created GoogleSheetsImportModal component for keyword import
+- Implemented server-side Google Sheets service with authentication
+- Added API endpoints for sheet info retrieval and keyword import
+- Expected sheet format: Column A (Keywords), Column B (Category), Column C (Brand), Column D (Platforms)
+- Automatic brand creation if brand doesn't exist
+- Duplicate keyword detection and skipping
+- Error handling for invalid sheets or API issues
+- Integration with QuickActions component for easy access
+
+### Setup Requirements
+To use Google Sheets import:
+1. Create Google Cloud project and enable Google Sheets API
+2. Create service account and download JSON key
+3. Set GOOGLE_SERVICE_ACCOUNT_KEY environment variable with JSON content
+4. Share target Google Sheets with service account email

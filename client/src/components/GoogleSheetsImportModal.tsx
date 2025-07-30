@@ -42,11 +42,20 @@ export default function GoogleSheetsImportModal({
 
   const getSheetInfo = async (url: string) => {
     try {
-      const response = await apiRequest('/api/sheets/info', {
+      const response = await fetch('/api/sheets/info', {
         method: 'POST',
-        body: { spreadsheetUrl: url },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ spreadsheetUrl: url }),
       });
-      setSheetInfo(response);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setSheetInfo(data);
     } catch (error) {
       console.error('Failed to get sheet info:', error);
       setSheetInfo(null);
@@ -58,11 +67,20 @@ export default function GoogleSheetsImportModal({
     setImportResult(null);
 
     try {
-      const result = await apiRequest('/api/sheets/import', {
+      const response = await fetch('/api/sheets/import', {
         method: 'POST',
-        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
       setImportResult(result);
       
       if (result.imported > 0) {
