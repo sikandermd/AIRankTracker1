@@ -40,6 +40,7 @@ const Navigation = () => {
     { path: "/", label: "Dashboard", icon: Home },
     { path: "/keywords", label: "Keywords", icon: Tag },
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
+    { path: "/alerts", label: "Alerts", icon: Bell },
   ];
 
   const generateReport = async () => {
@@ -67,7 +68,7 @@ const Navigation = () => {
       ]);
       
       const csvContent = [headers, ...rows]
-        .map(row => row.map(field => `"${field}"`).join(','))
+        .map(row => row.map((field: any) => `"${field}"`).join(','))
         .join('\n');
       
       const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -147,7 +148,7 @@ const Navigation = () => {
                     onCheckedChange={handleApiToggle}
                     className="data-[state=checked]:bg-green-600"
                   />
-                  <Badge variant={apiEnabled ? "success" : "secondary"} className={`text-xs ${
+                  <Badge variant={apiEnabled ? "default" : "secondary"} className={`text-xs ${
                     apiEnabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
                   }`}>
                     {apiEnabled ? "ON" : "OFF"}

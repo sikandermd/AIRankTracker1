@@ -67,12 +67,36 @@ export const competitorAnalysis = pgTable("competitor_analysis", {
 
 export const alerts = pgTable("alerts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id),
-  keywordId: varchar("keyword_id").references(() => keywords.id),
-  alertType: text("alert_type").notNull(), // 'visibility_loss', 'position_change', 'new_competitor'
-  conditions: jsonb("conditions").$type<Record<string, any>>(),
+  name: text("name").notNull(),
+  brandId: varchar("brand_id").references(() => brands.id).notNull(),
+  keywordId: varchar("keyword_id").references(() => keywords.id).notNull(),
+  platforms: text("platforms").array().notNull(), // ['gpt', 'claude', 'gemini', 'perplexity']
+  triggerConditions: jsonb("trigger_conditions").$type<{
+    mentionChange: boolean;
+    positionImprove: boolean;
+    newPlatform: boolean;
+    mentionIncrease: boolean;
+  }>().notNull(),
+  notificationMethods: jsonb("notification_methods").$type<{
+    email?: string;
+    discord?: string;
+  }>().notNull(),
   isActive: boolean("is_active").default(true),
+  lastTriggered: timestamp("last_triggered"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const alertLogs = pgTable("alert_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  alertId: varchar("alert_id").references(() => alerts.id).notNull(),
+  platform: text("platform").notNull(),
+  triggerType: text("trigger_type").notNull(), // 'mention_change', 'position_improve', 'new_platform', 'mention_increase'
+  previousValue: text("previous_value"),
+  currentValue: text("current_value").notNull(),
+  notificationSent: boolean("notification_sent").default(false),
+  notificationError: text("notification_error"),
+  triggeredAt: timestamp("triggered_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -109,14 +133,22 @@ export const competitorAnalysisRelations = relations(competitorAnalysis, ({ one 
   }),
 }));
 
-export const alertsRelations = relations(alerts, ({ one }) => ({
-  user: one(users, {
-    fields: [alerts.userId],
-    references: [users.id],
+export const alertsRelations = relations(alerts, ({ one, many }) => ({
+  brand: one(brands, {
+    fields: [alerts.brandId],
+    references: [brands.id],
   }),
   keyword: one(keywords, {
     fields: [alerts.keywordId],
     references: [keywords.id],
+  }),
+  logs: many(alertLogs),
+}));
+
+export const alertLogsRelations = relations(alertLogs, ({ one }) => ({
+  alert: one(alerts, {
+    fields: [alertLogs.alertId],
+    references: [alerts.id],
   }),
 }));
 
@@ -149,6 +181,13 @@ export const insertCompetitorAnalysisSchema = createInsertSchema(competitorAnaly
 export const insertAlertSchema = createInsertSchema(alerts).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
+  lastTriggered: true,
+});
+
+export const insertAlertLogSchema = createInsertSchema(alertLogs).omit({
+  id: true,
+  triggeredAt: true,
 });
 
 // Types
@@ -169,3 +208,5 @@ export type InsertCompetitorAnalysis = z.infer<typeof insertCompetitorAnalysisSc
 
 export type Alert = typeof alerts.$inferSelect;
 export type InsertAlert = z.infer<typeof insertAlertSchema>;
+export type AlertLog = typeof alertLogs.$inferSelect;
+export type InsertAlertLog = z.infer<typeof insertAlertLogSchema>;

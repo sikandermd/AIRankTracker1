@@ -7,6 +7,7 @@ import Navigation from "@/components/Navigation";
 import Dashboard from "@/pages/dashboard";
 import Analytics from "@/pages/analytics";
 import Keywords from "@/pages/keywords";
+import AlertsPage from "@/pages/AlertsPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/keywords" component={Keywords} />
+          <Route path="/alerts" component={AlertsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

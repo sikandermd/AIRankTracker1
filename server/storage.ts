@@ -1,8 +1,9 @@
 import { 
-  users, brands, keywords, trackingResults, competitorAnalysis, alerts,
+  users, brands, keywords, trackingResults, competitorAnalysis, alerts, alertLogs,
   type User, type InsertUser, type Brand, type InsertBrand, 
   type Keyword, type InsertKeyword, type TrackingResult, type InsertTrackingResult,
-  type CompetitorAnalysis, type InsertCompetitorAnalysis
+  type CompetitorAnalysis, type InsertCompetitorAnalysis,
+  type Alert, type InsertAlert, type AlertLog, type InsertAlertLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray } from "drizzle-orm";
@@ -39,6 +40,19 @@ export interface IStorage {
   // Competitor analysis operations
   getCompetitorAnalysis(keywordId?: string): Promise<CompetitorAnalysis[]>;
   createCompetitorAnalysis(analysis: InsertCompetitorAnalysis): Promise<CompetitorAnalysis>;
+
+  // Alert operations
+  getAllAlerts(): Promise<Alert[]>;
+  getAlert(id: string): Promise<Alert | undefined>;
+  getAlertsForKeywordAndBrand(keywordId: string, brandId: string): Promise<Alert[]>;
+  createAlert(alert: InsertAlert): Promise<Alert>;
+  updateAlert(id: string, updates: Partial<InsertAlert>): Promise<Alert>;
+  deleteAlert(id: string): Promise<void>;
+
+  // Alert log operations
+  getAlertLogs(alertId?: string): Promise<AlertLog[]>;
+  createAlertLog(log: InsertAlertLog): Promise<AlertLog>;
+  updateAlertLog(id: string, updates: Partial<InsertAlertLog>): Promise<AlertLog>;
 
   // Dashboard stats
   getDashboardStats(): Promise<{
@@ -243,6 +257,92 @@ export class DatabaseStorage implements IStorage {
       rankingDropped,
       keywordsTracked: Number(keywordsCount.count) || 0,
     };
+  }
+
+  // Alert operations
+  async getAllAlerts(): Promise<Alert[]> {
+    return await db
+      .select()
+      .from(alerts)
+      .orderBy(desc(alerts.createdAt));
+  }
+
+  async getAlert(id: string): Promise<Alert | undefined> {
+    const [alert] = await db
+      .select()
+      .from(alerts)
+      .where(eq(alerts.id, id));
+    return alert;
+  }
+
+  async getAlertsForKeywordAndBrand(keywordId: string, brandId: string): Promise<Alert[]> {
+    return await db
+      .select()
+      .from(alerts)
+      .where(
+        and(
+          eq(alerts.keywordId, keywordId),
+          eq(alerts.brandId, brandId),
+          eq(alerts.isActive, true)
+        )
+      );
+  }
+
+  async createAlert(alert: InsertAlert): Promise<Alert> {
+    const [newAlert] = await db
+      .insert(alerts)
+      .values(alert)
+      .returning();
+    return newAlert;
+  }
+
+  async updateAlert(id: string, updates: Partial<InsertAlert>): Promise<Alert> {
+    const [updatedAlert] = await db
+      .update(alerts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(alerts.id, id))
+      .returning();
+    return updatedAlert;
+  }
+
+  async deleteAlert(id: string): Promise<void> {
+    await db
+      .delete(alerts)
+      .where(eq(alerts.id, id));
+  }
+
+  // Alert log operations
+  async getAlertLogs(alertId?: string): Promise<AlertLog[]> {
+    if (alertId) {
+      return await db
+        .select()
+        .from(alertLogs)
+        .where(eq(alertLogs.alertId, alertId))
+        .orderBy(desc(alertLogs.triggeredAt));
+    }
+
+    return await db
+      .select()
+      .from(alertLogs)
+      .orderBy(desc(alertLogs.triggeredAt))
+      .limit(100);
+  }
+
+  async createAlertLog(log: InsertAlertLog): Promise<AlertLog> {
+    const [newLog] = await db
+      .insert(alertLogs)
+      .values(log)
+      .returning();
+    return newLog;
+  }
+
+  async updateAlertLog(id: string, updates: Partial<InsertAlertLog>): Promise<AlertLog> {
+    const [updatedLog] = await db
+      .update(alertLogs)
+      .set(updates)
+      .where(eq(alertLogs.id, id))
+      .returning();
+    return updatedLog;
   }
 }
 

@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import { aiAnalyzer } from "./aiAnalyzer";
+import { alertEngine } from "./alertEngine";
 import type { InsertTrackingResult, InsertCompetitorAnalysis } from "@shared/schema";
 
 export class TrackingService {
@@ -99,6 +100,16 @@ export class TrackingService {
     };
 
     const result = await storage.createTrackingResult(trackingResult);
+
+    // Check alerts for this result
+    await alertEngine.checkAlertsForResult({
+      keywordId,
+      brandId,
+      aiPlatform: platform,
+      mentioned: analysis.mentioned,
+      position: analysis.position,
+      mentionCount: analysis.mentionCount,
+    });
 
     // Store competitor analysis
     for (const competitor of analysis.competitorsMentioned) {

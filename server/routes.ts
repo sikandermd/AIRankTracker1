@@ -269,6 +269,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alert routes
+  app.get("/api/alerts", async (req, res) => {
+    try {
+      const alerts = await storage.getAllAlerts();
+      res.json(alerts);
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+      res.status(500).json({ error: "Failed to fetch alerts" });
+    }
+  });
+
+  app.post("/api/alerts", async (req, res) => {
+    try {
+      const alert = await storage.createAlert(req.body);
+      res.status(201).json(alert);
+    } catch (error) {
+      console.error("Error creating alert:", error);
+      res.status(500).json({ error: "Failed to create alert" });
+    }
+  });
+
+  app.delete("/api/alerts/:id", async (req, res) => {
+    try {
+      await storage.deleteAlert(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting alert:", error);
+      res.status(500).json({ error: "Failed to delete alert" });
+    }
+  });
+
+  app.get("/api/alerts/:id/logs", async (req, res) => {
+    try {
+      const logs = await storage.getAlertLogs(req.params.id);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching alert logs:", error);
+      res.status(500).json({ error: "Failed to fetch alert logs" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
