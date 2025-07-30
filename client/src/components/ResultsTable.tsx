@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PlatformIcon, getPlatformName, getPlatformColor } from "./PlatformIcons";
+import ResponsePreview from "./ResponsePreview";
 import type { EnrichedTrackingResult } from "@/lib/types";
 
 interface ResultsTableProps {
@@ -273,14 +274,33 @@ export default function ResultsTable({ results, onViewDetails, searchFilters }: 
                       <span className="font-semibold">{data.totalMentions}</span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => onViewDetails(keywordId)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
-                      </Button>
+                      <div className="flex items-center justify-end space-x-2">
+                        {/* Response Preview for each platform */}
+                        {data.platforms.map((platform: any, idx: number) => (
+                          <ResponsePreview
+                            key={idx}
+                            result={{
+                              keyword: data.keyword?.keyword || '',
+                              brand: data.brand?.name || '',
+                              platform: platform.platform,
+                              mentioned: platform.mentioned,
+                              position: platform.position,
+                              mentionCount: platform.mentionCount,
+                              competitors: platform.competitors || [],
+                              confidence: platform.confidence || 0,
+                              responseText: platform.responseText
+                            }}
+                          />
+                        ))}
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => onViewDetails(keywordId)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Details
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
