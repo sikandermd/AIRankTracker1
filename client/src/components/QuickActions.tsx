@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { Plus, FileText, Bell, BarChart3 } from "lucide-react";
+import { Plus, FileText, Bell, BarChart3, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AddKeywordModal from "./AddKeywordModal";
 import BulkUploadModal from "./BulkUploadModal";
 import AlertSetupModal from "./AlertSetupModal";
+import GoogleSheetsImportModal from "./GoogleSheetsImportModal";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 
 export default function QuickActions() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [showSheetsModal, setShowSheetsModal] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -82,6 +85,11 @@ export default function QuickActions() {
       onClick: () => setShowAddModal(true),
     },
     {
+      icon: FileSpreadsheet,
+      label: "Import from Sheets",
+      onClick: () => setShowSheetsModal(true),
+    },
+    {
       icon: FileText,
       label: "Generate Report", 
       onClick: generateReport,
@@ -132,6 +140,16 @@ export default function QuickActions() {
       <AlertSetupModal 
         isOpen={showAlertModal} 
         onClose={() => setShowAlertModal(false)} 
+      />
+
+      <GoogleSheetsImportModal 
+        isOpen={showSheetsModal} 
+        onClose={() => setShowSheetsModal(false)}
+        onImportComplete={() => {
+          // Refresh keywords data
+          queryClient.invalidateQueries({ queryKey: ['/api/keywords'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/tracking-results/latest'] });
+        }}
       />
     </>
   );

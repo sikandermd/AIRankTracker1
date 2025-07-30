@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema } from "@shared/schema";
 import { trackingService } from "./services/trackingService.js";
+import { googleSheetsService } from "./services/googleSheetsService.js";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -187,6 +188,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch keyword analysis" });
+    }
+  });
+
+  // Google Sheets integration routes
+  app.post("/api/sheets/import", async (req, res) => {
+    try {
+      const schema = z.object({
+        spreadsheetUrl: z.string().url(),
+        range: z.string().optional().default('A:D'),
+      });
+      
+      const { spreadsheetUrl, range } = schema.parse(req.body);
+      
+      const spreadsheetId = googleSheetsService.extractSpreadsheetId(spreadsheetUrl);
+      if (!spreadsheetId) {
+        return res.status(400).json({ message: "Invalid Google Sheets URL" });
+      }
+
+      const result = await googleSheetsService.pullKeywordsFromSheet(spreadsheetId, range);
+      res.json(result);
+    } catch (error) {
+      console.error('Sheets import error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to import from Google Sheets"
+      });
+    }
+  });
+
+  app.post("/api/sheets/info", async (req, res) => {
+    try {
+      const schema = z.object({
+        spreadsheetUrl: z.string().url(),
+      });
+      
+      const { spreadsheetUrl } = schema.parse(req.body);
+      
+      const spreadsheetId = googleSheetsService.extractSpreadsheetId(spreadsheetUrl);
+      if (!spreadsheetId) {
+        return res.status(400).json({ message: "Invalid Google Sheets URL" });
+      }
+
+      const info = await googleSheetsService.getSheetInfo(spreadsheetId);
+      res.json(info);
+    } catch (error) {
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to get sheet info"
+      });
     }
   });
 
