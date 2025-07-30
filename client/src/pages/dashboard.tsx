@@ -89,20 +89,7 @@ export default function Dashboard() {
                   AI Ranking Tracker
                 </h1>
               </div>
-              <nav className="hidden md:ml-10 md:flex md:space-x-8">
-                <a href="#" className="text-primary font-medium border-b-2 border-primary pb-4">
-                  Dashboard
-                </a>
-                <a href="#" className="text-gray-500 hover:text-gray-700 pb-4">
-                  Keywords
-                </a>
-                <a href="#" className="text-gray-500 hover:text-gray-700 pb-4">
-                  Reports
-                </a>
-                <a href="#" className="text-gray-500 hover:text-gray-700 pb-4">
-                  Settings
-                </a>
-              </nav>
+
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm" onClick={() => setShowAlertModal(true)}>

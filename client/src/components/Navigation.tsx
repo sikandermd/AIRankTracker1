@@ -38,6 +38,7 @@ const Navigation = () => {
 
   const navItems = [
     { path: "/", label: "Dashboard", icon: Home },
+    { path: "/keywords", label: "Keywords", icon: Tag },
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
     { path: "/alerts", label: "Alerts", icon: Bell },
   ];
