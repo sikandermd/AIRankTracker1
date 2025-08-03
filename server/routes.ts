@@ -519,6 +519,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/organic-keywords/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { currentPosition } = req.body;
+      
+      if (typeof currentPosition !== 'number' || currentPosition < 1 || currentPosition > 100) {
+        return res.status(400).json({ message: "Position must be a number between 1 and 100" });
+      }
+      
+      const updatedKeyword = await storage.updateOrganicKeywordPosition(id, currentPosition);
+      res.json(updatedKeyword);
+    } catch (error) {
+      console.error('Error updating organic keyword position:', error);
+      res.status(500).json({ message: error.message || "Failed to update keyword position" });
+    }
+  });
+
   app.get("/api/organic-rankings/:keywordId?", async (req, res) => {
     try {
       const { keywordId } = req.params;

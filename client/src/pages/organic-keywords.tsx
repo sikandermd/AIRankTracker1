@@ -83,6 +83,29 @@ export default function OrganicKeywords() {
     },
   });
 
+  const updatePositionMutation = useMutation({
+    mutationFn: async ({ id, position }: { id: string; position: number }) => {
+      const response = await apiRequest('PATCH', `/api/organic-keywords/${id}`, {
+        currentPosition: position
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/organic-keywords'] });
+      toast({
+        title: "Position Updated",
+        description: "Keyword position updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update position",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddKeyword = () => {
     if (!keyword.trim() || !domain.trim()) {
       toast({
@@ -266,6 +289,21 @@ export default function OrganicKeywords() {
                           <Badge variant="outline">#{kw.previousPosition}</Badge>
                         </div>
                       )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const position = prompt(`Enter current position for "${kw.keyword}" (1-100):`);
+                          if (position && !isNaN(Number(position))) {
+                            updatePositionMutation.mutate({
+                              id: kw.id,
+                              position: Number(position)
+                            });
+                          }
+                        }}
+                      >
+                        Update
+                      </Button>
                     </div>
                   </div>
                   {kw.url && (

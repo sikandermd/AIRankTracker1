@@ -69,6 +69,7 @@ export interface IStorage {
   getOrganicKeyword(id: string): Promise<OrganicKeyword | undefined>;
   createOrganicKeyword(keyword: InsertOrganicKeyword): Promise<OrganicKeyword>;
   updateOrganicKeyword(id: string, updates: Partial<InsertOrganicKeyword>): Promise<OrganicKeyword>;
+  updateOrganicKeywordPosition(id: string, currentPosition: number): Promise<OrganicKeyword>;
   
   // Organic Rankings operations
   getOrganicRankings(keywordId?: string): Promise<OrganicRanking[]>;
@@ -411,6 +412,25 @@ export class DatabaseStorage implements IStorage {
     const [updated] = await db
       .update(organicKeywords)
       .set({ ...updates, updatedAt: new Date() })
+      .where(eq(organicKeywords.id, id))
+      .returning();
+    return updated;
+  }
+
+  async updateOrganicKeywordPosition(id: string, currentPosition: number): Promise<OrganicKeyword> {
+    // First get the current keyword to store previous position
+    const existing = await this.getOrganicKeyword(id);
+    if (!existing) {
+      throw new Error('Keyword not found');
+    }
+
+    const [updated] = await db
+      .update(organicKeywords)
+      .set({ 
+        previousPosition: existing.currentPosition,
+        currentPosition: currentPosition,
+        updatedAt: new Date() 
+      })
       .where(eq(organicKeywords.id, id))
       .returning();
     return updated;
