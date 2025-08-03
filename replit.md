@@ -125,6 +125,8 @@ The application is structured as a monorepo with shared schemas between client a
 - Landing page URL identification for each keyword
 - Country-specific search data (usa, ind, gbr, etc.)
 - Service account authentication for secure access
+- JSON format troubleshooting guide created (GOOGLE_API_TROUBLESHOOTING.md)
+- Clear error messages guide users to fix Secrets formatting issues
 
 ### Email Integration Complete ✅
 - Successfully integrated Brevo email service with verified sender domain

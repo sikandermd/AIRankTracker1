@@ -77,7 +77,7 @@ export default function OrganicKeywords() {
       console.log('Sync error:', error);
       toast({
         title: "Setup Required", 
-        description: "Google Search Console API not configured. The JSON key format needs to be fixed in Secrets. Check SEARCH_CONSOLE_SETUP.md for complete setup guide.",
+        description: "Google Search Console API not configured. Fix JSON key format in Secrets.",
         variant: "destructive",
       });
     },
@@ -142,9 +142,9 @@ export default function OrganicKeywords() {
             variant="outline"
             onClick={() => {
               toast({
-                title: "API Setup Required",
-                description: "Google Service Account JSON key needs proper formatting in Secrets. See SEARCH_CONSOLE_SETUP.md for complete guide.",
-                duration: 8000,
+                title: "Setup Instructions",
+                description: "Fix JSON format in Secrets. See SEARCH_CONSOLE_SETUP.md",
+                duration: 5000,
               });
             }}
           >
