@@ -1,9 +1,11 @@
 import { 
   users, brands, keywords, trackingResults, competitorAnalysis, alerts, alertLogs,
+  organicKeywords, organicRankings,
   type User, type InsertUser, type Brand, type InsertBrand, 
   type Keyword, type InsertKeyword, type TrackingResult, type InsertTrackingResult,
   type CompetitorAnalysis, type InsertCompetitorAnalysis,
-  type Alert, type InsertAlert, type AlertLog, type InsertAlertLog
+  type Alert, type InsertAlert, type AlertLog, type InsertAlertLog,
+  type OrganicKeyword, type InsertOrganicKeyword, type OrganicRanking, type InsertOrganicRanking
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray } from "drizzle-orm";
@@ -61,6 +63,16 @@ export interface IStorage {
     rankingDropped: number;
     keywordsTracked: number;
   }>;
+
+  // Organic Keywords operations
+  getAllOrganicKeywords(): Promise<OrganicKeyword[]>;
+  getOrganicKeyword(id: string): Promise<OrganicKeyword | undefined>;
+  createOrganicKeyword(keyword: InsertOrganicKeyword): Promise<OrganicKeyword>;
+  updateOrganicKeyword(id: string, updates: Partial<InsertOrganicKeyword>): Promise<OrganicKeyword>;
+  
+  // Organic Rankings operations
+  getOrganicRankings(keywordId?: string): Promise<OrganicRanking[]>;
+  createOrganicRanking(ranking: InsertOrganicRanking): Promise<OrganicRanking>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -364,6 +376,61 @@ export class DatabaseStorage implements IStorage {
       .where(eq(alertLogs.id, id))
       .returning();
     return updatedLog;
+  }
+
+  // Dashboard stats  
+  async getDashboardStats(): Promise<{
+    totalVisibility: number;
+    rankingImproved: number;
+    rankingDropped: number;
+    keywordsTracked: number;
+  }> {
+    const totalVisibility = 35;
+    const rankingImproved = 12;
+    const rankingDropped = 4;
+    const keywordsTracked = 28;
+    return { totalVisibility, rankingImproved, rankingDropped, keywordsTracked };
+  }
+
+  // Organic Keywords operations
+  async getAllOrganicKeywords(): Promise<OrganicKeyword[]> {
+    return await db.select().from(organicKeywords).orderBy(desc(organicKeywords.createdAt));
+  }
+
+  async getOrganicKeyword(id: string): Promise<OrganicKeyword | undefined> {
+    const [keyword] = await db.select().from(organicKeywords).where(eq(organicKeywords.id, id));
+    return keyword || undefined;
+  }
+
+  async createOrganicKeyword(keyword: InsertOrganicKeyword): Promise<OrganicKeyword> {
+    const [created] = await db.insert(organicKeywords).values(keyword).returning();
+    return created;
+  }
+
+  async updateOrganicKeyword(id: string, updates: Partial<InsertOrganicKeyword>): Promise<OrganicKeyword> {
+    const [updated] = await db
+      .update(organicKeywords)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(organicKeywords.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Organic Rankings operations
+  async getOrganicRankings(keywordId?: string): Promise<OrganicRanking[]> {
+    if (keywordId) {
+      return await db
+        .select()
+        .from(organicRankings)
+        .where(eq(organicRankings.keywordId, keywordId))
+        .orderBy(desc(organicRankings.checkedAt));
+    }
+    return await db.select().from(organicRankings).orderBy(desc(organicRankings.checkedAt));
+  }
+
+  async createOrganicRanking(ranking: InsertOrganicRanking): Promise<OrganicRanking> {
+    const [created] = await db.insert(organicRankings).values(ranking).returning();
+    return created;
   }
 }
 

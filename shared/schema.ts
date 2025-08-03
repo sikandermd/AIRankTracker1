@@ -65,6 +65,43 @@ export const competitorAnalysis = pgTable("competitor_analysis", {
   keywordIdx: index("competitor_keyword_idx").on(table.keywordId),
 }));
 
+// Organic Keywords Tracking Tables
+export const organicKeywords = pgTable("organic_keywords", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  keyword: text("keyword").notNull(),
+  domain: text("domain").notNull(), // website domain being tracked
+  country: text("country").notNull().default('US'), // country code (US, IN, UK, etc.)
+  searchEngine: text("search_engine").notNull().default('google'), // google, bing
+  currentPosition: integer("current_position"),
+  previousPosition: integer("previous_position"),
+  searchVolume: integer("search_volume"),
+  difficulty: integer("difficulty"), // 0-100
+  url: text("url"), // landing page URL for this keyword
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  keywordIdx: index("organic_keyword_idx").on(table.keyword),
+  domainIdx: index("organic_domain_idx").on(table.domain),
+  countryIdx: index("organic_country_idx").on(table.country),
+}));
+
+export const organicRankings = pgTable("organic_rankings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  keywordId: varchar("keyword_id").references(() => organicKeywords.id).notNull(),
+  position: integer("position"),
+  url: text("url"),
+  searchVolume: integer("search_volume"),
+  clicks: integer("clicks").default(0),
+  impressions: integer("impressions").default(0),
+  ctr: text("ctr"), // click-through rate as percentage
+  checkedAt: timestamp("checked_at").defaultNow().notNull(),
+}, (table) => ({
+  keywordIdx: index("organic_ranking_keyword_idx").on(table.keywordId),
+  dateIdx: index("organic_ranking_date_idx").on(table.checkedAt),
+  positionIdx: index("organic_ranking_position_idx").on(table.position),
+}));
+
 export const alerts = pgTable("alerts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -152,6 +189,17 @@ export const alertLogsRelations = relations(alertLogs, ({ one }) => ({
   }),
 }));
 
+export const organicKeywordsRelations = relations(organicKeywords, ({ many }) => ({
+  rankings: many(organicRankings),
+}));
+
+export const organicRankingsRelations = relations(organicRankings, ({ one }) => ({
+  keyword: one(organicKeywords, {
+    fields: [organicRankings.keywordId],
+    references: [organicKeywords.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -211,3 +259,22 @@ export type Alert = typeof alerts.$inferSelect;
 export type InsertAlert = z.infer<typeof insertAlertSchema>;
 export type AlertLog = typeof alertLogs.$inferSelect;
 export type InsertAlertLog = z.infer<typeof insertAlertLogSchema>;
+
+// Organic Keywords Insert Schemas
+export const insertOrganicKeywordSchema = createInsertSchema(organicKeywords).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOrganicRankingSchema = createInsertSchema(organicRankings).omit({
+  id: true,
+  checkedAt: true,
+});
+
+// Organic Keywords Types
+export type OrganicKeyword = typeof organicKeywords.$inferSelect;
+export type InsertOrganicKeyword = z.infer<typeof insertOrganicKeywordSchema>;
+
+export type OrganicRanking = typeof organicRankings.$inferSelect;
+export type InsertOrganicRanking = z.infer<typeof insertOrganicRankingSchema>;

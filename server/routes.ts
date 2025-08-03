@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema, alerts } from "@shared/schema";
+import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema, insertOrganicKeywordSchema, alerts } from "@shared/schema";
 import { createInsertSchema } from "drizzle-zod";
 import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
@@ -495,6 +495,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error'
       });
+    }
+  });
+
+  // Organic Keywords routes
+  app.get("/api/organic-keywords", async (req, res) => {
+    try {
+      const organicKeywords = await storage.getAllOrganicKeywords();
+      res.json(organicKeywords);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch organic keywords" });
+    }
+  });
+
+  app.post("/api/organic-keywords", async (req, res) => {
+    try {
+      const validatedData = insertOrganicKeywordSchema.parse(req.body);
+      const organicKeyword = await storage.createOrganicKeyword(validatedData);
+      res.status(201).json(organicKeyword);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid organic keyword data", error: error.message });
+    }
+  });
+
+  app.get("/api/organic-rankings/:keywordId?", async (req, res) => {
+    try {
+      const { keywordId } = req.params;
+      const rankings = await storage.getOrganicRankings(keywordId);
+      res.json(rankings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch organic rankings" });
     }
   });
 
