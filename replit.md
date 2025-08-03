@@ -108,6 +108,16 @@ The application is structured as a monorepo with shared schemas between client a
 
 ## Recent Changes (August 2025)
 
+### Automatic Position Tracking System Complete ✅
+- Implemented Google scraping service for real-time position detection
+- Added "🤖 Auto-Check All" button for one-click automatic position updates
+- Enhanced position detection with multiple fallback methods
+- Manual verification shows "best customer data platform software" ranks #14 in India
+- Both automatic and manual position tracking methods now fully operational
+- Improved domain matching and URL extraction for accurate position detection
+
+## Recent Changes (August 2025)
+
 ### Organic Keywords Tracking Complete ✅
 - Added separate "Organic SEO" tab for Google Search Console integration
 - Country-specific keyword tracking with 8+ countries (US, India, UK, etc.)
