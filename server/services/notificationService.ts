@@ -212,6 +212,80 @@ export class NotificationService {
       timestamp: new Date().toISOString(),
     };
   }
+
+  async sendAlertCreationEmail(data: {
+    email: string;
+    alertName: string;
+    brandName: string;
+    keyword: string;
+    platforms: string[];
+  }): Promise<boolean> {
+    if (!this.mailService) {
+      console.warn('SendGrid not configured, skipping alert creation email');
+      return false;
+    }
+
+    try {
+      const subject = `✅ Alert Created: ${data.alertName}`;
+      const html = this.generateAlertCreationHTML(data);
+
+      await this.mailService.send({
+        to: data.email,
+        from: 'alerts@rankingtracker.app',
+        subject,
+        html,
+      });
+
+      console.log(`Alert creation email sent to ${data.email}`);
+      return true;
+    } catch (error) {
+      console.error('Alert creation email failed:', error);
+      return false;
+    }
+  }
+
+  private generateAlertCreationHTML(data: {
+    alertName: string;
+    brandName: string;
+    keyword: string;
+    platforms: string[];
+  }): string {
+    const platformList = data.platforms.map(p => p.toUpperCase()).join(', ');
+    
+    return `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #FB9A4E, #FF7F3F); padding: 30px; border-radius: 8px; color: white; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px;">🔔 Alert Successfully Created!</h1>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
+          <h2 style="color: #333; margin-top: 0;">Alert Details</h2>
+          
+          <div style="background: white; padding: 20px; border-radius: 6px; border-left: 4px solid #FB9A4E;">
+            <p><strong>Alert Name:</strong> ${data.alertName}</p>
+            <p><strong>Brand:</strong> ${data.brandName}</p>
+            <p><strong>Keyword:</strong> "${data.keyword}"</p>
+            <p><strong>Monitoring Platforms:</strong> ${platformList}</p>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 6px;">
+            <p style="margin: 0; color: #0066cc;">
+              <strong>📧 You'll receive notifications when:</strong><br>
+              • Brand mentions change for this keyword<br>
+              • Position improves on any platform<br>
+              • Brand appears on new platforms<br>
+              • Mention frequency increases
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
+          <p>This is an automated message from AI Ranking Tracker</p>
+          <p>Track your brand visibility across AI platforms</p>
+        </div>
+      </div>
+    `;
+  }
 }
 
 export const notificationService = new NotificationService();

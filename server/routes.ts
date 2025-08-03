@@ -5,6 +5,7 @@ import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema, ale
 import { createInsertSchema } from "drizzle-zod";
 import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
+import { notificationService } from "./services/notificationService.js";
 import { z } from "zod";
 import { apiUsageLogger } from "./apiUsageLogger";
 
@@ -315,6 +316,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const alertData = insertAlertSchema.parse(req.body);
       const alert = await storage.createAlert(alertData);
+      
+      // Send alert creation confirmation email
+      if (alert.notificationMethods && alert.notificationMethods.email) {
+        try {
+          const brand = await storage.getBrand(alert.brandId);
+          const keyword = await storage.getKeyword(alert.keywordId);
+          
+          await notificationService.sendAlertCreationEmail({
+            email: alert.notificationMethods.email,
+            alertName: alert.name,
+            brandName: brand?.name || 'Unknown Brand',
+            keyword: keyword?.keyword || 'Unknown Keyword',
+            platforms: alert.platforms
+          });
+        } catch (emailError) {
+          console.error("Failed to send alert creation email:", emailError);
+          // Don't fail the alert creation if email fails
+        }
+      }
+      
       res.status(201).json(alert);
     } catch (error) {
       console.error("Error creating alert:", error);
