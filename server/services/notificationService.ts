@@ -287,7 +287,7 @@ export class NotificationService {
         subject: subject,
         messageId: result.messageId,
         timestamp: new Date().toISOString(),
-        sender: 'sikander@notifyvisitors.com'
+        sender: 'jason@notifyvisitorsmail.com'
       });
       
       return true;
