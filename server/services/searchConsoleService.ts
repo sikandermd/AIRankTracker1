@@ -34,7 +34,18 @@ class SearchConsoleService {
         return;
       }
 
-      const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+      // Clean up the JSON string - remove any extra quotes or escaping
+      let credentialsString = process.env.GOOGLE_SERVICE_ACCOUNT_KEY.trim();
+      
+      // If the string starts and ends with quotes, remove them
+      if (credentialsString.startsWith('"') && credentialsString.endsWith('"')) {
+        credentialsString = credentialsString.slice(1, -1);
+      }
+      
+      // Replace escaped quotes
+      credentialsString = credentialsString.replace(/\\"/g, '"');
+      
+      const credentials = JSON.parse(credentialsString);
       const auth = new google.auth.GoogleAuth({
         credentials,
         scopes: ['https://www.googleapis.com/auth/webmasters.readonly']
@@ -44,7 +55,8 @@ class SearchConsoleService {
       this.isConfigured = true;
       console.log('Google Search Console API configured successfully');
     } catch (error) {
-      console.error('Failed to initialize Google Search Console:', error);
+      console.error('Failed to initialize Google Search Console:', error.message);
+      console.log('Please ensure GOOGLE_SERVICE_ACCOUNT_KEY contains valid JSON');
       this.isConfigured = false;
     }
   }

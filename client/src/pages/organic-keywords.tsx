@@ -132,15 +132,28 @@ export default function OrganicKeywords() {
           <h1 className="text-3xl font-bold tracking-tight">Organic Keywords</h1>
           <p className="text-muted-foreground">Track your website's organic search rankings</p>
         </div>
-        {organicKeywords && organicKeywords.length > 0 && (
+        <div className="flex gap-2">
+          {organicKeywords && organicKeywords.length > 0 && (
+            <Button 
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {syncMutation.isPending ? 'Syncing...' : 'Sync with Search Console'}
+            </Button>
+          )}
           <Button 
-            onClick={() => syncMutation.mutate()}
-            disabled={syncMutation.isPending}
-            className="bg-green-600 hover:bg-green-700"
+            variant="outline"
+            onClick={() => {
+              toast({
+                title: "Setup Guide",
+                description: "Check SEARCH_CONSOLE_SETUP.md file for Google API configuration steps",
+              });
+            }}
           >
-            {syncMutation.isPending ? 'Syncing...' : 'Sync with Search Console'}
+            Setup Guide
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Add Keyword Form */}
