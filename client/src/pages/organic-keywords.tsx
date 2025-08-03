@@ -107,14 +107,14 @@ export default function OrganicKeywords() {
   };
 
   const getPositionBadge = (current: number | null, previous: number | null) => {
-    if (!current) return <Badge variant="outline">Not Ranked</Badge>;
+    if (!current) return <Badge variant="outline">Needs Sync</Badge>;
     
     const isImprovement = previous && current < previous;
     const isDecline = previous && current > previous;
     
     return (
       <div className="flex items-center gap-2">
-        <Badge variant={current <= 10 ? "default" : current <= 30 ? "secondary" : "outline"}>
+        <Badge variant={current <= 3 ? "default" : current <= 10 ? "secondary" : "outline"}>
           #{current}
         </Badge>
         {isImprovement && <TrendingUp className="h-4 w-4 text-green-500" />}
@@ -167,7 +167,7 @@ export default function OrganicKeywords() {
             Add Organic Keyword
           </CardTitle>
           <CardDescription>
-            Start tracking a new keyword's organic search position
+            Add keywords for manual tracking. Use the "Sync with Search Console" button to get real positions from Google Search Console API.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -252,6 +252,11 @@ export default function OrganicKeywords() {
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>Search Engine: {kw.searchEngine}</span>
+                        {!kw.currentPosition ? (
+                          <span className="text-amber-600">⚠️ Use Sync button to get real positions from Google Search Console</span>
+                        ) : (
+                          <span>Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>
+                        )}
                         {kw.searchVolume && <span>Volume: {kw.searchVolume.toLocaleString()}</span>}
                         {kw.difficulty && <span>Difficulty: {kw.difficulty}/100</span>}
                       </div>
