@@ -11,6 +11,7 @@ import BulkUploadModal from "@/components/BulkUploadModal";
 import AlertSetupModal from "@/components/AlertSetupModal";
 import InitialSetup from "@/components/InitialSetup";
 import { Bell, ChartLine } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { SearchFilters as SearchFiltersType } from "@/lib/types";
 import { useLocation } from "wouter";
 
@@ -82,7 +83,8 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="-ml-1" />
               <div className="flex-shrink-0">
                 <h1 className="text-xl font-bold text-gray-900">
                   <ChartLine className="inline-block w-6 h-6 text-primary mr-2" />

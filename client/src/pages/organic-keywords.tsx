@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, TrendingUp, TrendingDown, Globe } from "lucide-react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { OrganicKeyword } from "@shared/schema";
@@ -155,9 +156,12 @@ export default function OrganicKeywords() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Organic Keywords</h1>
-          <p className="text-muted-foreground">Track your website's organic search rankings</p>
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="-ml-1" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Organic Keywords</h1>
+            <p className="text-muted-foreground">Track your website's organic search rankings</p>
+          </div>
         </div>
         <div className="flex gap-2">
           {organicKeywords && organicKeywords.length > 0 && (

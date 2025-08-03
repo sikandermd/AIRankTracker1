@@ -572,6 +572,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Top Pages route for Search Console data
+  app.get("/api/top-pages", async (req, res) => {
+    try {
+      // Mock top pages data for now - replace with Search Console API
+      const mockTopPages = [
+        {
+          id: "1",
+          url: "https://www.notifyvisitors.com/customer-data-platform",
+          title: "Customer Data Platform - Unified Customer View | NotifyVisitors",
+          clicks: 1250,
+          impressions: 12500,
+          ctr: 10.0,
+          position: 8.5,
+          internalLinks: 45,
+          externalLinks: 12,
+          backlinks: 89,
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          id: "2", 
+          url: "https://www.notifyvisitors.com/marketing-automation",
+          title: "Marketing Automation Platform - Drive Engagement | NotifyVisitors",
+          clicks: 980,
+          impressions: 15600,
+          ctr: 6.3,
+          position: 12.2,
+          internalLinks: 38,
+          externalLinks: 8,
+          backlinks: 67,
+          lastUpdated: new Date().toISOString()
+        }
+      ];
+      
+      res.json(mockTopPages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch top pages" });
+    }
+  });
+
   // Search Console integration routes
   app.post("/api/organic-keywords/sync", async (req, res) => {
     try {
