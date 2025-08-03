@@ -33,9 +33,10 @@ export class NotificationService {
 
       const emailData = {
         to: [{ email }],
-        sender: { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' },
+        sender: { email: 'noreply@brevo.com', name: 'AI Ranking Tracker' },
         subject: subject,
-        htmlContent: html
+        htmlContent: html,
+        textContent: `Brand Monitoring Alert\n\nBrand: ${data.brandName}\nKeyword: ${data.keyword}\nPlatform: ${data.platform}\nTrigger: ${data.triggerType}\nValue: ${data.currentValue}`
       };
 
       const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -250,9 +251,10 @@ export class NotificationService {
 
       const emailData = {
         to: [{ email: data.email }],
-        sender: { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' },
+        sender: { email: 'noreply@brevo.com', name: 'AI Ranking Tracker' },
         subject: subject,
-        htmlContent: html
+        htmlContent: html,
+        textContent: `Alert Created: ${data.alertName}\n\nBrand: ${data.brandName}\nKeyword: ${data.keyword}\nPlatforms: ${data.platforms.join(', ')}\n\nYou'll receive notifications when your brand is mentioned on these AI platforms.`
       };
 
       const response = await fetch('https://api.brevo.com/v3/smtp/email', {

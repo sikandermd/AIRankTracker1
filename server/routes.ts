@@ -401,6 +401,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Email troubleshooting endpoint
+  app.post("/api/troubleshoot-email", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      // Test direct Brevo API call
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY!
+        },
+        body: JSON.stringify({
+          to: [{ email }],
+          sender: { email: 'noreply@brevo.com', name: 'AI Ranking Tracker' },
+          subject: '🔧 Email Troubleshooting Test',
+          htmlContent: `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+              <h2>📧 Email Test Successful!</h2>
+              <p>अगर आपको यह email मिली है, तो email service properly काम कर रही है।</p>
+              <p><strong>Troubleshooting Steps:</strong></p>
+              <ul>
+                <li>✅ Check your spam/junk folder</li>
+                <li>✅ Wait 5-10 minutes for delivery</li>
+                <li>✅ Add noreply@brevo.com to your contacts</li>
+                <li>✅ Check email filters</li>
+              </ul>
+              <p>Time sent: ${new Date().toISOString()}</p>
+            </div>
+          `,
+          textContent: 'Email Test Successful! अगर आपको यह email मिली है, तो email service properly काम कर रही है।'
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return res.status(500).json({ 
+          success: false, 
+          error: `Brevo API error: ${response.status} ${errorText}` 
+        });
+      }
+
+      const result = await response.json();
+      res.json({ 
+        success: true, 
+        messageId: result.messageId,
+        message: 'Troubleshooting email sent. Check your inbox and spam folder in 5-10 minutes.',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Troubleshoot email error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
