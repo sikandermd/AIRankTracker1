@@ -76,8 +76,8 @@ export default function OrganicKeywords() {
     onError: (error: any) => {
       console.log('Sync error:', error);
       toast({
-        title: "Setup Required", 
-        description: "Google Search Console API not configured. Fix JSON key format in Secrets.",
+        title: "Google Search Console Error", 
+        description: "JSON key format issue in Secrets. Use manual Update buttons for now or fix the JSON formatting.",
         variant: "destructive",
       });
     },
@@ -184,7 +184,7 @@ export default function OrganicKeywords() {
             Add Organic Keyword
           </CardTitle>
           <CardDescription>
-            Add keywords for manual tracking. Use the "Sync with Search Console" button to get real positions from Google Search Console API.
+            Add keywords to track. Google Search Console sync needs JSON format fix in Secrets. Use "Update" buttons for manual position tracking.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -270,9 +270,9 @@ export default function OrganicKeywords() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>Search Engine: {kw.searchEngine}</span>
                         {!kw.currentPosition ? (
-                          <span className="text-amber-600">⚠️ Use Sync button to get real positions from Google Search Console</span>
+                          <span className="text-amber-600">⚠️ Position not set - Use Update button or fix Google Search Console setup</span>
                         ) : (
-                          <span>Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>
+                          <span>Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>  
                         )}
                         {kw.searchVolume && <span>Volume: {kw.searchVolume.toLocaleString()}</span>}
                         {kw.difficulty && <span>Difficulty: {kw.difficulty}/100</span>}
@@ -292,17 +292,24 @@ export default function OrganicKeywords() {
                       <Button
                         size="sm"
                         variant="outline"
+                        disabled={updatePositionMutation.isPending}
                         onClick={() => {
                           const position = prompt(`Enter current position for "${kw.keyword}" (1-100):`);
-                          if (position && !isNaN(Number(position))) {
+                          if (position && !isNaN(Number(position)) && Number(position) >= 1 && Number(position) <= 100) {
                             updatePositionMutation.mutate({
                               id: kw.id,
                               position: Number(position)
                             });
+                          } else if (position) {
+                            toast({
+                              title: "Invalid Position",
+                              description: "Please enter a number between 1 and 100",
+                              variant: "destructive"
+                            });
                           }
                         }}
                       >
-                        Update
+                        {updatePositionMutation.isPending ? "Updating..." : "Update"}
                       </Button>
                     </div>
                   </div>
