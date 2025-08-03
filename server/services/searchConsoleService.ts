@@ -266,6 +266,71 @@ export class SearchConsoleService {
       { value: 'integrations', label: 'Integrations' }
     ];
   }
+
+  isServiceConfigured(): boolean {
+    return this.searchConsole !== null;
+  }
+
+  async getKeywordPositions(siteUrl: string, keywords: string[], country: string = 'usa'): Promise<Array<{keyword: string, position: number, url: string, clicks: number, impressions: number, ctr: number}>> {
+    if (!this.searchConsole) {
+      console.log('Search Console not configured, returning empty positions');
+      return [];
+    }
+
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 30);
+
+      const response = await this.searchConsole.searchanalytics.query({
+        siteUrl: siteUrl,
+        requestBody: {
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
+          dimensions: ['query', 'page'],
+          dimensionFilterGroups: [{
+            filters: keywords.map(keyword => ({
+              dimension: 'query',
+              operator: 'contains',
+              expression: keyword
+            }))
+          }],
+          rowLimit: 1000
+        }
+      });
+
+      if (!response.data?.rows) {
+        return [];
+      }
+
+      return response.data.rows.map((row: any) => ({
+        keyword: row.keys[0],
+        position: Math.round(row.position || 0),
+        url: row.keys[1] || '',
+        clicks: row.clicks || 0,
+        impressions: row.impressions || 0,
+        ctr: row.ctr || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching keyword positions:', error);
+      return [];
+    }
+  }
+
+  async getSiteList(): Promise<Array<{siteUrl: string, permissionLevel: string}>> {
+    if (!this.searchConsole) {
+      console.log('Search Console not configured, returning empty site list');
+      return [];
+    }
+
+    try {
+      const response = await this.searchConsole.sites.list();
+      return response.data.siteEntry || [];
+    } catch (error) {
+      console.error('Error fetching site list:', error);
+      return [];
+    }
+  }
 }
 
 export const searchConsoleService = new SearchConsoleService();

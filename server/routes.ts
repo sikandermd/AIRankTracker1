@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(brand);
     } catch (error) {
       console.error('Brand creation error:', error);
-      res.status(400).json({ message: "Invalid brand data", error: error.message });
+      res.status(400).json({ message: "Invalid brand data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const keyword = await storage.createKeyword(validatedData);
       res.status(201).json(keyword);
     } catch (error) {
-      if (error.message && error.message.includes('already exists')) {
+      if (error instanceof Error && error.message.includes('already exists')) {
         res.status(409).json({ message: error.message });
       } else {
         res.status(400).json({ message: "Invalid keyword data" });
@@ -405,7 +405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Test email error:", error);
-      res.status(500).json({ success: false, message: "Email service error", error: error.message });
+      res.status(500).json({ success: false, message: "Email service error", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -453,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Test notification error:', error);
       res.status(500).json({ 
         success: false, 
-        error: error.message 
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });
@@ -553,12 +553,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`No ranking found for ${organicKeyword.keyword} in top 100`);
         }
       }).catch(error => {
-        console.error(`Error checking position for ${organicKeyword.keyword}:`, error.message);
+        console.error(`Error checking position for ${organicKeyword.keyword}:`, error instanceof Error ? error.message : String(error));
       });
       
       res.status(201).json(organicKeyword);
     } catch (error) {
-      res.status(400).json({ message: "Invalid organic keyword data", error: error.message });
+      res.status(400).json({ message: "Invalid organic keyword data", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -575,7 +575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedKeyword);
     } catch (error) {
       console.error('Error updating organic keyword position:', error);
-      res.status(500).json({ message: error.message || "Failed to update keyword position" });
+      res.status(500).json({ message: (error instanceof Error ? error.message : String(error)) || "Failed to update keyword position" });
     }
   });
 
@@ -708,7 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Search Console sync error:', error);
       res.status(500).json({ 
         message: "Failed to sync with Search Console",
-        error: error.message 
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });
@@ -727,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ 
         message: "Failed to fetch Search Console sites",
-        error: error.message 
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });
@@ -756,7 +756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to start automatic tracking", 
-        error: error.message 
+        error: error instanceof Error ? error.message : String(error) 
       });
     }
   });
@@ -809,7 +809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to check position", 
-        error: error.message 
+        error: error instanceof Error ? error.message : String(error) 
       });
     }
   });
