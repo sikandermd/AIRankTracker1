@@ -29,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Validated data:', validatedData);
       const brand = await storage.createBrand(validatedData);
       res.status(201).json(brand);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Brand creation error:', error);
       res.status(400).json({ message: "Invalid brand data", error: error.message });
     }
@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertKeywordSchema.parse(req.body);
       const keyword = await storage.createKeyword(validatedData);
       res.status(201).json(keyword);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message && error.message.includes('already exists')) {
         res.status(409).json({ message: error.message });
       } else {
@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ success: false, message: "Failed to send test email" });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Test email error:", error);
       res.status(500).json({ success: false, message: "Email service error", error: error.message });
     }
@@ -449,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: "Failed to send test notification" 
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Test notification error:', error);
       res.status(500).json({ 
         success: false, 
@@ -557,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       res.status(201).json(organicKeyword);
-    } catch (error) {
+    } catch (error: any) {
       res.status(400).json({ message: "Invalid organic keyword data", error: error.message });
     }
   });
@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updatedKeyword = await storage.updateOrganicKeywordPosition(id, currentPosition);
       res.json(updatedKeyword);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating organic keyword position:', error);
       res.status(500).json({ message: error.message || "Failed to update keyword position" });
     }
@@ -704,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updated: updatedKeywords.length,
         message: `Updated ${updatedKeywords.length} keywords with Search Console data`
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Search Console sync error:', error);
       res.status(500).json({ 
         message: "Failed to sync with Search Console",
@@ -724,7 +724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const sites = await searchConsoleService.getSiteList();
       res.json(sites);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ 
         message: "Failed to fetch Search Console sites",
         error: error.message 
