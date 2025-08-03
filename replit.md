@@ -106,7 +106,28 @@ The application uses a relational database with the following main entities:
 
 The application is structured as a monorepo with shared schemas between client and server, ensuring consistent data types across the full stack.
 
-## Recent Changes (January 2025)
+## Recent Changes (August 2025)
+
+### Alert System Database Fixes
+- Fixed critical alert creation database schema issues by adding missing columns
+- Added brand_id, keyword_id, platforms, trigger_conditions, notification_methods, last_triggered, updated_at columns
+- Removed NOT NULL constraint from legacy alert_type column to maintain compatibility
+- Alert creation functionality now working properly with proper validation
+- All API parameter order issues fixed across the application (apiRequest method calls)
+
+### UI Improvements
+- Updated primary button color to orange (#FB9A4E) across entire application
+- Fixed navigation menu by restoring Keywords option access
+- Resolved duplicate keyword prevention system
+- Optimized API usage from polling to on-demand fetching
+- Added 1-minute server-side caching for usage stats
+
+### Database Updates
+- Added 6 new brands to production: mParticle, Treasure Data, Insider, Netcore Cloud, WebEngage, MoEngage
+- Proper database population with original brands plus new additions
+- Alert system fully operational with proper schema
+
+## Previous Changes (January 2025)
 
 ### Google Sheets Integration
 - Added Google Sheets API integration using googleapis package
