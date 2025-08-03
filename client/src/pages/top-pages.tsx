@@ -453,7 +453,6 @@ const TopPages = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Pages</SelectItem>
                     {directories?.map((dir) => (
                       <SelectItem key={dir.value} value={dir.value}>
                         {dir.label}
