@@ -70,7 +70,7 @@ export default function OrganicKeywords() {
       queryClient.invalidateQueries({ queryKey: ['/api/organic-keywords'] });
       toast({
         title: "Sync Complete",
-        description: `Updated ${data.updated} keywords with Search Console data`,
+        description: `Updated ${data.updated} keywords. Keywords not showing positions are not ranking in top 100.`,
       });
     },
     onError: (error: any) => {
@@ -123,14 +123,17 @@ export default function OrganicKeywords() {
   };
 
   const getPositionBadge = (current: number | null, previous: number | null) => {
-    if (!current) return <Badge variant="outline">Needs Sync</Badge>;
+    if (!current) return <Badge variant="outline" className="text-gray-500">Not in Top 100</Badge>;
     
     const isImprovement = previous && current < previous;
     const isDecline = previous && current > previous;
     
     return (
       <div className="flex items-center gap-2">
-        <Badge variant={current <= 3 ? "default" : current <= 10 ? "secondary" : "outline"}>
+        <Badge 
+          variant={current <= 3 ? "default" : current <= 10 ? "secondary" : "outline"}
+          className={`${current <= 3 ? "bg-green-600 text-white" : current <= 10 ? "bg-blue-600 text-white" : "bg-gray-600 text-white"}`}
+        >
           #{current}
         </Badge>
         {isImprovement && <TrendingUp className="h-4 w-4 text-green-500" />}
@@ -270,9 +273,9 @@ export default function OrganicKeywords() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>Search Engine: {kw.searchEngine}</span>
                         {!kw.currentPosition ? (
-                          <span className="text-blue-600">📍 Click Update button to set position manually</span>
+                          <span className="text-red-600">🔍 Not ranking in top 100 or needs manual update</span>
                         ) : (
-                          <span>Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>  
+                          <span className="text-green-600">✅ Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>  
                         )}
                         {kw.searchVolume && <span>Volume: {kw.searchVolume.toLocaleString()}</span>}
                         {kw.difficulty && <span>Difficulty: {kw.difficulty}/100</span>}
