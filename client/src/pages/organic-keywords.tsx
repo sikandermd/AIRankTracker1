@@ -76,8 +76,8 @@ export default function OrganicKeywords() {
     onError: (error: any) => {
       console.log('Sync error:', error);
       toast({
-        title: "Google Search Console Error", 
-        description: "JSON key format issue in Secrets. Use manual Update buttons for now or fix the JSON formatting.",
+        title: "Search Console Not Available", 
+        description: "Use the orange 'Set Position' buttons to manually track keyword positions for now.",
         variant: "destructive",
       });
     },
@@ -184,7 +184,7 @@ export default function OrganicKeywords() {
             Add Organic Keyword
           </CardTitle>
           <CardDescription>
-            Add keywords to track. Google Search Console sync needs JSON format fix in Secrets. Use "Update" buttons for manual position tracking.
+            Add keywords to track. Use orange "Set Position" buttons for manual tracking. Sync requires Google Console API setup.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -270,7 +270,7 @@ export default function OrganicKeywords() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>Search Engine: {kw.searchEngine}</span>
                         {!kw.currentPosition ? (
-                          <span className="text-amber-600">⚠️ Position not set - Use Update button or fix Google Search Console setup</span>
+                          <span className="text-blue-600">📍 Click Update button to set position manually</span>
                         ) : (
                           <span>Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>  
                         )}
@@ -291,7 +291,8 @@ export default function OrganicKeywords() {
                       )}
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant={!kw.currentPosition ? "default" : "outline"}
+                        className={!kw.currentPosition ? "bg-[#FB9A4E] hover:bg-[#e8864a] text-white" : ""}
                         disabled={updatePositionMutation.isPending}
                         onClick={() => {
                           const position = prompt(`Enter current position for "${kw.keyword}" (1-100):`);
@@ -309,7 +310,7 @@ export default function OrganicKeywords() {
                           }
                         }}
                       >
-                        {updatePositionMutation.isPending ? "Updating..." : "Update"}
+                        {updatePositionMutation.isPending ? "Updating..." : (!kw.currentPosition ? "Set Position" : "Update")}
                       </Button>
                     </div>
                   </div>
