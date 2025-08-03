@@ -6,6 +6,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
 import { notificationService } from "./services/notificationService.js";
+import { searchConsoleService } from "./services/searchConsoleService.js";
 import { z } from "zod";
 import { apiUsageLogger } from "./apiUsageLogger";
 
@@ -525,6 +526,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(rankings);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch organic rankings" });
+    }
+  });
+
+  // Search Console integration routes
+  app.post("/api/organic-keywords/sync", async (req, res) => {
+    try {
+      const { domain, keywords, country } = req.body;
+      
+      if (!searchConsoleService.isServiceConfigured()) {
+        return res.status(400).json({ 
+          message: "Google Search Console not configured",
+          setupRequired: true 
+        });
+      }
+
+      // Validate domain format
+      const siteUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+      
+      // Get keyword positions from Search Console
+      const positions = await searchConsoleService.getKeywordPositions(
+        siteUrl, 
+        keywords, 
+        country || 'usa'
+      );
+
+      // Update organic keywords with real positions
+      const updatedKeywords = [];
+      for (const position of positions) {
+        const organicKeywords = await storage.getAllOrganicKeywords();
+        const existingKeyword = organicKeywords.find(
+          k => k.keyword === position.keyword && k.domain === domain
+        );
+
+        if (existingKeyword) {
+          // Update existing keyword with new position data
+          const updated = await storage.updateOrganicKeyword(existingKeyword.id, {
+            previousPosition: existingKeyword.currentPosition,
+            currentPosition: position.position > 0 ? position.position : null,
+            searchVolume: position.impressions,
+            url: position.url
+          });
+          
+          // Create ranking history record
+          await storage.createOrganicRanking({
+            keywordId: existingKeyword.id,
+            position: position.position > 0 ? position.position : null,
+            url: position.url,
+            clicks: position.clicks,
+            impressions: position.impressions,
+            ctr: (position.ctr * 100).toFixed(2) + '%'
+          });
+          
+          updatedKeywords.push(updated);
+        }
+      }
+
+      res.json({
+        success: true,
+        updated: updatedKeywords.length,
+        message: `Updated ${updatedKeywords.length} keywords with Search Console data`
+      });
+    } catch (error) {
+      console.error('Search Console sync error:', error);
+      res.status(500).json({ 
+        message: "Failed to sync with Search Console",
+        error: error.message 
+      });
+    }
+  });
+
+  app.get("/api/search-console/sites", async (req, res) => {
+    try {
+      if (!searchConsoleService.isServiceConfigured()) {
+        return res.status(400).json({ 
+          message: "Google Search Console not configured",
+          setupRequired: true 
+        });
+      }
+
+      const sites = await searchConsoleService.getSiteList();
+      res.json(sites);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch Search Console sites",
+        error: error.message 
+      });
     }
   });
 

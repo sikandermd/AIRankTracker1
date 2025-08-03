@@ -52,6 +52,41 @@ export default function OrganicKeywords() {
     },
   });
 
+  const syncMutation = useMutation({
+    mutationFn: () => {
+      const domains = [...new Set(organicKeywords?.map(kw => kw.domain) || [])];
+      const keywords = organicKeywords?.map(kw => kw.keyword) || [];
+      
+      return apiRequest('/api/organic-keywords/sync', 'POST', {
+        domain: domains[0], // Use first domain for now
+        keywords,
+        country: selectedCountry.toLowerCase()
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/organic-keywords'] });
+      toast({
+        title: "Sync Complete",
+        description: `Updated ${data.updated} keywords with Search Console data`,
+      });
+    },
+    onError: (error: any) => {
+      if (error.setupRequired) {
+        toast({
+          title: "Setup Required",
+          description: "Please configure Google Search Console API. Check SEARCH_CONSOLE_SETUP.md",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sync Failed",
+          description: error.message || "Failed to sync with Search Console",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
   const handleAddKeyword = () => {
     if (!keyword.trim() || !domain.trim()) {
       toast({
@@ -97,6 +132,15 @@ export default function OrganicKeywords() {
           <h1 className="text-3xl font-bold tracking-tight">Organic Keywords</h1>
           <p className="text-muted-foreground">Track your website's organic search rankings</p>
         </div>
+        {organicKeywords && organicKeywords.length > 0 && (
+          <Button 
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {syncMutation.isPending ? 'Syncing...' : 'Sync with Search Console'}
+          </Button>
+        )}
       </div>
 
       {/* Add Keyword Form */}

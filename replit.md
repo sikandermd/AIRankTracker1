@@ -108,6 +108,24 @@ The application is structured as a monorepo with shared schemas between client a
 
 ## Recent Changes (August 2025)
 
+### Organic Keywords Tracking Complete ✅
+- Added separate "Organic SEO" tab for Google Search Console integration
+- Country-specific keyword tracking with 8+ countries (US, India, UK, etc.)
+- Real-time position monitoring with Search Console API sync
+- Domain-based tracking with position history and trends
+- Clean, fast interface optimized for performance
+- Automatic position updates with click-through rates and impressions
+- Setup guide created: SEARCH_CONSOLE_SETUP.md
+
+### Search Console API Integration
+- Google Search Console service for real keyword positions
+- Supports verified domains and site properties
+- Rate-limited API calls with automatic delays
+- Historical position tracking with ranking changes
+- Landing page URL identification for each keyword
+- Country-specific search data (usa, ind, gbr, etc.)
+- Service account authentication for secure access
+
 ### Email Integration Complete ✅
 - Successfully integrated Brevo email service with verified sender domain
 - Fixed sender authentication using jason@notifyvisitorsmail.com
