@@ -187,7 +187,7 @@ export default function OrganicKeywords() {
             Add Organic Keyword
           </CardTitle>
           <CardDescription>
-            Add keywords to track. Use orange "Set Position" buttons for manual tracking. Sync requires Google Console API setup.
+            Add keywords to track. Manual tracking with "Set Position" buttons works immediately. Google Search Console sync may miss some rankings due to data lag.
           </CardDescription>
         </CardHeader>
         <CardContent>

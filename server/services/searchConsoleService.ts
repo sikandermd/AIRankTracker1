@@ -105,11 +105,11 @@ class SearchConsoleService {
                   {
                     dimension: 'query',
                     expression: keyword,
-                    operator: 'equals'
+                    operator: 'contains'  // Changed from 'equals' to 'contains' for better matching
                   },
                   {
                     dimension: 'country',
-                    expression: country.toLowerCase(),
+                    expression: country.toLowerCase() === 'in' ? 'ind' : country.toLowerCase(),
                     operator: 'equals'
                   }
                 ]
