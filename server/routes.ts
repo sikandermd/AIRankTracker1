@@ -298,6 +298,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Alert routes
+  // Password verification endpoint
+  app.post('/api/verify-password', async (req, res) => {
+    try {
+      const { password } = req.body;
+      const correctPassword = process.env.DASHBOARD_PASSWORD || 'seo2025';
+      
+      if (password === correctPassword) {
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ success: false, message: 'Invalid password' });
+      }
+    } catch (error) {
+      console.error('Password verification error:', error);
+      res.status(500).json({ success: false, message: 'Server error' });
+    }
+  });
+
   app.get("/api/alerts", async (req, res) => {
     try {
       const alerts = await storage.getAllAlerts();

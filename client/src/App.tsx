@@ -12,6 +12,7 @@ import OrganicKeywords from "@/pages/organic-keywords";
 import TopPages from "./pages/top-pages";
 import AlertsPage from "@/pages/AlertsPage";
 import NotFound from "@/pages/not-found";
+import PasswordGuard from "@/components/PasswordGuard";
 
 function Router() {
   return (
@@ -39,7 +40,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Router />
+        <PasswordGuard>
+          <Router />
+        </PasswordGuard>
       </TooltipProvider>
     </QueryClientProvider>
   );
