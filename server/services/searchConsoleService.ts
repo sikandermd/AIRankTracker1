@@ -74,9 +74,30 @@ export class SearchConsoleService {
         position: row.position || 0
       }));
 
-      // Filter by directory if specified
+      // Apply directory filter with better matching
       if (directoryFilter && directoryFilter !== 'all') {
-        pages = pages.filter(page => page.page.includes(`/${directoryFilter}/`));
+        pages = pages.filter((page: TopPageData) => {
+          const url = page.page.toLowerCase();
+          
+          switch(directoryFilter) {
+            case 'products':
+              return url.includes('/products/') || url.includes('/product/') || url.includes('/features/');
+            case 'blog':
+              return url.includes('/blog/') || url.includes('/post/') || url.includes('/article/');
+            case 'resources':
+              return url.includes('/resources/') || url.includes('/resource/') || url.includes('/guides/') || url.includes('/help/');
+            case 'features':
+              return url.includes('/features/') || url.includes('/feature/');
+            case 'use-cases':
+              return url.includes('/use-cases/') || url.includes('/usecase/') || url.includes('/case-studies/');
+            case 'integrations':
+              return url.includes('/integrations/') || url.includes('/integration/') || url.includes('/apps/');
+            case 'agencies':
+              return url.includes('/agencies/') || url.includes('/agency/') || url.includes('/partners/');
+            default:
+              return url.includes(`/${directoryFilter}/`);
+          }
+        });
       }
 
       return pages;
@@ -103,7 +124,28 @@ export class SearchConsoleService {
     ];
 
     if (directoryFilter && directoryFilter !== 'all') {
-      return allPages.filter(page => page.page.includes(`/${directoryFilter}/`));
+      return allPages.filter(page => {
+        const url = page.page.toLowerCase();
+        
+        switch(directoryFilter) {
+          case 'products':
+            return url.includes('/products/') || url.includes('/product/') || url.includes('/features/');
+          case 'blog':
+            return url.includes('/blog/') || url.includes('/post/') || url.includes('/article/');
+          case 'resources':
+            return url.includes('/resources/') || url.includes('/resource/') || url.includes('/guides/') || url.includes('/help/');
+          case 'features':
+            return url.includes('/features/') || url.includes('/feature/');
+          case 'use-cases':
+            return url.includes('/use-cases/') || url.includes('/usecase/') || url.includes('/case-studies/');
+          case 'integrations':
+            return url.includes('/integrations/') || url.includes('/integration/') || url.includes('/apps/');
+          case 'agencies':
+            return url.includes('/agencies/') || url.includes('/agency/') || url.includes('/partners/');
+          default:
+            return url.includes(`/${directoryFilter}/`);
+        }
+      });
     }
 
     return allPages;

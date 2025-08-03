@@ -148,10 +148,10 @@ const TopPages = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-hidden">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="-ml-1" />
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold tracking-tight">Top Pages</h1>
           <p className="text-muted-foreground">
             Analyze your highest performing pages with search console data, internal/external links, and backlinks
@@ -361,27 +361,27 @@ const TopPages = () => {
               <p className="mt-2 text-muted-foreground">Loading top pages...</p>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
+            <div className="w-full overflow-x-auto">
+              <Table className="min-w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[300px]">Page</TableHead>
-                    <TableHead className="text-center">Clicks</TableHead>
-                    <TableHead className="text-center">Impressions</TableHead>
-                    <TableHead className="text-center">CTR %</TableHead>
-                    <TableHead className="text-center">Position</TableHead>
-                    <TableHead className="text-center">Internal Links</TableHead>
-                    <TableHead className="text-center">External Links</TableHead>
-                    <TableHead className="text-center">Backlinks</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
+                    <TableHead className="min-w-[280px] max-w-[300px]">Page</TableHead>
+                    <TableHead className="text-center min-w-[80px]">Clicks</TableHead>
+                    <TableHead className="text-center min-w-[100px]">Impressions</TableHead>
+                    <TableHead className="text-center min-w-[70px]">CTR %</TableHead>
+                    <TableHead className="text-center min-w-[80px]">Position</TableHead>
+                    <TableHead className="text-center min-w-[80px]">Internal</TableHead>
+                    <TableHead className="text-center min-w-[80px]">External</TableHead>
+                    <TableHead className="text-center min-w-[80px]">Backlinks</TableHead>
+                    <TableHead className="text-center min-w-[80px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedPages.map((page) => (
                     <TableRow key={page.id}>
-                      <TableCell>
+                      <TableCell className="max-w-[300px]">
                         <div className="space-y-1">
-                          <div className="font-medium text-sm leading-tight">
+                          <div className="font-medium text-sm leading-tight truncate">
                             {page.title}
                           </div>
                           <div className="text-xs text-muted-foreground truncate">
@@ -390,37 +390,37 @@ const TopPages = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 whitespace-nowrap">
                           {formatNumber(page.clicks)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
                           {formatNumber(page.impressions)}
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className="text-sm font-medium">
-                          {page.ctr.toFixed(1)}%
+                        <span className="text-sm font-medium whitespace-nowrap">
+                          {(page.ctr * 100).toFixed(1)}%
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className={getPositionColor(page.position)}>
+                        <Badge className={`${getPositionColor(page.position)} whitespace-nowrap`}>
                           #{page.position.toFixed(1)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className="text-sm">
+                        <span className="text-sm whitespace-nowrap">
                           {page.internalLinks}
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <span className="text-sm">
+                        <span className="text-sm whitespace-nowrap">
                           {page.externalLinks}
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline" className="bg-green-50 text-green-700">
+                        <Badge variant="outline" className="bg-green-50 text-green-700 whitespace-nowrap">
                           {page.backlinks}
                         </Badge>
                       </TableCell>
@@ -429,6 +429,7 @@ const TopPages = () => {
                           variant="ghost"
                           size="sm"
                           asChild
+                          className="whitespace-nowrap"
                         >
                           <a 
                             href={page.url} 
