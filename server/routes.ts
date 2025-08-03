@@ -367,6 +367,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test email endpoint
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      const { email } = req.body;
+      const result = await notificationService.sendAlertCreationEmail({
+        email,
+        alertName: "Test Alert - Email Verification",
+        brandName: "Test Brand",
+        keyword: "test keyword",
+        platforms: ["gpt", "claude"]
+      });
+      
+      if (result) {
+        res.json({ success: true, message: "Test email sent successfully" });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error("Test email error:", error);
+      res.status(500).json({ success: false, message: "Email service error", error: error.message });
+    }
+  });
+
+  // Debug Brevo config endpoint
+  app.get("/api/test-brevo-config", (req, res) => {
+    const hasApiKey = !!process.env.BREVO_API_KEY;
+    const keyLength = process.env.BREVO_API_KEY ? process.env.BREVO_API_KEY.length : 0;
+    res.json({ 
+      hasApiKey, 
+      keyLength,
+      message: hasApiKey ? "Brevo API key is configured" : "Brevo API key is missing"
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

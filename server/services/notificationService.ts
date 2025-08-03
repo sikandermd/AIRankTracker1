@@ -1,5 +1,3 @@
-import * as brevo from '@getbrevo/brevo';
-
 interface NotificationData {
   brandName: string;
   keyword: string;
@@ -11,19 +9,20 @@ interface NotificationData {
 }
 
 export class NotificationService {
-  private brevoApi?: brevo.TransactionalEmailsApi;
+  private apiKey?: string;
 
   constructor() {
     if (process.env.BREVO_API_KEY) {
-      const apiInstance = new brevo.TransactionalEmailsApi();
-      const apiKey = apiInstance.authentications['apiKey'];
-      apiKey.apiKey = process.env.BREVO_API_KEY;
-      this.brevoApi = apiInstance;
+      this.apiKey = process.env.BREVO_API_KEY;
+      console.log('Brevo API key configured successfully. Length:', this.apiKey.length);
+    } else {
+      console.warn('BREVO_API_KEY not found in environment variables');
+      console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('BREVO')));
     }
   }
 
   async sendEmailNotification(email: string, data: NotificationData): Promise<boolean> {
-    if (!this.brevoApi) {
+    if (!this.apiKey) {
       console.warn('Brevo not configured, skipping email notification');
       return false;
     }
@@ -32,13 +31,31 @@ export class NotificationService {
       const subject = this.generateEmailSubject(data);
       const html = this.generateEmailHTML(data);
 
-      const sendSmtpEmail = new brevo.SendSmtpEmail();
-      sendSmtpEmail.to = [{ email }];
-      sendSmtpEmail.sender = { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' };
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = html;
+      const emailData = {
+        to: [{ email }],
+        sender: { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' },
+        subject: subject,
+        htmlContent: html
+      };
 
-      await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Brevo API error:', response.status, errorText);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('Brevo email sent successfully:', result);
       return true;
     } catch (error) {
       console.error('Email notification failed:', error);
@@ -222,7 +239,7 @@ export class NotificationService {
     keyword: string;
     platforms: string[];
   }): Promise<boolean> {
-    if (!this.brevoApi) {
+    if (!this.apiKey) {
       console.warn('Brevo not configured, skipping alert creation email');
       return false;
     }
@@ -231,13 +248,31 @@ export class NotificationService {
       const subject = `✅ Alert Created: ${data.alertName}`;
       const html = this.generateAlertCreationHTML(data);
 
-      const sendSmtpEmail = new brevo.SendSmtpEmail();
-      sendSmtpEmail.to = [{ email: data.email }];
-      sendSmtpEmail.sender = { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' };
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = html;
+      const emailData = {
+        to: [{ email: data.email }],
+        sender: { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' },
+        subject: subject,
+        htmlContent: html
+      };
 
-      await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Brevo API error:', response.status, errorText);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('Alert creation email sent successfully:', result);
       console.log(`Alert creation email sent to ${data.email}`);
       return true;
     } catch (error) {
