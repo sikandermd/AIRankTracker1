@@ -35,7 +35,11 @@ import {
   Link as LinkIcon,
   ArrowUpRight,
   Download,
-  Calendar
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -56,9 +60,12 @@ interface TopPage {
 const TopPages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("clicks");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedDirectory, setSelectedDirectory] = useState("all");
   const [dateRange, setDateRange] = useState("30");
   const [customDateRange, setCustomDateRange] = useState({ start: "", end: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data: directories } = useQuery<Array<{value: string, label: string}>>({
     queryKey: ['/api/notifyvisitors-directories'],
@@ -83,27 +90,58 @@ const TopPages = () => {
   ) || [];
 
   const sortedPages = [...filteredPages].sort((a, b) => {
+    let comparison = 0;
+    
     switch (sortBy) {
       case "clicks":
-        return b.clicks - a.clicks;
+        comparison = a.clicks - b.clicks;
+        break;
       case "impressions":
-        return b.impressions - a.impressions;
+        comparison = a.impressions - b.impressions;
+        break;
       case "ctr":
-        return b.ctr - a.ctr;
+        comparison = a.ctr - b.ctr;
+        break;
       case "position":
-        return a.position - b.position;
+        comparison = a.position - b.position;
+        break;
       case "backlinks":
-        return b.backlinks - a.backlinks;
+        comparison = a.backlinks - b.backlinks;
+        break;
+      case "internalLinks":
+        comparison = a.internalLinks - b.internalLinks;
+        break;
+      case "externalLinks":
+        comparison = a.externalLinks - b.externalLinks;
+        break;
       default:
         return 0;
     }
+    
+    return sortOrder === "desc" ? -comparison : comparison;
   });
 
-  const totalPages = sortedPages.length;
+  // Pagination
+  const totalPagesForPagination = Math.ceil(sortedPages.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedPages = sortedPages.slice(startIndex, startIndex + pageSize);
+
+  const totalPagesCount = sortedPages.length;
   const totalClicks = sortedPages.reduce((sum, page) => sum + page.clicks, 0);
   const avgPosition = sortedPages.length > 0 
     ? sortedPages.reduce((sum, page) => sum + page.position, 0) / sortedPages.length 
     : 0;
+
+  // Handle sort changes
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+    } else {
+      setSortBy(column);
+      setSortOrder("desc");
+    }
+    setCurrentPage(1); // Reset to first page when sorting
+  };
 
   // Export functionality
   const exportToCSV = () => {
@@ -181,7 +219,7 @@ const TopPages = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalPages}</div>
+            <div className="text-2xl font-bold">{totalPagesCount}</div>
             <p className="text-xs text-muted-foreground">
               {selectedDirectory === 'all' ? 'All sections' : `${selectedDirectory} section`}
             </p>
@@ -351,7 +389,7 @@ const TopPages = () => {
             Top Performing Pages
           </CardTitle>
           <CardDescription>
-            {sortedPages.length} pages with search console data, link analysis, and backlink counts
+            Showing {startIndex + 1}-{Math.min(startIndex + pageSize, sortedPages.length)} of {sortedPages.length} pages
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -366,18 +404,95 @@ const TopPages = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="min-w-[280px] max-w-[300px]">Page</TableHead>
-                    <TableHead className="text-center min-w-[80px]">Clicks</TableHead>
-                    <TableHead className="text-center min-w-[100px]">Impressions</TableHead>
-                    <TableHead className="text-center min-w-[70px]">CTR %</TableHead>
-                    <TableHead className="text-center min-w-[80px]">Position</TableHead>
-                    <TableHead className="text-center min-w-[80px]">Internal</TableHead>
-                    <TableHead className="text-center min-w-[80px]">External</TableHead>
-                    <TableHead className="text-center min-w-[80px]">Backlinks</TableHead>
+                    <TableHead className="text-center min-w-[80px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("clicks")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        Clicks
+                        {sortBy === "clicks" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center min-w-[100px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("impressions")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        Impressions
+                        {sortBy === "impressions" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center min-w-[70px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("ctr")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        CTR %
+                        {sortBy === "ctr" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center min-w-[80px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("position")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        Position
+                        {sortBy === "position" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center min-w-[80px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("internalLinks")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        Internal
+                        {sortBy === "internalLinks" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center min-w-[80px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("externalLinks")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        External
+                        {sortBy === "externalLinks" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center min-w-[80px]">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleSort("backlinks")}
+                        className="font-semibold h-auto p-1 justify-center w-full"
+                      >
+                        Backlinks
+                        {sortBy === "backlinks" && (
+                          sortOrder === "desc" ? <ChevronDown className="ml-1 h-3 w-3" /> : <ChevronUp className="ml-1 h-3 w-3" />
+                        )}
+                      </Button>
+                    </TableHead>
                     <TableHead className="text-center min-w-[80px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedPages.map((page) => (
+                  {paginatedPages.map((page) => (
                     <TableRow key={page.id}>
                       <TableCell className="max-w-[300px]">
                         <div className="space-y-1">
@@ -446,6 +561,55 @@ const TopPages = () => {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+          
+          {/* Pagination */}
+          {sortedPages.length > pageSize && (
+            <div className="flex items-center justify-between space-x-2 py-4 px-6 border-t">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  Rows per page:
+                </span>
+                <Select value={pageSize.toString()} onValueChange={(value) => {
+                  setPageSize(Number(value));
+                  setCurrentPage(1);
+                }}>
+                  <SelectTrigger className="w-16">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPagesForPagination}
+                </span>
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPagesForPagination, currentPage + 1))}
+                    disabled={currentPage === totalPagesForPagination}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

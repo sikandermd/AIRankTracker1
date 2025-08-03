@@ -56,7 +56,7 @@ export class SearchConsoleService {
           startDate: startDate.toISOString().split('T')[0],
           endDate: endDate.toISOString().split('T')[0],
           dimensions: ['page'],
-          rowLimit: 100,
+          rowLimit: 1000,
           aggregationType: 'auto'
         }
       });
@@ -110,17 +110,64 @@ export class SearchConsoleService {
 
   private getFallbackData(directoryFilter?: string): TopPageData[] {
     const allPages = [
+      // Homepage and main pages
       { page: 'https://www.notifyvisitors.com/customer-data-platform', clicks: 1300, impressions: 12500, ctr: 0.104, position: 8.5 },
       { page: 'https://www.notifyvisitors.com/marketing-automation', clicks: 980, impressions: 15600, ctr: 0.063, position: 12.2 },
       { page: 'https://www.notifyvisitors.com/customer-engagement-platform', clicks: 756, impressions: 9800, ctr: 0.077, position: 15.8 },
       { page: 'https://www.notifyvisitors.com/email-marketing', clicks: 645, impressions: 11200, ctr: 0.058, position: 18.3 },
       { page: 'https://www.notifyvisitors.com/web-push-notifications', clicks: 523, impressions: 8900, ctr: 0.059, position: 22.1 },
+      
+      // Products pages
       { page: 'https://www.notifyvisitors.com/products/customer-segmentation', clicks: 423, impressions: 7800, ctr: 0.054, position: 25.2 },
       { page: 'https://www.notifyvisitors.com/products/lead-generation', clicks: 389, impressions: 6900, ctr: 0.056, position: 28.1 },
+      { page: 'https://www.notifyvisitors.com/products/marketing-automation-tools', clicks: 312, impressions: 5800, ctr: 0.054, position: 32.1 },
+      { page: 'https://www.notifyvisitors.com/products/customer-analytics', clicks: 298, impressions: 5200, ctr: 0.057, position: 29.8 },
+      { page: 'https://www.notifyvisitors.com/products/email-automation', clicks: 245, impressions: 4300, ctr: 0.057, position: 35.2 },
+      { page: 'https://www.notifyvisitors.com/products/web-personalization', clicks: 223, impressions: 3900, ctr: 0.057, position: 38.1 },
+      { page: 'https://www.notifyvisitors.com/products/user-behavior-tracking', clicks: 198, impressions: 3500, ctr: 0.057, position: 41.3 },
+      { page: 'https://www.notifyvisitors.com/products/conversion-optimization', clicks: 187, impressions: 3200, ctr: 0.058, position: 43.2 },
+      { page: 'https://www.notifyvisitors.com/products/customer-journey-analytics', clicks: 165, impressions: 2800, ctr: 0.059, position: 46.1 },
+      { page: 'https://www.notifyvisitors.com/products/real-time-personalization', clicks: 143, impressions: 2400, ctr: 0.060, position: 48.9 },
+      { page: 'https://www.notifyvisitors.com/products/mobile-app-analytics', clicks: 129, impressions: 2100, ctr: 0.061, position: 51.2 },
+      { page: 'https://www.notifyvisitors.com/products/social-media-integration', clicks: 112, impressions: 1800, ctr: 0.062, position: 54.1 },
+      
+      // Features pages  
+      { page: 'https://www.notifyvisitors.com/features/push-notifications', clicks: 234, impressions: 4100, ctr: 0.057, position: 31.4 },
+      { page: 'https://www.notifyvisitors.com/features/email-campaigns', clicks: 212, impressions: 3700, ctr: 0.057, position: 33.8 },
+      { page: 'https://www.notifyvisitors.com/features/user-segmentation', clicks: 189, impressions: 3300, ctr: 0.057, position: 36.2 },
+      { page: 'https://www.notifyvisitors.com/features/ab-testing', clicks: 167, impressions: 2900, ctr: 0.058, position: 39.1 },
+      { page: 'https://www.notifyvisitors.com/features/analytics-dashboard', clicks: 145, impressions: 2500, ctr: 0.058, position: 42.3 },
+      
+      // Blog pages
       { page: 'https://www.notifyvisitors.com/blog/customer-retention-strategies', clicks: 345, impressions: 5600, ctr: 0.062, position: 18.7 },
       { page: 'https://www.notifyvisitors.com/blog/email-marketing-best-practices', clicks: 298, impressions: 4800, ctr: 0.062, position: 22.3 },
+      { page: 'https://www.notifyvisitors.com/blog/conversion-rate-optimization', clicks: 267, impressions: 4200, ctr: 0.064, position: 25.1 },
+      { page: 'https://www.notifyvisitors.com/blog/customer-engagement-metrics', clicks: 234, impressions: 3600, ctr: 0.065, position: 28.4 },
+      { page: 'https://www.notifyvisitors.com/blog/personalization-strategies', clicks: 201, impressions: 3100, ctr: 0.065, position: 31.7 },
+      { page: 'https://www.notifyvisitors.com/blog/marketing-automation-trends', clicks: 178, impressions: 2700, ctr: 0.066, position: 34.2 },
+      { page: 'https://www.notifyvisitors.com/blog/customer-data-analysis', clicks: 156, impressions: 2300, ctr: 0.068, position: 37.1 },
+      { page: 'https://www.notifyvisitors.com/blog/ecommerce-optimization', clicks: 134, impressions: 1900, ctr: 0.071, position: 40.3 },
+      
+      // Resources pages
       { page: 'https://www.notifyvisitors.com/resources/customer-journey-mapping', clicks: 256, impressions: 4200, ctr: 0.061, position: 26.8 },
-      { page: 'https://www.notifyvisitors.com/resources/marketing-automation-guide', clicks: 234, impressions: 3900, ctr: 0.060, position: 29.1 }
+      { page: 'https://www.notifyvisitors.com/resources/marketing-automation-guide', clicks: 234, impressions: 3900, ctr: 0.060, position: 29.1 },
+      { page: 'https://www.notifyvisitors.com/resources/conversion-optimization-checklist', clicks: 203, impressions: 3400, ctr: 0.060, position: 32.5 },
+      { page: 'https://www.notifyvisitors.com/resources/email-marketing-templates', clicks: 178, impressions: 2900, ctr: 0.061, position: 35.8 },
+      { page: 'https://www.notifyvisitors.com/resources/customer-segmentation-guide', clicks: 156, impressions: 2500, ctr: 0.062, position: 38.9 },
+      { page: 'https://www.notifyvisitors.com/resources/analytics-dashboard-setup', clicks: 134, impressions: 2100, ctr: 0.064, position: 42.1 },
+      { page: 'https://www.notifyvisitors.com/resources/personalization-best-practices', clicks: 112, impressions: 1700, ctr: 0.066, position: 45.2 },
+      
+      // Use cases pages
+      { page: 'https://www.notifyvisitors.com/use-cases/ecommerce-personalization', clicks: 189, impressions: 3200, ctr: 0.059, position: 33.7 },
+      { page: 'https://www.notifyvisitors.com/use-cases/saas-user-engagement', clicks: 167, impressions: 2800, ctr: 0.060, position: 36.4 },
+      { page: 'https://www.notifyvisitors.com/use-cases/media-content-optimization', clicks: 145, impressions: 2400, ctr: 0.060, position: 39.2 },
+      { page: 'https://www.notifyvisitors.com/use-cases/financial-services-compliance', clicks: 123, impressions: 2000, ctr: 0.062, position: 42.8 },
+      
+      // Integrations pages
+      { page: 'https://www.notifyvisitors.com/integrations/shopify-integration', clicks: 178, impressions: 2900, ctr: 0.061, position: 35.1 },
+      { page: 'https://www.notifyvisitors.com/integrations/wordpress-plugin', clicks: 156, impressions: 2500, ctr: 0.062, position: 38.3 },
+      { page: 'https://www.notifyvisitors.com/integrations/magento-extension', clicks: 134, impressions: 2100, ctr: 0.064, position: 41.7 },
+      { page: 'https://www.notifyvisitors.com/integrations/woocommerce-integration', clicks: 112, impressions: 1700, ctr: 0.066, position: 44.9 }
     ];
 
     if (directoryFilter && directoryFilter !== 'all') {
