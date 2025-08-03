@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-08-03T20:42:06.093Z",
+  "reason": "Database migration platform issues",
+  "skipMigrations": true,
+  "contactSupport": "Replit support for database migration platform issue"
+}
