@@ -76,8 +76,8 @@ export default function OrganicKeywords() {
     onError: (error: any) => {
       console.log('Sync error:', error);
       toast({
-        title: "Google Search Console Not Setup", 
-        description: "Use the orange 'Set Position' buttons to manually track keyword positions. This works great for now!",
+        title: "Search Console Permission Required", 
+        description: "Add service account email to your Google Search Console property. See Setup Guide for instructions.",
         variant: "destructive",
       });
     },
