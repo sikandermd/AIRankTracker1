@@ -416,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         body: JSON.stringify({
           to: [{ email }],
-          sender: { email: 'jason@notifyvisitorsmail.com', name: 'AI Ranking Tracker' },
+          sender: { email: 'sikander@notifyvisitors.com', name: 'AI Ranking Tracker' },
           subject: '🔧 Email Troubleshooting Test',
           htmlContent: `
             <div style="font-family: Arial, sans-serif; padding: 20px;">
