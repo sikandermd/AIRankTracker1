@@ -213,7 +213,7 @@ export default function OrganicKeywords() {
             Add Organic Keyword
           </CardTitle>
           <CardDescription>
-            Add keywords to track. Position will be checked automatically after adding. Use "🤖 Auto-Check All" to refresh all positions.
+            Add keywords to track. Position will be checked automatically after adding. Landing page URLs are extracted when found in search results.
           </CardDescription>
         </CardHeader>
         <CardContent>
