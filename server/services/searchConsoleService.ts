@@ -37,6 +37,14 @@ class SearchConsoleService {
       // Clean up the JSON string - remove any extra quotes or escaping
       let credentialsString = process.env.GOOGLE_SERVICE_ACCOUNT_KEY.trim();
       
+      // Check if it's an API key instead of service account JSON
+      if (credentialsString.startsWith('GOCSPX-') || !credentialsString.includes('{')) {
+        console.log('Google Search Console: API key detected, but service account JSON required');
+        console.log('Manual position tracking available via Set Position buttons');
+        this.isConfigured = false;
+        return;
+      }
+      
       // If the string starts and ends with quotes, remove them
       if (credentialsString.startsWith('"') && credentialsString.endsWith('"')) {
         credentialsString = credentialsString.slice(1, -1);
@@ -46,6 +54,15 @@ class SearchConsoleService {
       credentialsString = credentialsString.replace(/\\"/g, '"');
       
       const credentials = JSON.parse(credentialsString);
+      
+      // Validate required fields
+      if (!credentials.private_key || !credentials.client_email || !credentials.project_id) {
+        console.log('Google Search Console: Invalid service account JSON - missing required fields');
+        console.log('Manual position tracking available via Set Position buttons');
+        this.isConfigured = false;
+        return;
+      }
+      
       const auth = new google.auth.GoogleAuth({
         credentials,
         scopes: ['https://www.googleapis.com/auth/webmasters.readonly']
@@ -54,9 +71,9 @@ class SearchConsoleService {
       this.searchConsole = google.searchconsole({ version: 'v1', auth });
       this.isConfigured = true;
       console.log('Google Search Console API configured successfully');
-    } catch (error) {
-      console.error('Failed to initialize Google Search Console:', error.message);
-      console.log('Please ensure GOOGLE_SERVICE_ACCOUNT_KEY contains valid JSON');
+    } catch (error: any) {
+      console.log('Google Search Console: Configuration failed -', error.message);
+      console.log('Manual position tracking available via Set Position buttons');
       this.isConfigured = false;
     }
   }
