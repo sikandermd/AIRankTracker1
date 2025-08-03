@@ -88,13 +88,13 @@ export class NotificationService {
   private generateEmailSubject(data: NotificationData): string {
     switch (data.triggerType) {
       case 'mention_change':
-        return `🎉 ${data.brandName} now mentioned for "${data.keyword}" on ${data.platform}`;
+        return `🎉 ${data.brandName} now at ${data.currentValue} for "${data.keyword}" on ${data.platform}`;
       case 'position_improve':
-        return `📈 ${data.brandName} position improved for "${data.keyword}" on ${data.platform}`;
+        return `📈 ${data.brandName} improved to ${data.currentValue} for "${data.keyword}" on ${data.platform}`;
       case 'new_platform':
-        return `🚀 ${data.brandName} now visible on ${data.platform} for "${data.keyword}"`;
+        return `🚀 ${data.brandName} now at ${data.currentValue} on ${data.platform} for "${data.keyword}"`;
       case 'mention_increase':
-        return `📊 ${data.brandName} mentions increased for "${data.keyword}" on ${data.platform}`;
+        return `📊 ${data.brandName} mentions increased to ${data.currentValue} for "${data.keyword}" on ${data.platform}`;
       default:
         return `🔔 Alert: ${data.alertName}`;
     }
@@ -104,13 +104,13 @@ export class NotificationService {
     const getChangeDescription = () => {
       switch (data.triggerType) {
         case 'mention_change':
-          return `Your brand <strong>${data.brandName}</strong> is now mentioned when people search for "<strong>${data.keyword}</strong>" on ${data.platform}!`;
+          return `Great news! Your brand <strong>${data.brandName}</strong> is now mentioned at <span style="color: #16a34a; font-weight: bold;">${data.currentValue}</span> when people search for "<strong>${data.keyword}</strong>" on ${data.platform}!`;
         case 'position_improve':
-          return `Your brand <strong>${data.brandName}</strong> improved from <span style="color: #dc2626;">${data.previousValue}</span> to <span style="color: #16a34a;">${data.currentValue}</span> position for "${data.keyword}" on ${data.platform}.`;
+          return `Excellent! Your brand <strong>${data.brandName}</strong> improved from <span style="color: #dc2626;">${data.previousValue}</span> to <span style="color: #16a34a; font-weight: bold;">${data.currentValue}</span> for "${data.keyword}" on ${data.platform}.`;
         case 'new_platform':
-          return `Your brand <strong>${data.brandName}</strong> is now visible on <strong>${data.platform}</strong> for the keyword "${data.keyword}".`;
+          return `Your brand <strong>${data.brandName}</strong> is now visible at <span style="color: #16a34a; font-weight: bold;">${data.currentValue}</span> on <strong>${data.platform}</strong> for the keyword "${data.keyword}".`;
         case 'mention_increase':
-          return `Your brand <strong>${data.brandName}</strong> mentions increased from ${data.previousValue} to <strong>${data.currentValue}</strong> for "${data.keyword}" on ${data.platform}.`;
+          return `Your brand <strong>${data.brandName}</strong> mentions increased from ${data.previousValue} to <span style="color: #16a34a; font-weight: bold;">${data.currentValue}</span> for "${data.keyword}" on ${data.platform}.`;
         default:
           return `Alert triggered for ${data.brandName} on ${data.platform}.`;
       }
@@ -152,9 +152,13 @@ export class NotificationService {
                 <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">${data.platform}</td>
               </tr>
               <tr>
-                <td style="padding: 8px 0; font-weight: bold;">Current Status:</td>
-                <td style="padding: 8px 0;">${data.currentValue}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold;">Current Position:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #16a34a; font-weight: bold;">${data.currentValue}</td>
               </tr>
+              ${data.previousValue ? `<tr>
+                <td style="padding: 8px 0; font-weight: bold;">Previous Position:</td>
+                <td style="padding: 8px 0; color: #dc2626;">${data.previousValue}</td>
+              </tr>` : ''}
             </table>
           </div>
 
