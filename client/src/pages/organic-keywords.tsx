@@ -74,19 +74,12 @@ export default function OrganicKeywords() {
       });
     },
     onError: (error: any) => {
-      if (error.setupRequired) {
-        toast({
-          title: "Setup Required",
-          description: "Please configure Google Search Console API. Check SEARCH_CONSOLE_SETUP.md",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sync Failed",
-          description: error.message || "Failed to sync with Search Console",
-          variant: "destructive",
-        });
-      }
+      console.log('Sync error:', error);
+      toast({
+        title: "Setup Required", 
+        description: "Google Search Console API not configured. The JSON key format needs to be fixed in Secrets. Check SEARCH_CONSOLE_SETUP.md for complete setup guide.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -149,8 +142,9 @@ export default function OrganicKeywords() {
             variant="outline"
             onClick={() => {
               toast({
-                title: "Setup Guide",
-                description: "Check SEARCH_CONSOLE_SETUP.md file for Google API configuration steps",
+                title: "API Setup Required",
+                description: "Google Service Account JSON key needs proper formatting in Secrets. See SEARCH_CONSOLE_SETUP.md for complete guide.",
+                duration: 8000,
               });
             }}
           >
