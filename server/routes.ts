@@ -401,6 +401,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Test alert notification endpoint - Shows sample emails for different scenarios
+  app.post("/api/test-alert-notification", async (req, res) => {
+    try {
+      const { email, alertName, brandName, keyword, platform, triggerType, currentValue, previousValue } = req.body;
+      
+      const testData = {
+        alertName: alertName || "NotifyVisitors Brand Alert",
+        brandName: brandName || "NotifyVisitors", 
+        keyword: keyword || "customer data platform",
+        platform: platform || "ChatGPT",
+        triggerType: triggerType || "mention_change",
+        currentValue: currentValue || "Position #2",
+        previousValue: previousValue || "Not mentioned"
+      };
+
+      const success = await notificationService.sendEmailNotification(email, testData);
+      
+      if (success) {
+        res.json({ 
+          success: true, 
+          message: "Test alert notification sent successfully",
+          testData
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          error: "Failed to send test notification" 
+        });
+      }
+    } catch (error) {
+      console.error('Test notification error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  });
+
   // Email troubleshooting endpoint
   app.post("/api/troubleshoot-email", async (req, res) => {
     try {
