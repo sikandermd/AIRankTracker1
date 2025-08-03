@@ -302,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/verify-password', async (req, res) => {
     try {
       const { password } = req.body;
-      const correctPassword = process.env.DASHBOARD_PASSWORD || 'seo2025';
+      const correctPassword = process.env.DASHBOARD_PASSWORD || 'Agent';
       
       if (password === correctPassword) {
         res.json({ success: true });
