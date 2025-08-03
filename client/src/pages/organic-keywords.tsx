@@ -32,8 +32,10 @@ export default function OrganicKeywords() {
   });
 
   const addKeywordMutation = useMutation({
-    mutationFn: (data: { keyword: string; domain: string; country: string }) =>
-      apiRequest('/api/organic-keywords', 'POST', data),
+    mutationFn: async (data: { keyword: string; domain: string; country: string }) => {
+      const response = await apiRequest('POST', '/api/organic-keywords', data);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/organic-keywords'] });
       setKeyword('');
@@ -53,15 +55,16 @@ export default function OrganicKeywords() {
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const domains = [...new Set(organicKeywords?.map(kw => kw.domain) || [])];
       const keywords = organicKeywords?.map(kw => kw.keyword) || [];
       
-      return apiRequest('/api/organic-keywords/sync', 'POST', {
+      const response = await apiRequest('POST', '/api/organic-keywords/sync', {
         domain: domains[0], // Use first domain for now
         keywords,
         country: selectedCountry.toLowerCase()
       });
+      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/organic-keywords'] });
