@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema } from "@shared/schema";
+import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema, alerts } from "@shared/schema";
+import { createInsertSchema } from "drizzle-zod";
 import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
 import { z } from "zod";
@@ -306,11 +307,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/alerts", async (req, res) => {
     try {
-      const alert = await storage.createAlert(req.body);
+      const insertAlertSchema = createInsertSchema(alerts).omit({
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+      });
+      
+      const alertData = insertAlertSchema.parse(req.body);
+      const alert = await storage.createAlert(alertData);
       res.status(201).json(alert);
     } catch (error) {
       console.error("Error creating alert:", error);
-      res.status(500).json({ error: "Failed to create alert" });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid alert data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create alert" });
+      }
     }
   });
 
