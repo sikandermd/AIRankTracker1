@@ -265,20 +265,41 @@ export default function OrganicKeywords() {
                 <div key={kw.id} className="border rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-3">
                         <h3 className="font-semibold text-lg">{kw.keyword}</h3>
-                        <span className="text-lg">{getCountryFlag(kw.country)}</span>
-                        <Badge variant="outline">{kw.domain}</Badge>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{getCountryFlag(kw.country)}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {countries.find(c => c.code === kw.country)?.name || kw.country}
+                          </Badge>
+                        </div>
+                        <Badge variant="outline" className="text-xs bg-blue-50">
+                          {kw.domain}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>Search Engine: {kw.searchEngine}</span>
-                        {!kw.currentPosition ? (
-                          <span className="text-red-600">🔍 Not ranking in top 100 or needs manual update</span>
-                        ) : (
-                          <span className="text-green-600">✅ Last updated: {new Date(kw.updatedAt).toLocaleDateString()}</span>  
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-muted-foreground">Search Engine:</span> 
+                          <span className="capitalize">{kw.searchEngine}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-muted-foreground">Status:</span>
+                          {!kw.currentPosition ? (
+                            <span className="text-red-600">Not ranking in top 100</span>
+                          ) : (
+                            <span className="text-green-600">Ranking at position #{kw.currentPosition}</span>  
+                          )}
+                        </div>
+                        {kw.searchVolume && kw.searchVolume > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-muted-foreground">Volume:</span>
+                            <span>{kw.searchVolume.toLocaleString()}</span>
+                          </div>
                         )}
-                        {kw.searchVolume && <span>Volume: {kw.searchVolume.toLocaleString()}</span>}
-                        {kw.difficulty && <span>Difficulty: {kw.difficulty}/100</span>}
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-muted-foreground">Updated:</span>
+                          <span>{new Date(kw.updatedAt).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -317,13 +338,36 @@ export default function OrganicKeywords() {
                       </Button>
                     </div>
                   </div>
-                  {kw.url && (
+                  {kw.url && kw.url.trim() && (
                     <div className="mt-3 pt-3 border-t">
-                      <span className="text-sm text-muted-foreground">Landing Page: </span>
-                      <a href={kw.url} target="_blank" rel="noopener noreferrer" 
-                         className="text-sm text-blue-600 hover:underline">
-                        {kw.url}
-                      </a>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground">Landing Page:</span>
+                        <a href={kw.url.startsWith('http') ? kw.url : `https://${kw.url}`} 
+                           target="_blank" rel="noopener noreferrer" 
+                           className="text-sm text-blue-600 hover:underline">
+                          {kw.url}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Ranking Details */}
+                  {kw.currentPosition && (
+                    <div className="mt-3 pt-3 border-t bg-green-50 p-3 rounded">
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-green-700">Current Ranking:</span>
+                          <span className="font-bold text-green-800">Position #{kw.currentPosition}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-green-700">Country:</span>
+                          <span>{getCountryFlag(kw.country)} {countries.find(c => c.code === kw.country)?.name || kw.country}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-green-700">Domain:</span>
+                          <span>{kw.domain}</span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
