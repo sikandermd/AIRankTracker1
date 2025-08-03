@@ -380,18 +380,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Dashboard stats  
-  async getDashboardStats(): Promise<{
-    totalVisibility: number;
-    rankingImproved: number;
-    rankingDropped: number;
-    keywordsTracked: number;
-  }> {
-    const totalVisibility = 35;
-    const rankingImproved = 12;
-    const rankingDropped = 4;
-    const keywordsTracked = 28;
-    return { totalVisibility, rankingImproved, rankingDropped, keywordsTracked };
-  }
+
 
   // Organic Keywords operations
   async getAllOrganicKeywords(): Promise<OrganicKeyword[]> {
@@ -417,7 +406,7 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async updateOrganicKeywordPosition(id: string, currentPosition: number): Promise<OrganicKeyword> {
+  async updateOrganicKeywordPosition(id: string, currentPosition: number, url?: string): Promise<OrganicKeyword> {
     // First get the current keyword to store previous position
     const existing = await this.getOrganicKeyword(id);
     if (!existing) {
@@ -429,11 +418,16 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         previousPosition: existing.currentPosition,
         currentPosition: currentPosition,
+        url: url || existing.url,
         updatedAt: new Date() 
       })
       .where(eq(organicKeywords.id, id))
       .returning();
     return updated;
+  }
+
+  async getOrganicKeywords(): Promise<OrganicKeyword[]> {
+    return await db.select().from(organicKeywords).orderBy(desc(organicKeywords.createdAt));
   }
 
   // Organic Rankings operations

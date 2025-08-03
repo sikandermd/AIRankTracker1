@@ -7,6 +7,7 @@ import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
 import { notificationService } from "./services/notificationService.js";
 import { searchConsoleService } from "./services/searchConsoleService.js";
+import { googleScrapeService } from "./services/googleScrapeService.js";
 import { z } from "zod";
 import { apiUsageLogger } from "./apiUsageLogger";
 
@@ -633,5 +634,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // Automatic keyword position tracking
+  app.post("/api/organic-keywords/auto-track", async (req, res) => {
+    try {
+      console.log("Starting automatic position tracking for all keywords...");
+      
+      // Start the automatic update process
+      googleScrapeService.updateKeywordPositions()
+        .then(() => {
+          console.log("Automatic position tracking completed");
+        })
+        .catch(error => {
+          console.error("Automatic position tracking failed:", error);
+        });
+      
+      res.json({ 
+        success: true, 
+        message: "Automatic position tracking started. Keywords will be updated automatically."
+      });
+    } catch (error: any) {
+      console.error("Auto-track error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to start automatic tracking", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Check single keyword position automatically
+  app.post("/api/organic-keywords/:id/check-position", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get the keyword details
+      const keyword = await storage.getOrganicKeyword(id);
+      if (!keyword) {
+        return res.status(404).json({ message: "Keyword not found" });
+      }
+
+      console.log(`Checking position for: ${keyword.keyword} on ${keyword.domain} in ${keyword.country}`);
+      
+      // Use scraping service to check position
+      const result = await googleScrapeService.searchKeywordPosition(
+        keyword.keyword,
+        keyword.domain,
+        keyword.country
+      );
+
+      if (result && result.position > 0) {
+        // Update the keyword with new position
+        const updated = await storage.updateOrganicKeywordPosition(
+          id,
+          result.position,
+          result.url
+        );
+        
+        res.json({
+          success: true,
+          message: `Position found: #${result.position}`,
+          keyword: updated,
+          position: result.position,
+          url: result.url
+        });
+      } else {
+        res.json({
+          success: false,
+          message: "Not ranking in top 100",
+          keyword,
+          position: 0
+        });
+      }
+    } catch (error: any) {
+      console.error("Position check error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to check position", 
+        error: error.message 
+      });
+    }
+  });
+
   return httpServer;
 }

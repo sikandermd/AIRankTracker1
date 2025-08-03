@@ -164,6 +164,27 @@ export default function OrganicKeywords() {
               {syncMutation.isPending ? 'Syncing...' : 'Sync with Search Console'}
             </Button>
           )}
+          <Button
+            onClick={() => {
+              fetch('/api/organic-keywords/auto-track', { method: 'POST' })
+                .then(() => {
+                  toast({
+                    title: "Auto-tracking Started",
+                    description: "Automatically checking positions for all keywords. This may take a few minutes.",
+                  });
+                })
+                .catch(() => {
+                  toast({
+                    title: "Error",
+                    description: "Failed to start automatic tracking",
+                    variant: "destructive"
+                  });
+                });
+            }}
+            className="bg-[#FB9A4E] hover:bg-[#e8864a] text-white"
+          >
+            🤖 Auto-Check All
+          </Button>
           <Button 
             variant="outline"
             onClick={() => {
