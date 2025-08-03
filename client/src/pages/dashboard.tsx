@@ -53,7 +53,7 @@ export default function Dashboard() {
   });
 
   // Show initial setup if no brands exist
-  if (brands && brands.length === 0) {
+  if (brands && Array.isArray(brands) && brands.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <InitialSetup />
@@ -104,9 +104,9 @@ export default function Dashboard() {
               </Button>
               <div className="flex items-center space-x-2">
                 <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-700">JD</span>
+                  <span className="text-sm font-medium text-gray-700">A</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">John Doe</span>
+                <span className="text-sm font-medium text-gray-700">Agent</span>
               </div>
             </div>
           </div>

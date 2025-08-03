@@ -11,6 +11,7 @@ import {
   FileText,
   ExternalLink,
   Settings,
+  Bot,
 } from "lucide-react";
 import {
   Sidebar,
@@ -83,7 +84,7 @@ const AppSidebar = () => {
               <SidebarMenuButton size="lg">
                 <div className="flex items-center gap-2">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-orange-600 text-white">
-                    <BarChart3 className="size-4" />
+                    <Bot className="size-4 animate-pulse" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">AI Ranking Tracker</span>
