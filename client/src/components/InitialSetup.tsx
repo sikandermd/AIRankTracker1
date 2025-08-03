@@ -19,7 +19,7 @@ export default function InitialSetup() {
 
   const createBrandMutation = useMutation({
     mutationFn: (data: { name: string; description?: string }) => 
-      apiRequest("/api/brands", "POST", data),
+      apiRequest("POST", "/api/brands", data),
     onSuccess: (brand) => {
       setCreatedBrandId(brand.id);
       setStep(2);
@@ -40,7 +40,7 @@ export default function InitialSetup() {
 
   const createKeywordMutation = useMutation({
     mutationFn: (data: { keyword: string; brandId: string; category?: string }) => 
-      apiRequest("/api/keywords", "POST", data),
+      apiRequest("POST", "/api/keywords", data),
     onSuccess: () => {
       setStep(3);
       queryClient.invalidateQueries({ queryKey: ["/api/keywords"] });

@@ -64,7 +64,7 @@ export default function AlertManager() {
 
   // Mutations
   const createAlertMutation = useMutation({
-    mutationFn: (data: CreateAlertFormData) => apiRequest("/api/alerts", "POST", data),
+    mutationFn: (data: CreateAlertFormData) => apiRequest("POST", "/api/alerts", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
       setIsCreateOpen(false);
@@ -84,7 +84,7 @@ export default function AlertManager() {
   });
 
   const deleteAlertMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/alerts/${id}`, "DELETE"),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/alerts/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
       toast({
