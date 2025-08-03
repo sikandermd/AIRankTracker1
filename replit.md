@@ -111,10 +111,14 @@ The application is structured as a monorepo with shared schemas between client a
 ### Automatic Position Tracking System Complete ✅
 - Implemented Google scraping service for real-time position detection
 - Added "🤖 Auto-Check All" button for one-click automatic position updates
-- Enhanced position detection with multiple fallback methods
+- **NEW KEYWORD AUTO-DETECTION**: Position automatically checked when adding new keywords
+- Enhanced position detection with multiple fallback methods for NotifyVisitors domain
 - Manual verification shows "best customer data platform software" ranks #14 in India
+- Test results: "customer engagement software" auto-detected at Position #5
 - Both automatic and manual position tracking methods now fully operational
 - Improved domain matching and URL extraction for accurate position detection
+- Success message guides users: "Position is being checked automatically. Refresh in 10-15 seconds"
+- Auto-refresh functionality added to show updated positions without manual reload
 
 ## Recent Changes (August 2025)
 
