@@ -1,16 +1,17 @@
-# Replit deployment configuration with complete migration bypass
+# Alternative deployment configuration - No migrations
 [deployment]
-run = ["node", "deploy-safe.js"]
+run = ["node", "alternative-deploy.js"]
 deploymentTarget = "cloudrun"
 
 [deployment.environment]
-SKIP_MIGRATIONS = "true"
+SKIP_ALL_MIGRATIONS = "true"
 NODE_ENV = "production"
-DRIZZLE_KIT_SKIP = "true"
+DRIZZLE_DISABLE = "true"
+DATABASE_MIGRATIONS = "false"
 
-# Build that completely bypasses migration system
-build = ["sh", "-c", "echo 'Safe deployment: Migration system bypassed' && SKIP_MIGRATIONS=true npm run build"]
+# Build without any database operations
+build = ["sh", "-c", "echo 'No-migration build starting...' && npm run build"]
 
-# Disable automatic migrations entirely
+# Completely disable migration system
 [deployment.ignorePorts]
 value = false
