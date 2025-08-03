@@ -41,9 +41,14 @@ export default function OrganicKeywords() {
       setKeyword('');
       setDomain('');
       toast({
-        title: "Success",
-        description: "Organic keyword added for tracking",
+        title: "Keyword Added Successfully",
+        description: "Position is being checked automatically. Refresh in 10-15 seconds to see results.",
       });
+      
+      // Auto-refresh after 15 seconds to show updated position
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/organic-keywords'] });
+      }, 15000);
     },
     onError: () => {
       toast({
@@ -208,7 +213,7 @@ export default function OrganicKeywords() {
             Add Organic Keyword
           </CardTitle>
           <CardDescription>
-            Add keywords to track. Manual tracking with "Set Position" buttons works immediately. Google Search Console sync may miss some rankings due to data lag.
+            Add keywords to track. Position will be checked automatically after adding. Use "🤖 Auto-Check All" to refresh all positions.
           </CardDescription>
         </CardHeader>
         <CardContent>

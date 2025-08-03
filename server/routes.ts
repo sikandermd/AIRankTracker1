@@ -514,6 +514,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertOrganicKeywordSchema.parse(req.body);
       const organicKeyword = await storage.createOrganicKeyword(validatedData);
+      
+      // Immediately check position after creating keyword
+      console.log(`Auto-checking position for new keyword: ${organicKeyword.keyword}`);
+      
+      // Start position check in background
+      googleScrapeService.searchKeywordPosition(
+        organicKeyword.keyword,
+        organicKeyword.domain,
+        organicKeyword.country
+      ).then(async (result) => {
+        if (result && result.position > 0) {
+          console.log(`Found position ${result.position} for ${organicKeyword.keyword}`);
+          await storage.updateOrganicKeywordPosition(
+            organicKeyword.id,
+            result.position,
+            result.url
+          );
+          console.log(`Updated ${organicKeyword.keyword} with position ${result.position}`);
+        } else {
+          console.log(`No ranking found for ${organicKeyword.keyword} in top 100`);
+        }
+      }).catch(error => {
+        console.error(`Error checking position for ${organicKeyword.keyword}:`, error.message);
+      });
+      
       res.status(201).json(organicKeyword);
     } catch (error) {
       res.status(400).json({ message: "Invalid organic keyword data", error: error.message });
