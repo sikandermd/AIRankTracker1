@@ -575,38 +575,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Top Pages route for Search Console data
   app.get("/api/top-pages", async (req, res) => {
     try {
-      // Mock top pages data for now - replace with Search Console API
-      const mockTopPages = [
-        {
-          id: "1",
-          url: "https://www.notifyvisitors.com/customer-data-platform",
-          title: "Customer Data Platform - Unified Customer View | NotifyVisitors",
-          clicks: 1250,
-          impressions: 12500,
-          ctr: 10.0,
-          position: 8.5,
-          internalLinks: 45,
-          externalLinks: 12,
-          backlinks: 89,
-          lastUpdated: new Date().toISOString()
-        },
-        {
-          id: "2", 
-          url: "https://www.notifyvisitors.com/marketing-automation",
-          title: "Marketing Automation Platform - Drive Engagement | NotifyVisitors",
-          clicks: 980,
-          impressions: 15600,
-          ctr: 6.3,
-          position: 12.2,
-          internalLinks: 38,
-          externalLinks: 8,
-          backlinks: 67,
-          lastUpdated: new Date().toISOString()
-        }
-      ];
+      const { searchConsoleService } = await import("./services/searchConsoleService");
       
-      res.json(mockTopPages);
+      // Get top pages from Search Console
+      const topPagesData = await searchConsoleService.getTopPages();
+      
+      // Combine with page details for complete data
+      const enrichedPages = await Promise.all(
+        topPagesData.map(async (page, index) => {
+          const pageDetails = await searchConsoleService.getPageDetails(page.page);
+          
+          return {
+            id: (index + 1).toString(),
+            url: page.page,
+            title: pageDetails.title,
+            clicks: page.clicks,
+            impressions: page.impressions,
+            ctr: Number((page.ctr * 100).toFixed(1)),
+            position: Number(page.position.toFixed(1)),
+            internalLinks: pageDetails.internalLinks,
+            externalLinks: pageDetails.externalLinks,
+            backlinks: pageDetails.backlinks,
+            lastUpdated: new Date().toISOString()
+          };
+        })
+      );
+      
+      res.json(enrichedPages);
     } catch (error) {
+      console.error("Error fetching top pages:", error);
       res.status(500).json({ message: "Failed to fetch top pages" });
     }
   });

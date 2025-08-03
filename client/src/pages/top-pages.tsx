@@ -56,82 +56,8 @@ const TopPages = () => {
   const [sortBy, setSortBy] = useState("clicks");
   const [selectedDomain, setSelectedDomain] = useState("all");
 
-  // Mock data for demonstration - this would come from Search Console API
-  const mockTopPages: TopPage[] = [
-    {
-      id: "1",
-      url: "https://www.notifyvisitors.com/customer-data-platform",
-      title: "Customer Data Platform - Unified Customer View | NotifyVisitors",
-      clicks: 1250,
-      impressions: 12500,
-      ctr: 10.0,
-      position: 8.5,
-      internalLinks: 45,
-      externalLinks: 12,
-      backlinks: 89,
-      lastUpdated: "2025-08-03T18:00:00Z"
-    },
-    {
-      id: "2", 
-      url: "https://www.notifyvisitors.com/marketing-automation",
-      title: "Marketing Automation Platform - Drive Engagement | NotifyVisitors",
-      clicks: 980,
-      impressions: 15600,
-      ctr: 6.3,
-      position: 12.2,
-      internalLinks: 38,
-      externalLinks: 8,
-      backlinks: 67,
-      lastUpdated: "2025-08-03T17:30:00Z"
-    },
-    {
-      id: "3",
-      url: "https://www.notifyvisitors.com/customer-engagement-platform", 
-      title: "Customer Engagement Platform - Personalized Experiences",
-      clicks: 756,
-      impressions: 9800,
-      ctr: 7.7,
-      position: 15.8,
-      internalLinks: 52,
-      externalLinks: 15,
-      backlinks: 134,
-      lastUpdated: "2025-08-03T16:45:00Z"
-    },
-    {
-      id: "4",
-      url: "https://www.notifyvisitors.com/email-marketing",
-      title: "Email Marketing Software - Advanced Campaigns | NotifyVisitors", 
-      clicks: 645,
-      impressions: 11200,
-      ctr: 5.8,
-      position: 18.3,
-      internalLinks: 29,
-      externalLinks: 6,
-      backlinks: 45,
-      lastUpdated: "2025-08-03T15:20:00Z"
-    },
-    {
-      id: "5",
-      url: "https://www.notifyvisitors.com/web-push-notifications",
-      title: "Web Push Notifications - Instant User Engagement",
-      clicks: 523,
-      impressions: 8900,
-      ctr: 5.9,
-      position: 22.1,
-      internalLinks: 34,
-      externalLinks: 4,
-      backlinks: 28,
-      lastUpdated: "2025-08-03T14:10:00Z"
-    }
-  ];
-
   const { data: topPages, isLoading } = useQuery<TopPage[]>({
     queryKey: ['/api/top-pages', selectedDomain, sortBy],
-    queryFn: async () => {
-      // Simulate API call - replace with actual Search Console API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockTopPages;
-    },
   });
 
   const filteredPages = topPages?.filter(page =>

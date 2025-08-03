@@ -103,11 +103,16 @@ const AppSidebar = () => {
                 {mainNavItems.map((item) => (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
+                      asChild
                       isActive={location === item.path}
-                      onClick={() => setLocation(item.path)}
                     >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.label}</span>
+                      <button 
+                        onClick={() => setLocation(item.path)}
+                        className="w-full flex items-center"
+                      >
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.label}</span>
+                      </button>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -133,11 +138,16 @@ const AppSidebar = () => {
                         {organicSeoItems.map((item) => (
                           <SidebarMenuSubItem key={item.path}>
                             <SidebarMenuSubButton
+                              asChild
                               isActive={location === item.path}
-                              onClick={() => setLocation(item.path)}
                             >
-                              <item.icon className="mr-2 h-4 w-4" />
-                              <span>{item.label}</span>
+                              <button 
+                                onClick={() => setLocation(item.path)}
+                                className="w-full flex items-center"
+                              >
+                                <item.icon className="mr-2 h-4 w-4" />
+                                <span>{item.label}</span>
+                              </button>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
