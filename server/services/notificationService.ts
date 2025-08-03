@@ -1,4 +1,4 @@
-import { MailService } from '@sendgrid/mail';
+import * as brevo from '@getbrevo/brevo';
 
 interface NotificationData {
   brandName: string;
@@ -11,18 +11,20 @@ interface NotificationData {
 }
 
 export class NotificationService {
-  private mailService?: MailService;
+  private brevoApi?: brevo.TransactionalEmailsApi;
 
   constructor() {
-    if (process.env.SENDGRID_API_KEY) {
-      this.mailService = new MailService();
-      this.mailService.setApiKey(process.env.SENDGRID_API_KEY);
+    if (process.env.BREVO_API_KEY) {
+      const apiInstance = new brevo.TransactionalEmailsApi();
+      const apiKey = apiInstance.authentications['apiKey'];
+      apiKey.apiKey = process.env.BREVO_API_KEY;
+      this.brevoApi = apiInstance;
     }
   }
 
   async sendEmailNotification(email: string, data: NotificationData): Promise<boolean> {
-    if (!this.mailService) {
-      console.warn('SendGrid not configured, skipping email notification');
+    if (!this.brevoApi) {
+      console.warn('Brevo not configured, skipping email notification');
       return false;
     }
 
@@ -30,13 +32,13 @@ export class NotificationService {
       const subject = this.generateEmailSubject(data);
       const html = this.generateEmailHTML(data);
 
-      await this.mailService.send({
-        to: email,
-        from: 'alerts@rankingtracker.app', // Configure this in SendGrid
-        subject,
-        html,
-      });
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.to = [{ email }];
+      sendSmtpEmail.sender = { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' };
+      sendSmtpEmail.subject = subject;
+      sendSmtpEmail.htmlContent = html;
 
+      await this.brevoApi.sendTransacEmail(sendSmtpEmail);
       return true;
     } catch (error) {
       console.error('Email notification failed:', error);
@@ -220,8 +222,8 @@ export class NotificationService {
     keyword: string;
     platforms: string[];
   }): Promise<boolean> {
-    if (!this.mailService) {
-      console.warn('SendGrid not configured, skipping alert creation email');
+    if (!this.brevoApi) {
+      console.warn('Brevo not configured, skipping alert creation email');
       return false;
     }
 
@@ -229,13 +231,13 @@ export class NotificationService {
       const subject = `✅ Alert Created: ${data.alertName}`;
       const html = this.generateAlertCreationHTML(data);
 
-      await this.mailService.send({
-        to: data.email,
-        from: 'alerts@rankingtracker.app',
-        subject,
-        html,
-      });
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.to = [{ email: data.email }];
+      sendSmtpEmail.sender = { email: 'alerts@rankingtracker.app', name: 'AI Ranking Tracker' };
+      sendSmtpEmail.subject = subject;
+      sendSmtpEmail.htmlContent = html;
 
+      await this.brevoApi.sendTransacEmail(sendSmtpEmail);
       console.log(`Alert creation email sent to ${data.email}`);
       return true;
     } catch (error) {
