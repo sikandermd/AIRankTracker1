@@ -592,8 +592,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Top Pages route for Search Console data
   app.get("/api/top-pages", async (req, res) => {
     try {
-      const { searchConsoleService } = await import("./services/searchConsoleService");
-      
       const dateRange = parseInt(req.query.dateRange as string) || 30;
       const directoryFilter = req.query.directory as string || 'all';
       
@@ -637,7 +635,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get NotifyVisitors directories
   app.get("/api/notifyvisitors-directories", async (req, res) => {
     try {
-      const { searchConsoleService } = await import("./services/searchConsoleService");
       const directories = searchConsoleService.getNotifyVisitorsDirectories();
       res.json(directories);
     } catch (error) {
