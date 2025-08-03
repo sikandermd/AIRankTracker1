@@ -17,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const brands = await storage.getAllBrands();
       res.json(brands);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch brands" });
     }
   });
@@ -29,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Validated data:', validatedData);
       const brand = await storage.createBrand(validatedData);
       res.status(201).json(brand);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Brand creation error:', error);
       res.status(400).json({ message: "Invalid brand data", error: error instanceof Error ? error.message : String(error) });
     }
@@ -43,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? await storage.getKeywordsByBrand(brandId as string)
         : await storage.getAllKeywords();
       res.json(keywords);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch keywords" });
     }
   });
@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertKeywordSchema.parse(req.body);
       const keyword = await storage.createKeyword(validatedData);
       res.status(201).json(keyword);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Error && error.message.includes('already exists')) {
         res.status(409).json({ message: error.message });
       } else {
@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const results = await trackingService.trackKeywords(keywordTexts, brandId, platforms);
       res.json(results);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(400).json({ message: "Invalid tracking request" });
     }
   });
@@ -94,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const results = await storage.getTrackingResults(filters);
       res.json(results);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch tracking results" });
     }
   });
@@ -116,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
 
       res.json(enrichedResults);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch latest results" });
     }
   });
@@ -127,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { keywordId } = req.query;
       const analysis = await storage.getCompetitorAnalysis(keywordId as string);
       res.json(analysis);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch competitor analysis" });
     }
   });
@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
   });
@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       usageStatsCacheTime = now;
       
       res.json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch usage stats" });
     }
   });
@@ -184,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const activity = await trackingService.getRecentActivity(10);
       res.json(activity);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Recent activity error:", error);
       res.status(500).json({ message: "Failed to fetch recent activity" });
     }
@@ -200,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: category || 'General',
       });
       res.json(newKeyword);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Create keyword error:", error);
       res.status(500).json({ message: "Failed to create keyword" });
     }
@@ -210,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const keywords = await storage.getAllKeywords();
       res.json(keywords);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch keywords" });
     }
   });
@@ -220,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteKeyword(id);
       res.json({ message: "Keyword deleted successfully" });
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to delete keyword" });
     }
   });
@@ -245,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         trackingResults,
         competitorAnalysis,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch keyword analysis" });
     }
   });
@@ -267,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const result = await googleSheetsService.pullKeywordsFromSheet(spreadsheetId, range);
       res.json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Sheets import error:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "Failed to import from Google Sheets"
@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const info = await googleSheetsService.getSheetInfo(spreadsheetId);
       res.json(info);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "Failed to get sheet info"
       });
@@ -309,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(401).json({ success: false, message: 'Invalid password' });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Password verification error:', error);
       res.status(500).json({ success: false, message: 'Server error' });
     }
@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const alerts = await storage.getAllAlerts();
       res.json(alerts);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching alerts:", error);
       res.status(500).json({ error: "Failed to fetch alerts" });
     }
@@ -356,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(201).json(alert);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creating alert:", error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: "Invalid alert data", details: error.errors });
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.deleteAlert(req.params.id);
       res.status(204).send();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error deleting alert:", error);
       res.status(500).json({ error: "Failed to delete alert" });
     }
@@ -380,7 +380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const logs = await storage.getAlertLogs(req.params.id);
       res.json(logs);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching alert logs:", error);
       res.status(500).json({ error: "Failed to fetch alert logs" });
     }
@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ success: false, message: "Failed to send test email" });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Test email error:", error);
       res.status(500).json({ success: false, message: "Email service error", error: error instanceof Error ? error.message : String(error) });
     }
@@ -449,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: "Failed to send test notification" 
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Test notification error:', error);
       res.status(500).json({ 
         success: false, 
@@ -508,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Troubleshooting email sent. Check your inbox and spam folder in 5-10 minutes.',
         timestamp: new Date().toISOString()
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Troubleshoot email error:', error);
       res.status(500).json({ 
         success: false, 
@@ -522,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const organicKeywords = await storage.getAllOrganicKeywords();
       res.json(organicKeywords);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch organic keywords" });
     }
   });
@@ -557,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       res.status(201).json(organicKeyword);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(400).json({ message: "Invalid organic keyword data", error: error instanceof Error ? error.message : String(error) });
     }
   });
@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updatedKeyword = await storage.updateOrganicKeywordPosition(id, currentPosition);
       res.json(updatedKeyword);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating organic keyword position:', error);
       res.status(500).json({ message: (error instanceof Error ? error.message : String(error)) || "Failed to update keyword position" });
     }
@@ -584,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { keywordId } = req.params;
       const rankings = await storage.getOrganicRankings(keywordId);
       res.json(rankings);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch organic rankings" });
     }
   });
@@ -626,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       res.json(enrichedPages);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching top pages:", error);
       res.status(500).json({ message: "Failed to fetch top pages" });
     }
@@ -637,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const directories = searchConsoleService.getNotifyVisitorsDirectories();
       res.json(directories);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching directories:", error);
       res.status(500).json({ message: "Failed to fetch directories" });
     }
@@ -701,7 +701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updated: updatedKeywords.length,
         message: `Updated ${updatedKeywords.length} keywords with Search Console data`
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Search Console sync error:', error);
       res.status(500).json({ 
         message: "Failed to sync with Search Console",
@@ -721,7 +721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const sites = await searchConsoleService.getSiteList();
       res.json(sites);
-    } catch (error) {
+    } catch (error: unknown) {
       res.status(500).json({ 
         message: "Failed to fetch Search Console sites",
         error: error instanceof Error ? error.message : String(error)
