@@ -83,8 +83,10 @@ const AppSidebar = () => {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg">
                 <div className="flex items-center gap-2">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-orange-600 text-white">
-                    <Bot className="size-4 animate-pulse" />
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white ai-robot-icon relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 to-transparent rounded-full"></div>
+                    <Bot className="size-4 relative z-10 drop-shadow-sm" />
+                    <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-cyan-300 rounded-full animate-ping"></div>
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">AI Ranking Tracker</span>
