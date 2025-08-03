@@ -33,7 +33,7 @@ export class NotificationService {
 
       const emailData = {
         to: [{ email }],
-        sender: { email: 'sikander@notifyvisitors.com', name: 'AI Ranking Tracker' },
+        sender: { email: 'jason@notifyvisitorsmail.com', name: 'AI Ranking Tracker' },
         subject: subject,
         htmlContent: html,
         textContent: `Brand Monitoring Alert\n\nBrand: ${data.brandName}\nKeyword: ${data.keyword}\nPlatform: ${data.platform}\nTrigger: ${data.triggerType}\nValue: ${data.currentValue}`
@@ -255,7 +255,7 @@ export class NotificationService {
 
       const emailData = {
         to: [{ email: data.email }],
-        sender: { email: 'sikander@notifyvisitors.com', name: 'AI Ranking Tracker' },
+        sender: { email: 'jason@notifyvisitorsmail.com', name: 'AI Ranking Tracker' },
         subject: subject,
         htmlContent: html,
         textContent: `Alert Created: ${data.alertName}\n\nBrand: ${data.brandName}\nKeyword: ${data.keyword}\nPlatforms: ${data.platforms.join(', ')}\n\nYou'll receive notifications when your brand is mentioned on these AI platforms.`
