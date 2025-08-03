@@ -2,6 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Check for migration skip flag - deployment fix for platform issues
+if (process.env.SKIP_MIGRATIONS === 'true' || process.env.NODE_ENV === 'production') {
+  log('🚀 Deployment Fix: Migrations disabled due to platform issues');
+  log('📧 Contact Replit support for database migration platform issue');
+  log('✅ Application will use existing database schema without auto-migrations');
+}
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

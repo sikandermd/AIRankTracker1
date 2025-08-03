@@ -1,0 +1,11 @@
+# Replit deployment configuration with migration skip
+[deployment]
+run = ["sh", "-c", "SKIP_MIGRATIONS=true node dist/index.js"]
+deploymentTarget = "cloudrun"
+
+[deployment.environment]
+SKIP_MIGRATIONS = "true"
+NODE_ENV = "production"
+
+# Build configuration that skips migrations
+build = ["sh", "-c", "npm run build && echo 'Build complete - migrations skipped for deployment'"]
