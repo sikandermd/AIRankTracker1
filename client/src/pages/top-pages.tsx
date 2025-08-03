@@ -34,6 +34,8 @@ import {
   BarChart3,
   Link as LinkIcon,
   ArrowUpRight,
+  Download,
+  Calendar
 } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -56,6 +58,7 @@ const TopPages = () => {
   const [sortBy, setSortBy] = useState("clicks");
   const [selectedDirectory, setSelectedDirectory] = useState("all");
   const [dateRange, setDateRange] = useState("30");
+  const [customDateRange, setCustomDateRange] = useState({ start: "", end: "" });
 
   const { data: directories } = useQuery<Array<{value: string, label: string}>>({
     queryKey: ['/api/notifyvisitors-directories'],
@@ -79,7 +82,7 @@ const TopPages = () => {
     page.url.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const sortedPages = filteredPages.sort((a, b) => {
+  const sortedPages = [...filteredPages].sort((a, b) => {
     switch (sortBy) {
       case "clicks":
         return b.clicks - a.clicks;
@@ -95,6 +98,40 @@ const TopPages = () => {
         return 0;
     }
   });
+
+  const totalPages = sortedPages.length;
+  const totalClicks = sortedPages.reduce((sum, page) => sum + page.clicks, 0);
+  const avgPosition = sortedPages.length > 0 
+    ? sortedPages.reduce((sum, page) => sum + page.position, 0) / sortedPages.length 
+    : 0;
+
+  // Export functionality
+  const exportToCSV = () => {
+    const headers = ['Page', 'Title', 'Clicks', 'Impressions', 'CTR %', 'Position', 'Internal Links', 'External Links', 'Backlinks'];
+    const csvData = sortedPages.map(page => [
+      page.url,
+      page.title,
+      page.clicks,
+      page.impressions,
+      page.ctr,
+      page.position,
+      page.internalLinks,
+      page.externalLinks,
+      page.backlinks
+    ]);
+    
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `top-pages-${selectedDirectory}-${dateRange}days.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -127,12 +164,26 @@ const TopPages = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pages</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Select value={selectedDirectory} onValueChange={setSelectedDirectory}>
+                <SelectTrigger className="w-24 h-6 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {directories?.map((dir) => (
+                    <SelectItem key={dir.value} value={dir.value}>
+                      {dir.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{topPages?.length || 0}</div>
+            <div className="text-2xl font-bold">{totalPages}</div>
             <p className="text-xs text-muted-foreground">
-              +12% from last month
+              {selectedDirectory === 'all' ? 'All sections' : `${selectedDirectory} section`}
             </p>
           </CardContent>
         </Card>
@@ -142,11 +193,9 @@ const TopPages = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(topPages?.reduce((sum, page) => sum + page.clicks, 0) || 0)}
-            </div>
+            <div className="text-2xl font-bold">{totalClicks.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              +8.5% from last month
+              Last {dateRange} days
             </p>
           </CardContent>
         </Card>
@@ -156,14 +205,9 @@ const TopPages = () => {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {topPages?.length 
-                ? (topPages.reduce((sum, page) => sum + page.position, 0) / topPages.length).toFixed(1)
-                : "0"
-              }
-            </div>
+            <div className="text-2xl font-bold">{avgPosition.toFixed(1)}</div>
             <p className="text-xs text-muted-foreground">
-              +2.3 improvement
+              Average position
             </p>
           </CardContent>
         </Card>
@@ -193,71 +237,108 @@ const TopPages = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <label className="text-sm font-medium">Search Pages</label>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            {/* Search Bar */}
+            <div className="w-full">
+              <label className="text-sm font-medium">Search Pages</label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by page title or URL..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+
+            {/* Responsive Filters Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium">Directory</label>
+                <Select value={selectedDirectory} onValueChange={setSelectedDirectory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {directories?.map((dir) => (
+                      <SelectItem key={dir.value} value={dir.value}>
+                        {dir.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Date Range</label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Last 7 days</SelectItem>
+                    <SelectItem value="30">Last 30 days</SelectItem>
+                    <SelectItem value="90">Last 90 days</SelectItem>
+                    <SelectItem value="180">Last 6 months</SelectItem>
+                    <SelectItem value="custom">Custom Range</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Sort By</label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clicks">Clicks</SelectItem>
+                    <SelectItem value="impressions">Impressions</SelectItem>
+                    <SelectItem value="ctr">CTR</SelectItem>
+                    <SelectItem value="position">Position</SelectItem>
+                    <SelectItem value="backlinks">Backlinks</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Export</label>
+                <Button 
+                  onClick={exportToCSV}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+              </div>
+            </div>
+
+            {/* Custom Date Range */}
+            {dateRange === 'custom' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <label className="text-sm font-medium">Start Date</label>
                   <Input
-                    placeholder="Search by page title or URL..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8"
+                    type="date"
+                    value={customDateRange.start}
+                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">End Date</label>
+                  <Input
+                    type="date"
+                    value={customDateRange.end}
+                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
                   />
                 </div>
               </div>
+            )}
+
+            <div className="text-sm text-muted-foreground">
+              Showing top pages from Search Console data for NotifyVisitors.com
             </div>
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Showing top pages from Search Console data for NotifyVisitors.com
-                </span>
-              </div>
-            <div className="w-48">
-              <label className="text-sm font-medium">Directory</label>
-              <Select value={selectedDirectory} onValueChange={setSelectedDirectory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {directories?.map((dir) => (
-                    <SelectItem key={dir.value} value={dir.value}>
-                      {dir.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-48">
-              <label className="text-sm font-medium">Date Range</label>
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Last 7 days</SelectItem>
-                  <SelectItem value="30">Last 30 days</SelectItem>
-                  <SelectItem value="90">Last 90 days</SelectItem>
-                  <SelectItem value="180">Last 6 months</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-48">
-              <label className="text-sm font-medium">Sort By</label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="clicks">Clicks</SelectItem>
-                  <SelectItem value="impressions">Impressions</SelectItem>
-                  <SelectItem value="ctr">CTR</SelectItem>
-                  <SelectItem value="position">Position</SelectItem>
-                  <SelectItem value="backlinks">Backlinks</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
           </div>
         </CardContent>
       </Card>
