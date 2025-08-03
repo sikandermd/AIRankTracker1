@@ -54,10 +54,24 @@ interface TopPage {
 const TopPages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("clicks");
-  const [selectedDomain, setSelectedDomain] = useState("all");
+  const [selectedDirectory, setSelectedDirectory] = useState("all");
+  const [dateRange, setDateRange] = useState("30");
+
+  const { data: directories } = useQuery<Array<{value: string, label: string}>>({
+    queryKey: ['/api/notifyvisitors-directories'],
+  });
 
   const { data: topPages, isLoading } = useQuery<TopPage[]>({
-    queryKey: ['/api/top-pages', selectedDomain, sortBy],
+    queryKey: ['/api/top-pages', selectedDirectory, dateRange],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        directory: selectedDirectory,
+        dateRange: dateRange
+      });
+      const response = await fetch(`/api/top-pages?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch top pages');
+      return response.json();
+    },
   });
 
   const filteredPages = topPages?.filter(page =>
@@ -178,18 +192,55 @@ const TopPages = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="text-sm font-medium">Search Pages</label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by page title or URL..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
+          <div className="space-y-4">
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="text-sm font-medium">Search Pages</label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by page title or URL..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
               </div>
+            </div>
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Showing top pages from Search Console data for NotifyVisitors.com
+                </span>
+              </div>
+            <div className="w-48">
+              <label className="text-sm font-medium">Directory</label>
+              <Select value={selectedDirectory} onValueChange={setSelectedDirectory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {directories?.map((dir) => (
+                    <SelectItem key={dir.value} value={dir.value}>
+                      {dir.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-48">
+              <label className="text-sm font-medium">Date Range</label>
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                  <SelectItem value="90">Last 90 days</SelectItem>
+                  <SelectItem value="180">Last 6 months</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="w-48">
               <label className="text-sm font-medium">Sort By</label>
@@ -206,18 +257,7 @@ const TopPages = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="w-48">
-              <label className="text-sm font-medium">Domain</label>
-              <Select value={selectedDomain} onValueChange={setSelectedDomain}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Domains</SelectItem>
-                  <SelectItem value="notifyvisitors.com">NotifyVisitors.com</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          </div>
           </div>
         </CardContent>
       </Card>

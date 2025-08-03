@@ -577,8 +577,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { searchConsoleService } = await import("./services/searchConsoleService");
       
+      const dateRange = parseInt(req.query.dateRange as string) || 30;
+      const directoryFilter = req.query.directory as string || 'all';
+      
+      console.log(`Fetching top pages for ${dateRange} days, directory: ${directoryFilter}`);
+      
       // Get top pages from Search Console
-      const topPagesData = await searchConsoleService.getTopPages();
+      const topPagesData = await searchConsoleService.getTopPages(
+        'https://www.notifyvisitors.com',
+        dateRange,
+        directoryFilter
+      );
       
       // Combine with page details for complete data
       const enrichedPages = await Promise.all(
@@ -605,6 +614,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching top pages:", error);
       res.status(500).json({ message: "Failed to fetch top pages" });
+    }
+  });
+
+  // Get NotifyVisitors directories
+  app.get("/api/notifyvisitors-directories", async (req, res) => {
+    try {
+      const { searchConsoleService } = await import("./services/searchConsoleService");
+      const directories = searchConsoleService.getNotifyVisitorsDirectories();
+      res.json(directories);
+    } catch (error) {
+      console.error("Error fetching directories:", error);
+      res.status(500).json({ message: "Failed to fetch directories" });
     }
   });
 
