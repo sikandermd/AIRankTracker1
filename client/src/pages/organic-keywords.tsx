@@ -56,7 +56,7 @@ export default function OrganicKeywords() {
 
   const syncMutation = useMutation({
     mutationFn: async () => {
-      const domains = [...new Set(organicKeywords?.map(kw => kw.domain) || [])];
+      const domains = Array.from(new Set(organicKeywords?.map(kw => kw.domain) || []));
       const keywords = organicKeywords?.map(kw => kw.keyword) || [];
       
       const response = await apiRequest('POST', '/api/organic-keywords/sync', {
