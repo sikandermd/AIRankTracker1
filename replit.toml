@@ -1,6 +1,6 @@
-# Alternative deployment configuration - No migrations
+# Enhanced deployment configuration - Migration bypass + Cache disable
 [deployment]
-run = ["node", "alternative-deploy.js"]
+run = ["node", "deployment-enhanced.js"]
 deploymentTarget = "cloudrun"
 
 [deployment.environment]
@@ -8,9 +8,12 @@ SKIP_ALL_MIGRATIONS = "true"
 NODE_ENV = "production"
 DRIZZLE_DISABLE = "true"
 DATABASE_MIGRATIONS = "false"
+DISABLE_PACKAGE_CACHE = "true"
+NPM_CONFIG_CACHE = "false"
+YARN_CACHE_FOLDER = "/tmp/yarn-cache"
 
-# Build without any database operations
-build = ["sh", "-c", "echo 'No-migration build starting...' && npm run build"]
+# Build without any database operations and cache bypass
+build = ["sh", "-c", "echo 'Enhanced deployment: Migration bypass + Cache disable' && DISABLE_PACKAGE_CACHE=true npm run build"]
 
 # Completely disable migration system
 [deployment.ignorePorts]
