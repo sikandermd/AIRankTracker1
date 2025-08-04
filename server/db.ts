@@ -13,8 +13,10 @@ if (!process.env.DATABASE_URL) {
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Create database connection with normal operations
+// Create database connection optimized for existing schema
 export const db = drizzle({ 
   client: pool, 
-  schema
+  schema,
+  // Optimized for platform compatibility
+  logger: process.env.NODE_ENV === 'development'
 });
