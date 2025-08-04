@@ -2,20 +2,21 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Mail, Plus, Trash2 } from "lucide-react";
+import { X, Mail, Plus, Trash2, ChevronDown } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 const alertSetupSchema = z.object({
   name: z.string().min(1, "Alert name is required"),
-  selectedBrands: z.array(z.string()).min(1, "At least one brand must be selected"),
-  customKeywords: z.array(z.string()).optional(),
+  selectedBrand: z.string().min(1, "Please select a brand"),
+  keyword: z.string().min(1, "Please enter a keyword"),
   platforms: z.object({
     chatgpt: z.boolean().default(false),
     claude: z.boolean().default(false),
@@ -40,7 +41,6 @@ interface AlertSetupModalProps {
 export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [newKeyword, setNewKeyword] = useState("");
 
   // Fetch brands
   const { data: brands = [] } = useQuery({
@@ -52,8 +52,8 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
     resolver: zodResolver(alertSetupSchema),
     defaultValues: {
       name: "",
-      selectedBrands: [],
-      customKeywords: [],
+      selectedBrand: "",
+      keyword: "",
       platforms: {
         chatgpt: false,
         claude: false,
@@ -97,8 +97,8 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
     // Convert form data to API format
     const alertData = {
       name: data.name,
-      brandId: data.selectedBrands[0], // For now, use first selected brand
-      keywordId: null, // Will be handled differently for custom keywords
+      brandId: data.selectedBrand,
+      keyword: data.keyword,
       platforms: Object.keys(data.platforms).filter(platform => data.platforms[platform as keyof typeof data.platforms]),
       triggerConditions: {
         mention_change: data.triggerConditions.newMentions,
@@ -110,26 +110,13 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
         email: data.email,
         discordWebhook: data.discordWebhook || null,
       },
-      customKeywords: data.customKeywords || [],
-      selectedBrands: data.selectedBrands,
       isActive: true,
     };
     
     createAlertMutation.mutate(alertData);
   };
 
-  const addCustomKeyword = () => {
-    if (newKeyword.trim()) {
-      const currentKeywords = form.getValues("customKeywords") || [];
-      form.setValue("customKeywords", [...currentKeywords, newKeyword.trim()]);
-      setNewKeyword("");
-    }
-  };
 
-  const removeCustomKeyword = (index: number) => {
-    const currentKeywords = form.getValues("customKeywords") || [];
-    form.setValue("customKeywords", currentKeywords.filter((_, i) => i !== index));
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
@@ -165,78 +152,43 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
             />
 
             {/* Brand Selection */}
-            <div className="space-y-3">
-              <FormLabel>Brand</FormLabel>
-              <div className="space-y-2">
-                {brands.map((brand: any) => (
-                  <FormField
-                    key={brand.id}
-                    control={form.control}
-                    name="selectedBrands"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(brand.id)}
-                            onCheckedChange={(checked) => {
-                              const currentSelection = field.value || [];
-                              if (checked) {
-                                field.onChange([...currentSelection, brand.id]);
-                              } else {
-                                field.onChange(currentSelection.filter((id: string) => id !== brand.id));
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
+            <FormField
+              control={form.control}
+              name="selectedBrand"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Brand</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select brand" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {(brands as any[]).map((brand: any) => (
+                        <SelectItem key={brand.id} value={brand.id}>
                           {brand.name}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
 
-            {/* Custom Keywords */}
-            <div className="space-y-3">
-              <FormLabel>Keyword</FormLabel>
-              <div className="space-y-2">
-                <div className="flex space-x-2">
-                  <Input
-                    value={newKeyword}
-                    onChange={(e) => setNewKeyword(e.target.value)}
-                    placeholder="Enter custom keyword"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addCustomKeyword();
-                      }
-                    }}
-                  />
-                  <Button type="button" onClick={addCustomKeyword} size="sm">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                
-                {/* Display added keywords */}
-                <div className="space-y-1">
-                  {(form.watch("customKeywords") || []).map((keyword, index) => (
-                    <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                      <span className="text-sm">{keyword}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCustomKeyword(index)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Keyword Input */}
+            <FormField
+              control={form.control}
+              name="keyword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Keyword</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Enter keyword to monitor" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             {/* AI Platforms */}
             <div className="space-y-3">
