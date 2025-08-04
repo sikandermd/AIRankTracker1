@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import AddKeywordModal from "./AddKeywordModal";
 import BulkUploadModal from "./BulkUploadModal";
-import AlertSetupModal from "./AlertSetupModal";
+import NewAlertSetupModal from "./NewAlertSetupModal";
 import GoogleSheetsImportModal from "./GoogleSheetsImportModal";
 import CSVImportModal from "./CSVImportModal";
 import { useToast } from "@/hooks/use-toast";
@@ -149,7 +149,7 @@ export default function QuickActions() {
         onClose={() => setShowBulkModal(false)} 
       />
 
-      <AlertSetupModal 
+      <NewAlertSetupModal 
         isOpen={showAlertModal} 
         onClose={() => setShowAlertModal(false)} 
       />
