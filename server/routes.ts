@@ -361,41 +361,242 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/alerts", async (req, res) => {
     try {
-      const insertAlertSchema = createInsertSchema(alerts).omit({
-        id: true,
-        createdAt: true,
-        updatedAt: true,
+      console.log("Alert creation request:", req.body);
+      
+      // Handle multi-brand, multi-keyword alert setup
+      const alertSetupSchema = z.object({
+        name: z.string().min(1, "Alert name is required"),
+        brandId: z.string().optional(), // Primary brand for backward compatibility
+        selectedBrands: z.array(z.string()).min(1, "At least one brand must be selected"),
+        customKeywords: z.array(z.string()).min(1, "At least one keyword must be added"),
+        platforms: z.array(z.string()).min(1, "At least one platform must be selected"),
+        triggerConditions: z.object({
+          mention_change: z.boolean().default(false),
+          position_improve: z.boolean().default(false),
+          new_platform: z.boolean().default(false),
+          mention_increase: z.boolean().default(false),
+        }),
+        notificationMethods: z.object({
+          email: z.string().email("Please enter a valid email"),
+          discordWebhook: z.string().url().optional().nullable(),
+        }),
+        isActive: z.boolean().default(true),
       });
       
-      const alertData = insertAlertSchema.parse(req.body);
-      const alert = await storage.createAlert(alertData);
+      const validatedData = alertSetupSchema.parse(req.body);
+      console.log("Validated alert data:", validatedData);
       
-      // Send alert creation confirmation email
-      if (alert.notificationMethods && alert.notificationMethods.email) {
-        try {
-          const brand = await storage.getBrand(alert.brandId);
-          const keyword = await storage.getKeyword(alert.keywordId);
+      // Create alerts for each brand-keyword combination
+      const createdAlerts = [];
+      
+      for (const brandId of validatedData.selectedBrands) {
+        for (const keyword of validatedData.customKeywords) {
+          // First create the keyword if it doesn't exist
+          let keywordRecord;
+          try {
+            keywordRecord = await storage.createKeyword({
+              keyword: keyword,
+              brandId: brandId,
+              category: "alert-keyword", // Special category for alert keywords
+              trackGpt: validatedData.platforms.includes('gpt') || validatedData.platforms.includes('chatgpt'),
+              trackClaude: validatedData.platforms.includes('claude'),
+              trackGemini: validatedData.platforms.includes('gemini'),
+              trackPerplexity: validatedData.platforms.includes('perplexity'),
+            });
+          } catch (keywordError) {
+            // If keyword already exists, find it
+            const existingKeywords = await storage.getAllKeywords();
+            keywordRecord = existingKeywords.find(kw => 
+              kw.keyword.toLowerCase() === keyword.toLowerCase() && 
+              kw.brandId === brandId
+            );
+            
+            if (!keywordRecord) {
+              console.error(`Could not create or find keyword: ${keyword} for brand: ${brandId}`);
+              continue;
+            }
+          }
           
-          await notificationService.sendAlertCreationEmail({
-            email: alert.notificationMethods.email,
-            alertName: alert.name,
-            brandName: brand?.name || 'Unknown Brand',
-            keyword: keyword?.keyword || 'Unknown Keyword',
-            platforms: alert.platforms
-          });
-        } catch (emailError) {
-          console.error("Failed to send alert creation email:", emailError);
-          // Don't fail the alert creation if email fails
+          // Create the alert
+          const alertData = {
+            name: `${validatedData.name} - ${keyword}`,
+            brandId: brandId,
+            keywordId: keywordRecord.id,
+            platforms: validatedData.platforms,
+            triggerConditions: validatedData.triggerConditions,
+            notificationMethods: validatedData.notificationMethods,
+            isActive: validatedData.isActive,
+          };
+          
+          try {
+            const alert = await storage.createAlert(alertData);
+            createdAlerts.push(alert);
+            console.log(`Created alert for brand: ${brandId}, keyword: ${keyword}`);
+            
+            // Send alert creation confirmation email
+            if (alert.notificationMethods && alert.notificationMethods.email) {
+              try {
+                const brand = await storage.getBrand(alert.brandId);
+                
+                await notificationService.sendAlertCreationEmail({
+                  email: alert.notificationMethods.email,
+                  alertName: alert.name,
+                  brandName: brand?.name || 'Unknown Brand',
+                  keyword: keyword,
+                  platforms: alert.platforms
+                });
+              } catch (emailError) {
+                console.error("Failed to send alert creation email:", emailError);
+                // Don't fail the alert creation if email fails
+              }
+            }
+          } catch (alertError) {
+            console.error(`Failed to create alert for brand: ${brandId}, keyword: ${keyword}:`, alertError);
+          }
         }
       }
       
-      res.status(201).json(alert);
+      if (createdAlerts.length === 0) {
+        return res.status(400).json({ 
+          error: "No alerts were created. Please check your data.",
+          details: "Failed to create alerts for the provided brands and keywords"
+        });
+      }
+      
+      console.log(`Successfully created ${createdAlerts.length} alerts`);
+      res.status(201).json({
+        message: `Successfully created ${createdAlerts.length} alerts`,
+        alerts: createdAlerts,
+        count: createdAlerts.length
+      });
+      
     } catch (error: unknown) {
       console.error("Error creating alert:", error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: "Invalid alert data", details: error.errors });
       } else {
-        res.status(500).json({ error: "Failed to create alert" });
+        res.status(500).json({ error: "Failed to create alert", details: error instanceof Error ? error.message : String(error) });
+      }
+    }
+  });
+
+  // New multi-brand multi-keyword alert creation endpoint
+  app.post("/api/alerts/multi", async (req, res) => {
+    try {
+      console.log("Multi-brand alert creation request:", req.body);
+      
+      // Handle multi-brand, multi-keyword alert setup
+      const alertSetupSchema = z.object({
+        name: z.string().min(1, "Alert name is required"),
+        selectedBrands: z.array(z.string()).min(1, "At least one brand must be selected"),
+        customKeywords: z.array(z.string()).min(1, "At least one keyword must be added"),
+        platforms: z.array(z.string()).min(1, "At least one platform must be selected"),
+        triggerConditions: z.object({
+          mention_change: z.boolean().default(false),
+          position_improve: z.boolean().default(false),
+          new_platform: z.boolean().default(false),
+          mention_increase: z.boolean().default(false),
+        }),
+        notificationMethods: z.object({
+          email: z.string().email("Please enter a valid email"),
+          discordWebhook: z.string().url().optional().nullable(),
+        }),
+        isActive: z.boolean().default(true),
+      });
+      
+      const validatedData = alertSetupSchema.parse(req.body);
+      console.log("Validated multi-alert data:", validatedData);
+      
+      // Create alerts for each brand-keyword combination
+      const createdAlerts = [];
+      
+      for (const brandId of validatedData.selectedBrands) {
+        for (const keyword of validatedData.customKeywords) {
+          // First create the keyword if it doesn't exist
+          let keywordRecord;
+          try {
+            keywordRecord = await storage.createKeyword({
+              keyword: keyword,
+              brandId: brandId,
+              category: "alert-keyword", // Special category for alert keywords
+              trackGpt: validatedData.platforms.includes('gpt') || validatedData.platforms.includes('chatgpt'),
+              trackClaude: validatedData.platforms.includes('claude'),
+              trackGemini: validatedData.platforms.includes('gemini'),
+              trackPerplexity: validatedData.platforms.includes('perplexity'),
+            });
+          } catch (keywordError) {
+            // If keyword already exists, find it
+            const existingKeywords = await storage.getAllKeywords();
+            keywordRecord = existingKeywords.find(kw => 
+              kw.keyword.toLowerCase() === keyword.toLowerCase() && 
+              kw.brandId === brandId
+            );
+            
+            if (!keywordRecord) {
+              console.error(`Could not create or find keyword: ${keyword} for brand: ${brandId}`);
+              continue;
+            }
+          }
+          
+          // Create the alert
+          const alertData = {
+            name: `${validatedData.name} - ${keyword}`,
+            brandId: brandId,
+            keywordId: keywordRecord.id,
+            platforms: validatedData.platforms,
+            triggerConditions: validatedData.triggerConditions,
+            notificationMethods: validatedData.notificationMethods,
+            isActive: validatedData.isActive,
+          };
+          
+          try {
+            const alert = await storage.createAlert(alertData);
+            createdAlerts.push(alert);
+            console.log(`Created alert for brand: ${brandId}, keyword: ${keyword}`);
+            
+            // Send alert creation confirmation email
+            if (alert.notificationMethods && alert.notificationMethods.email) {
+              try {
+                const brand = await storage.getBrand(alert.brandId);
+                
+                await notificationService.sendAlertCreationEmail({
+                  email: alert.notificationMethods.email,
+                  alertName: alert.name,
+                  brandName: brand?.name || 'Unknown Brand',
+                  keyword: keyword,
+                  platforms: alert.platforms
+                });
+              } catch (emailError) {
+                console.error("Failed to send alert creation email:", emailError);
+                // Don't fail the alert creation if email fails
+              }
+            }
+          } catch (alertError) {
+            console.error(`Failed to create alert for brand: ${brandId}, keyword: ${keyword}:`, alertError);
+          }
+        }
+      }
+      
+      if (createdAlerts.length === 0) {
+        return res.status(400).json({ 
+          error: "No alerts were created. Please check your data.",
+          details: "Failed to create alerts for the provided brands and keywords"
+        });
+      }
+      
+      console.log(`Successfully created ${createdAlerts.length} multi-brand alerts`);
+      res.status(201).json({
+        message: `Successfully created ${createdAlerts.length} alerts`,
+        alerts: createdAlerts,
+        count: createdAlerts.length
+      });
+      
+    } catch (error: unknown) {
+      console.error("Error creating multi-brand alert:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid alert data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create alert", details: error instanceof Error ? error.message : String(error) });
       }
     }
   });

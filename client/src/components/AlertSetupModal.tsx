@@ -73,7 +73,7 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
   });
 
   const createAlertMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("/api/alerts", "POST", data),
+    mutationFn: (data: any) => apiRequest("/api/alerts/multi", { method: "POST", body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
       toast({
