@@ -14,6 +14,7 @@ import {
   Bot,
   Mail,
   Brain,
+  Lightbulb,
 } from "lucide-react";
 import {
   Sidebar,
@@ -70,6 +71,7 @@ const AppSidebar = () => {
     { path: "/keywords", label: "Keywords", icon: Tag },
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
     { path: "/ml-recommendations", label: "AI Recommendations", icon: Brain },
+    { path: "/ai-recommendations", label: "AI Page Analysis", icon: Lightbulb },
     { path: "/alerts", label: "Alerts", icon: Bell },
     { path: "/combined-alerts", label: "Combined Alerts", icon: Mail },
   ];

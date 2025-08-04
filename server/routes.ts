@@ -1138,5 +1138,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-Powered Page Analysis and SEO Recommendations
+  app.post("/api/analyze-pages", async (req, res) => {
+    try {
+      const { searchConsoleAnalysisService } = await import("./services/searchConsoleAnalysisService");
+      const { siteUrl, days = 30 } = req.body;
+      
+      if (!siteUrl) {
+        return res.status(400).json({ error: "Site URL is required" });
+      }
+      
+      console.log(`Starting AI analysis for ${siteUrl} over ${days} days...`);
+      const analysis = await searchConsoleAnalysisService.generatePageRecommendations(siteUrl, days);
+      
+      res.json({
+        success: true,
+        data: analysis,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: unknown) {
+      console.error("Page analysis error:", error);
+      res.status(500).json({ 
+        error: "Failed to analyze pages", 
+        details: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  app.post("/api/analyze-single-page", async (req, res) => {
+    try {
+      const { searchConsoleAnalysisService } = await import("./services/searchConsoleAnalysisService");
+      const { siteUrl, pageUrl } = req.body;
+      
+      if (!siteUrl || !pageUrl) {
+        return res.status(400).json({ error: "Site URL and Page URL are required" });
+      }
+      
+      console.log(`Analyzing single page: ${pageUrl} for site: ${siteUrl}`);
+      const recommendation = await searchConsoleAnalysisService.getRecommendationsForPage(siteUrl, pageUrl);
+      
+      res.json({
+        success: true,
+        data: recommendation,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: unknown) {
+      console.error("Single page analysis error:", error);
+      res.status(500).json({ 
+        error: "Failed to analyze page", 
+        details: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // AI Recommendations Dashboard Data
+  app.get("/api/ai-recommendations/summary", async (req, res) => {
+    try {
+      const { pageAnalysisService } = await import("./services/pageAnalysisService");
+      
+      // Get sample recommendations for dashboard
+      const sampleData = {
+        totalPagesAnalyzed: 0,
+        highPriorityIssues: 0,
+        averageScore: 0,
+        topIssueCategories: [
+          { category: "Title & Meta Optimization", count: 0 },
+          { category: "Content Authority", count: 0 },
+          { category: "Featured Snippet Optimization", count: 0 }
+        ],
+        recentAnalyses: []
+      };
+      
+      res.json(sampleData);
+      
+    } catch (error: unknown) {
+      console.error("AI recommendations summary error:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch AI recommendations summary"
+      });
+    }
+  });
+
   return httpServer;
 }
