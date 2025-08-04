@@ -48,6 +48,9 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
     queryKey: ["/api/brands"],
     enabled: isOpen,
   });
+  
+  // Debug: Log brands data
+  console.log("AlertSetupModal - Brands loaded:", brands?.length, brands);
 
   const form = useForm<z.infer<typeof alertSetupSchema>>({
     resolver: zodResolver(alertSetupSchema),
@@ -169,14 +172,14 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
         <DialogHeader>
           <div className="flex justify-between items-center">
             <DialogTitle className="text-lg font-semibold text-gray-900">
-              Create Brand Alert
+              Create Multi-Brand Alert (Updated)
             </DialogTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="w-4 h-4" />
             </Button>
           </div>
           <p className="text-sm text-gray-600 mt-2">
-            Set up automated notifications for brand visibility changes
+            ✅ NEW: Select multiple brands and add multiple keywords for comprehensive monitoring
           </p>
         </DialogHeader>
 
