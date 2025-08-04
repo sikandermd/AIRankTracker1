@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema, insertOrganicKeywordSchema, alerts } from "@shared/schema";
+import { MLRecommendationEngine } from './services/mlRecommendationEngine';
 import { createInsertSchema } from "drizzle-zod";
 import { trackingService } from "./services/trackingService.js";
 import { googleSheetsService } from "./services/googleSheetsService.js";
@@ -841,6 +842,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to check position", 
         error: error instanceof Error ? error.message : String(error) 
       });
+    }
+  });
+
+  // Initialize ML Recommendation Engine
+  const mlEngine = new MLRecommendationEngine(storage);
+
+  // ML Recommendation Routes
+  app.post("/api/ml/generate-recommendations", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session/auth
+      const recommendations = await mlEngine.generateRecommendations(userId);
+      res.json(recommendations);
+    } catch (error: unknown) {
+      console.error('Error generating recommendations:', error);
+      res.status(500).json({ message: "Failed to generate recommendations" });
+    }
+  });
+
+  app.get("/api/ml/recommendations", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session/auth
+      const { type, priority, status } = req.query;
+      const filters = {
+        type: type as string || undefined,
+        priority: priority as string || undefined,
+        status: status as string || undefined,
+      };
+      const recommendations = await mlEngine.getRecommendations(userId, filters);
+      res.json(recommendations);
+    } catch (error: unknown) {
+      console.error('Error fetching recommendations:', error);
+      res.status(500).json({ message: "Failed to fetch recommendations" });
+    }
+  });
+
+  app.patch("/api/ml/recommendations/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      if (!['pending', 'in_progress', 'completed', 'dismissed'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+
+      const recommendation = await mlEngine.updateRecommendationStatus(id, status);
+      res.json(recommendation);
+    } catch (error: unknown) {
+      console.error('Error updating recommendation:', error);
+      res.status(500).json({ message: "Failed to update recommendation" });
+    }
+  });
+
+  app.get("/api/ml/insights", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session/auth
+      const insights = await mlEngine.getInsights(userId);
+      res.json(insights);
+    } catch (error: unknown) {
+      console.error('Error fetching insights:', error);
+      res.status(500).json({ message: "Failed to fetch insights" });
+    }
+  });
+
+  app.post("/api/ml/user-profile", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session/auth
+      const profileData = { ...req.body, userId };
+      
+      const existingProfile = await storage.getUserProfile(userId);
+      let profile;
+      
+      if (existingProfile) {
+        profile = await storage.updateUserProfile(userId, profileData);
+      } else {
+        profile = await storage.createUserProfile(profileData);
+      }
+      
+      res.json(profile);
+    } catch (error: unknown) {
+      console.error('Error saving user profile:', error);
+      res.status(500).json({ message: "Failed to save user profile" });
+    }
+  });
+
+  app.get("/api/ml/user-profile", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session/auth
+      const profile = await storage.getUserProfile(userId);
+      res.json(profile);
+    } catch (error: unknown) {
+      console.error('Error fetching user profile:', error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
     }
   });
 

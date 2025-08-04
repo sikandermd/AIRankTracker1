@@ -303,3 +303,135 @@ export type InsertOrganicKeyword = z.infer<typeof insertOrganicKeywordSchema>;
 
 export type OrganicRanking = typeof organicRankings.$inferSelect;
 export type InsertOrganicRanking = z.infer<typeof insertOrganicRankingSchema>;
+
+
+// ML-Powered SEO Recommendation System Tables
+export const userProfiles = pgTable("user_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  industry: text("industry"),
+  businessSize: text("business_size"), // startup, small, medium, enterprise
+  primaryGoals: text("primary_goals").array(), // ['brand_awareness', 'lead_generation', 'sales']
+  targetAudience: jsonb("target_audience").$type<{
+    demographics: string[];
+    interests: string[];
+    geoLocations: string[];
+  }>(),
+  competitorBrands: text("competitor_brands").array().default([]),
+  monthlyBudget: integer("monthly_budget"),
+  preferredChannels: text("preferred_channels").array(), // ['organic', 'paid', 'social']
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const seoRecommendations = pgTable("seo_recommendations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  brandId: varchar("brand_id").references(() => brands.id),
+  type: text("type").notNull(), // 'keyword', 'content', 'technical', 'competitive'
+  priority: text("priority").notNull(), // 'high', 'medium', 'low'
+  category: text("category").notNull(), // 'ai_visibility', 'organic_ranking', 'competitor_gap'
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  actionItems: jsonb("action_items").$type<{
+    task: string;
+    effort: 'low' | 'medium' | 'high';
+    impact: 'low' | 'medium' | 'high';
+    timeframe: string;
+  }[]>().notNull(),
+  expectedImpact: jsonb("expected_impact").$type<{
+    metric: string;
+    currentValue: number;
+    projectedValue: number;
+    confidence: number; // 0-100
+  }[]>(),
+  relatedKeywords: text("related_keywords").array().default([]),
+  confidenceScore: integer("confidence_score").notNull(), // 0-100
+  status: text("status").default('pending'), // 'pending', 'in_progress', 'completed', 'dismissed'
+  implementedAt: timestamp("implemented_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("recommendation_user_idx").on(table.userId),
+  typeIdx: index("recommendation_type_idx").on(table.type),
+  priorityIdx: index("recommendation_priority_idx").on(table.priority),
+  statusIdx: index("recommendation_status_idx").on(table.status),
+}));
+
+export const mlInsights = pgTable("ml_insights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  brandId: varchar("brand_id").references(() => brands.id),
+  insightType: text("insight_type").notNull(), // 'trend', 'anomaly', 'opportunity', 'threat'
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  data: jsonb("data").$type<{
+    metrics: Record<string, number>;
+    trends: Array<{
+      period: string;
+      value: number;
+      change: number;
+    }>;
+    patterns: string[];
+  }>().notNull(),
+  confidence: integer("confidence").notNull(), // 0-100
+  impact: text("impact").notNull(), // 'high', 'medium', 'low'
+  actionability: text("actionability").notNull(), // 'immediate', 'short_term', 'long_term'
+  relatedRecommendations: text("related_recommendations").array().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("insight_user_idx").on(table.userId),
+  typeIdx: index("insight_type_idx").on(table.insightType),
+  impactIdx: index("insight_impact_idx").on(table.impact),
+}));
+
+export const performanceMetrics = pgTable("performance_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  brandId: varchar("brand_id").references(() => brands.id),
+  metricType: text("metric_type").notNull(), // 'ai_visibility', 'organic_ranking', 'traffic', 'conversions'
+  metricName: text("metric_name").notNull(),
+  value: integer("value").notNull(),
+  previousValue: integer("previous_value"),
+  changePercent: integer("change_percent"),
+  period: text("period").notNull(), // 'daily', 'weekly', 'monthly'
+  date: timestamp("date").notNull(),
+  metadata: jsonb("metadata").$type<Record<string, any>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("metric_user_idx").on(table.userId),
+  typeIdx: index("metric_type_idx").on(table.metricType),
+  dateIdx: index("metric_date_idx").on(table.date),
+}));
+
+// ML Schema Insert/Select Types
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSeoRecommendationSchema = createInsertSchema(seoRecommendations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMlInsightSchema = createInsertSchema(mlInsights).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPerformanceMetricSchema = createInsertSchema(performanceMetrics).omit({
+  id: true,  
+  createdAt: true,
+});
+
+export type InsertUserProfile = typeof userProfiles.$inferInsert;
+export type SelectUserProfile = typeof userProfiles.$inferSelect;
+export type InsertSeoRecommendation = typeof seoRecommendations.$inferInsert;
+export type SelectSeoRecommendation = typeof seoRecommendations.$inferSelect;
+export type InsertMlInsight = typeof mlInsights.$inferInsert;
+export type SelectMlInsight = typeof mlInsights.$inferSelect;
+export type InsertPerformanceMetric = typeof performanceMetrics.$inferInsert;
+export type SelectPerformanceMetric = typeof performanceMetrics.$inferSelect;
