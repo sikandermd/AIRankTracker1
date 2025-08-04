@@ -3,10 +3,10 @@ import { execSync } from 'child_process';
 
 console.log('🚀 Alternative Deployment: No Migration Strategy');
 
-// Set environment to completely bypass migration system
-process.env.SKIP_ALL_MIGRATIONS = 'true';
+// Set environment for normal deployment
+process.env.SKIP_ALL_MIGRATIONS = 'false';
 process.env.NODE_ENV = 'production';
-process.env.DRIZZLE_DISABLE = 'true';
+process.env.DRIZZLE_DISABLE = 'false';
 
 // Remove migration directory temporarily
 console.log('📁 Temporarily removing migration triggers...');

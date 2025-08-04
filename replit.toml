@@ -1,20 +1,20 @@
-# Enhanced deployment configuration - Migration bypass + Cache disable
+# Normal deployment configuration - Migrations enabled + Cache optimized
 [deployment]
 run = ["node", "deployment-enhanced.js"]
 deploymentTarget = "cloudrun"
 
 [deployment.environment]
-SKIP_ALL_MIGRATIONS = "true"
+SKIP_ALL_MIGRATIONS = "false"
 NODE_ENV = "production"
-DRIZZLE_DISABLE = "true"
-DATABASE_MIGRATIONS = "false"
+DRIZZLE_DISABLE = "false"
+DATABASE_MIGRATIONS = "true"
 DISABLE_PACKAGE_CACHE = "true"
 NPM_CONFIG_CACHE = "false"
 YARN_CACHE_FOLDER = "/tmp/yarn-cache"
 
-# Build without any database operations and cache bypass
-build = ["sh", "-c", "echo 'Enhanced deployment: Migration bypass + Cache disable' && DISABLE_PACKAGE_CACHE=true npm run build"]
+# Build with normal database operations and cache bypass
+build = ["sh", "-c", "echo 'Normal deployment with cache optimization' && DISABLE_PACKAGE_CACHE=true npm run build"]
 
-# Completely disable migration system
+# Normal deployment with migrations enabled
 [deployment.ignorePorts]
 value = false

@@ -7,10 +7,10 @@ import { existsSync } from 'fs';
 console.log('🚀 Enhanced Deployment: Platform Issue Bypass');
 
 // Set comprehensive environment variables
-process.env.SKIP_ALL_MIGRATIONS = 'true';
+process.env.SKIP_ALL_MIGRATIONS = 'false';
 process.env.NODE_ENV = 'production';
-process.env.DRIZZLE_DISABLE = 'true';
-process.env.DATABASE_MIGRATIONS = 'false';
+process.env.DRIZZLE_DISABLE = 'false';
+process.env.DATABASE_MIGRATIONS = 'true';
 process.env.DISABLE_PACKAGE_CACHE = 'true';
 process.env.NPM_CONFIG_CACHE = 'false';
 process.env.YARN_CACHE_FOLDER = '/tmp/yarn-cache';
@@ -27,6 +27,7 @@ try {
 console.log('🔍 Environment verification:');
 console.log('- SKIP_ALL_MIGRATIONS:', process.env.SKIP_ALL_MIGRATIONS);
 console.log('- DRIZZLE_DISABLE:', process.env.DRIZZLE_DISABLE);
+console.log('- DATABASE_MIGRATIONS:', process.env.DATABASE_MIGRATIONS);
 console.log('- DISABLE_PACKAGE_CACHE:', process.env.DISABLE_PACKAGE_CACHE);
 
 try {

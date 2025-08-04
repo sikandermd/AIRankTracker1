@@ -13,9 +13,8 @@ if (!process.env.DATABASE_URL) {
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Create database connection without schema introspection to avoid migrations
+// Create database connection with normal operations
 export const db = drizzle({ 
   client: pool, 
-  schema,
-  logger: false // Disable logging to avoid migration checks
+  schema
 });
