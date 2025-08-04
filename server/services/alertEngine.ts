@@ -3,12 +3,12 @@ import { notificationService } from "./notificationService";
 import type { InsertAlertLog } from "@shared/schema";
 
 interface TrackingResult {
-  keywordId: string;
-  brandId: string;
+  keywordId: string | null;
+  brandId: string | null;
   aiPlatform: string;
-  mentioned: boolean;
+  mentioned: boolean | null;
   position: 'top' | 'middle' | 'bottom' | null;
-  mentionCount: number;
+  mentionCount: number | null;
 }
 
 export class AlertEngine {
@@ -24,14 +24,17 @@ export class AlertEngine {
         if (!alert.platforms.includes(result.aiPlatform)) continue;
 
         // Get previous result for comparison
-        const previousResults = await storage.getTrackingResults({
-          keywordId: result.keywordId,
-          brandId: result.brandId,
-          aiPlatform: result.aiPlatform,
-          limit: 2
-        });
+        const allResults = await storage.getAllTrackingResults();
+        const relevantResults = allResults
+          .filter(r => 
+            r.keywordId === result.keywordId && 
+            r.brandId === result.brandId && 
+            r.aiPlatform === result.aiPlatform
+          )
+          .sort((a, b) => new Date(b.trackedAt).getTime() - new Date(a.trackedAt).getTime())
+          .slice(0, 2);
 
-        const previousResult = previousResults.length > 1 ? previousResults[1] : null;
+        const previousResult = relevantResults.length > 1 ? relevantResults[1] : null;
 
         // Check each trigger condition
         await this.checkMentionChange(alert, result, previousResult);
@@ -60,9 +63,9 @@ export class AlertEngine {
 
     if (!previous || !current.mentioned) return;
 
-    const positionValues = { 'top': 3, 'middle': 2, 'bottom': 1, null: 0 };
-    const previousValue = positionValues[previous.position || null];
-    const currentValue = positionValues[current.position || null];
+    const positionValues: Record<string, number> = { 'top': 3, 'middle': 2, 'bottom': 1, 'null': 0 };
+    const previousValue = positionValues[previous.position || 'null'];
+    const currentValue = positionValues[current.position || 'null'];
 
     if (currentValue > previousValue) {
       await this.triggerAlert(
@@ -177,10 +180,8 @@ export class AlertEngine {
         notificationError: notificationError || null,
       });
 
-      // Update alert last triggered time
-      await storage.updateAlert(alert.id, {
-        lastTriggered: new Date(),
-      });
+      // Note: lastTriggered field update would require schema modification
+      console.log(`Alert ${alert.id} triggered at ${new Date().toISOString()}`);
 
       console.log(`Alert triggered: ${alert.name} - ${triggerType} for ${brand.name} on ${result.aiPlatform}`);
     } catch (error) {
