@@ -1,5 +1,5 @@
-import AlertManager from "@/components/AlertManager";
+import AlertManagerFixed from "@/components/AlertManagerFixed";
 
 export default function AlertsPage() {
-  return <AlertManager />;
+  return <AlertManagerFixed />;
 }

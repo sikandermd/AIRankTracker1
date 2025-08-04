@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Mail, MessageSquare, Bell, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Alert, Brand, Keyword } from "@shared/schema";
+import NewAlertSetupModal from "./NewAlertSetupModal";
 
 interface CreateAlertFormData {
   name: string;
@@ -34,6 +35,7 @@ export default function AlertManager() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isNewAlertModalOpen, setIsNewAlertModalOpen] = useState(false);
   
   const [formData, setFormData] = useState<CreateAlertFormData>({
     name: "",
@@ -184,13 +186,14 @@ export default function AlertManager() {
           </p>
         </div>
         
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Alert
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-3">
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Single Alert
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create Brand Alert</DialogTitle>
@@ -374,6 +377,11 @@ export default function AlertManager() {
             </form>
           </DialogContent>
         </Dialog>
+        
+        <Button onClick={() => setIsNewAlertModalOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          🚀 Multi-Brand Alert
+        </Button>
       </div>
 
       {alerts.length === 0 ? (
@@ -483,6 +491,12 @@ export default function AlertManager() {
           ))}
         </div>
       )}
+
+      
+      <NewAlertSetupModal 
+        isOpen={isNewAlertModalOpen} 
+        onClose={() => setIsNewAlertModalOpen(false)} 
+      />
     </div>
   );
 }
