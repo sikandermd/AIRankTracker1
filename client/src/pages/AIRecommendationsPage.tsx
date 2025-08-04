@@ -259,8 +259,24 @@ export default function AIRecommendationsPage() {
                 <p className="text-gray-500 dark:text-gray-400 mb-4">
                   Start your first AI analysis to get personalized SEO recommendations
                 </p>
+                {analyzePagesMutation.error && (
+                  <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                      <div className="text-left">
+                        <h4 className="font-medium text-yellow-800 mb-1">Search Console Setup Required</h4>
+                        <p className="text-sm text-yellow-700 mb-2">
+                          For real Search Console data, add your Google Service Account key to Secrets.
+                        </p>
+                        <p className="text-xs text-yellow-600">
+                          Demo mode will show AI analysis with sample data for testing.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <Button onClick={handleBulkAnalysis} disabled={analyzePagesMutation.isPending}>
-                  {analyzePagesMutation.isPending ? "Analyzing..." : "Start Analysis"}
+                  {analyzePagesMutation.isPending ? "Analyzing..." : "🧠 Start AI Analysis (Demo Mode)"}
                 </Button>
               </div>
             ) : (

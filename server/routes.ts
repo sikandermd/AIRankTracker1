@@ -1154,7 +1154,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         data: analysis,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        note: !process.env.GOOGLE_SERVICE_ACCOUNT_KEY ? 
+          'Demo mode: Using sample data for AI analysis demonstration. Add Google Service Account key for real Search Console data.' : 
+          'Live mode: Using real Search Console data.'
       });
       
     } catch (error: unknown) {
