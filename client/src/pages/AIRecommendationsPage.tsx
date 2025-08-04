@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Brain, TrendingUp, FileText, Lightbulb, Search, BarChart3 } from "lucide-react";
+import { AlertCircle, Brain, TrendingUp, FileText, Lightbulb, Search, BarChart3, Zap } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,17 @@ interface AIRecommendation {
   pageUrl: string;
   pageType: 'blog' | 'landing' | 'product' | 'category';
   overallScore: number;
+  aiRankingFactors?: {
+    factor: string;
+    score: number;
+    currentState: string;
+    recommendation: string;
+    priority: 'high' | 'medium' | 'low';
+    expectedImpact: string;
+  }[];
+  topStrengths?: string[];
+  criticalIssues?: string[];
+  quickWins?: string[];
   recommendations: {
     category: string;
     priority: 'high' | 'medium' | 'low';
@@ -23,7 +34,7 @@ interface AIRecommendation {
     expectedImpact: string;
     aiRankingFactor: string;
   }[];
-  aiOptimizationSuggestions: {
+  aiOptimizationSuggestions?: {
     contentStructure: string[];
     semanticOptimization: string[];
     userIntent: string[];

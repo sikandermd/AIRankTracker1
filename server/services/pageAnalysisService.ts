@@ -21,6 +21,17 @@ interface AIRecommendation {
   pageUrl: string;
   pageType: 'blog' | 'landing' | 'product' | 'category';
   overallScore: number;
+  aiRankingFactors: {
+    factor: string;
+    score: number;
+    currentState: string;
+    recommendation: string;
+    priority: 'high' | 'medium' | 'low';
+    expectedImpact: string;
+  }[];
+  topStrengths: string[];
+  criticalIssues: string[];
+  quickWins: string[];
   recommendations: {
     category: string;
     priority: 'high' | 'medium' | 'low';
@@ -29,12 +40,6 @@ interface AIRecommendation {
     expectedImpact: string;
     aiRankingFactor: string;
   }[];
-  aiOptimizationSuggestions: {
-    contentStructure: string[];
-    semanticOptimization: string[];
-    userIntent: string[];
-    competitiveAdvantage: string[];
-  };
 }
 
 export class PageAnalysisService {
@@ -54,17 +59,49 @@ export class PageAnalysisService {
         - Clicks: ${pageData.clicks}
         - Impressions: ${pageData.impressions}
         
-        Provide comprehensive AI SEO recommendations focusing on:
-        1. How AI models understand and rank this content
-        2. Semantic search optimization
-        3. Entity-based SEO
-        4. User intent alignment
-        5. Content depth and expertise signals
-        6. Featured snippet optimization
-        7. Voice search optimization
-        8. Content freshness and authority signals
+        You are a Page Quality Auditor designed to assess webpages for their potential to rank or be cited by AI/LLM tools (ChatGPT, Perplexity, Gemini, Claude, etc.).
+
+        Evaluate the page on these 20 AI-ranking factors with scores (0-10) and actionable recommendations:
+
+        1. Schema Markup (FAQPage, HowTo, etc.)
+        2. E-E-A-T: Experience, Expertise, Authority, Trust
+        3. Conversational/Natural-Language Tone (question/answer format)
+        4. Technical SEO & Performance (page speed, crawlability, mobile UX)
+        5. Accuracy & Query Intent Relevance
+        6. Clarity & Comprehensiveness (bullets, headings, short paragraphs)
+        7. Freshness/Date Recency
+        8. Semantic Relevance/Intent Recognition (LSI, topic clustering)
+        9. User Engagement Signals (dwell time, bounce, upvotes if available)
+        10. Citation Depth & Source Quality
+        11. Internal Linking (hub/cluster structure)
+        12. Content Depth & Original Insights
+        13. Avoidance of Keyword Stuffing/Spammy Phrasing
+        14. Topical Focus (niche relevance to query)
+        15. Brand Ubiquity & External Mentions (social, forums, news)
+        16. Entity Signals/Knowledge Graph Markers
+        17. Retrieval-Augmented Generation (RAG)-friendly structure
+        18. Multi-format Layout (tables, visuals, quick facts)
+        19. Correct HTML Tag Hierarchy (<h1>, <h2>, etc.)
+        20. Human-Feedback Signals (upvote/downvote ratio if available)
         
-        Return analysis in JSON format with specific, actionable recommendations.
+        Return analysis in this JSON format:
+        {
+          "overallScore": number (0-100),
+          "pageType": "blog" | "landing" | "product" | "category",
+          "aiRankingFactors": [
+            {
+              "factor": "Schema Markup",
+              "score": number (0-10),
+              "currentState": "what is working and what is missing",
+              "recommendation": "specific actionable advice to improve",
+              "priority": "high" | "medium" | "low",
+              "expectedImpact": "description of improvement potential"
+            }
+          ],
+          "topStrengths": ["strength1", "strength2"],
+          "criticalIssues": ["issue1", "issue2"],
+          "quickWins": ["quick fix 1", "quick fix 2"]
+        }
       `;
 
       const response = await openai.chat.completions.create({
@@ -72,20 +109,19 @@ export class PageAnalysisService {
         messages: [
           {
             role: "system",
-            content: `You are an expert AI SEO analyst specializing in optimizing content for AI search engines (ChatGPT, Claude, Gemini, Perplexity). 
+            content: `You are an expert Page Quality Auditor specializing in AI/LLM ranking factors. 
             
-            Focus on these AI ranking factors:
-            - Semantic relevance and entity recognition
-            - Content depth and expertise (E-A-T signals)
-            - User intent matching
-            - Featured snippet potential
-            - Conversational query optimization
-            - Topic authority and entity relationships
-            - Content freshness and update signals
-            - Structured data and schema markup
-            - Answer-focused content structure
+            Your task is to comprehensively evaluate webpages for their potential to rank or be cited by AI tools like ChatGPT, Perplexity, Gemini, and Claude.
             
-            Provide specific, actionable recommendations with expected impact estimates.`
+            For each of the 20 AI-ranking factors, provide:
+            • A score between 0 and 10
+            • What is working and what is missing
+            • Specific actionable advice to improve it
+            • Priority level and expected impact
+            
+            Focus on how AI models understand, process, and cite content. Consider semantic relevance, entity recognition, content authority, user intent alignment, and modern ranking signals.
+            
+            Provide detailed, specific recommendations that can be implemented immediately.`
           },
           {
             role: "user",
@@ -113,8 +149,11 @@ export class PageAnalysisService {
       pageUrl: pageData.url,
       pageType,
       overallScore: aiAnalysis.overallScore || this.calculateScore(pageData),
-      recommendations: aiAnalysis.recommendations || this.getDefaultRecommendations(pageData),
-      aiOptimizationSuggestions: aiAnalysis.aiOptimizationSuggestions || this.getDefaultAIOptimizations(pageData)
+      aiRankingFactors: aiAnalysis.aiRankingFactors || this.getDefault20Factors(pageData),
+      topStrengths: aiAnalysis.topStrengths || [],
+      criticalIssues: aiAnalysis.criticalIssues || [],
+      quickWins: aiAnalysis.quickWins || [],
+      recommendations: aiAnalysis.recommendations || this.getDefaultRecommendations(pageData)
     };
   }
 
@@ -213,13 +252,61 @@ export class PageAnalysisService {
     };
   }
 
+  private getDefault20Factors(pageData: PageAnalysisData) {
+    return [
+      {
+        factor: "Schema Markup",
+        score: pageData.url.includes('/blog/') ? 4 : 2,
+        currentState: "Basic schema may be present but likely incomplete for AI optimization",
+        recommendation: "Add FAQPage, HowTo, Article, or Product schema with detailed structured data",
+        priority: "high" as const,
+        expectedImpact: "15-25% improvement in AI tool citation rates"
+      },
+      {
+        factor: "E-E-A-T (Experience, Expertise, Authority, Trust)",
+        score: pageData.currentPosition <= 10 ? 7 : 5,
+        currentState: "Content may show some authority signals but could be strengthened",
+        recommendation: "Add author bios, publication dates, expert quotes, and authoritative external links",
+        priority: "high" as const,
+        expectedImpact: "10-20% ranking improvement"
+      },
+      {
+        factor: "Conversational/Natural-Language Tone",
+        score: 6,
+        currentState: "Content likely uses formal tone, may lack conversational elements",
+        recommendation: "Restructure content to answer direct questions and use natural language patterns",
+        priority: "medium" as const,
+        expectedImpact: "Better AI understanding and citation potential"
+      },
+      {
+        factor: "Technical SEO & Performance",
+        score: pageData.ctr > 5 ? 7 : 5,
+        currentState: "Basic technical SEO likely implemented",
+        recommendation: "Optimize Core Web Vitals, mobile responsiveness, and crawlability",
+        priority: "high" as const,
+        expectedImpact: "5-15% ranking improvement"
+      },
+      {
+        factor: "Accuracy & Query Intent Relevance",
+        score: pageData.currentPosition <= 5 ? 8 : 6,
+        currentState: "Content partially matches search intent",
+        recommendation: "Analyze top-ranking competitors and align content with exact user intent",
+        priority: "high" as const,
+        expectedImpact: "Significant ranking and traffic improvement"
+      }
+    ];
+  }
+
   private getFallbackRecommendations(pageData: PageAnalysisData): AIRecommendation {
     return {
       pageUrl: pageData.url,
       pageType: this.detectPageType(pageData.url),
       overallScore: this.calculateScore(pageData),
-      recommendations: this.getDefaultRecommendations(pageData),
-      aiOptimizationSuggestions: this.getDefaultAIOptimizations(pageData)
+      aiRankingFactors: this.getDefault20Factors(pageData),
+      topStrengths: ["Content depth", "Keyword targeting"],
+      criticalIssues: ["Schema markup missing", "Low CTR"],
+      quickWins: ["Add FAQ section", "Optimize title tags"],
+      recommendations: this.getDefaultRecommendations(pageData)
     };
   }
 
