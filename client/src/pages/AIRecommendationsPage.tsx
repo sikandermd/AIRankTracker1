@@ -180,10 +180,10 @@ export default function AIRecommendationsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Brain className="h-8 w-8 text-blue-600" />
-            AI SEO Recommendations
+            🧠 AI Page Quality Auditor
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">
-            Search Console data से blog और landing pages के लिए AI-powered recommendations
+            Professional 20-Factor Analysis for AI/LLM Citation Optimization
           </p>
         </div>
       </div>
@@ -197,7 +197,7 @@ export default function AIRecommendationsPage() {
               Analysis Setup
             </CardTitle>
             <CardDescription>
-              Configure AI analysis parameters
+              Analyze webpage for 20 AI-ranking factors with quantitative scores
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
