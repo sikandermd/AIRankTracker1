@@ -1,14 +1,15 @@
 import { 
   users, brands, keywords, trackingResults, competitorAnalysis, alerts, alertLogs,
-  organicKeywords, organicRankings,
+  organicKeywords, organicRankings, combinedAlertLogs,
   type User, type InsertUser, type Brand, type InsertBrand, 
   type Keyword, type InsertKeyword, type TrackingResult, type InsertTrackingResult,
   type CompetitorAnalysis, type InsertCompetitorAnalysis,
   type Alert, type InsertAlert, type AlertLog, type InsertAlertLog,
+  type CombinedAlertLog, type InsertCombinedAlertLog,
   type OrganicKeyword, type InsertOrganicKeyword, type OrganicRanking, type InsertOrganicRanking
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, inArray } from "drizzle-orm";
+import { eq, desc, and, sql, inArray, gte, count } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -55,6 +56,17 @@ export interface IStorage {
   getAlertLogs(alertId?: string): Promise<AlertLog[]>;
   createAlertLog(log: InsertAlertLog): Promise<AlertLog>;
   updateAlertLog(id: string, updates: Partial<InsertAlertLog>): Promise<AlertLog>;
+
+  // Combined Alert operations
+  storeCombinedAlertLog(data: InsertCombinedAlertLog): Promise<CombinedAlertLog>;
+  getCombinedAlerts(range?: string): Promise<any[]>;
+  getCombinedAlertStats(): Promise<{
+    totalCombined: number;
+    totalIndividual: number;
+    sentToday: number;
+    averagePerBatch: number;
+  }>;
+  markCombinedAlertAsSent(brandId: string, keywordId: string, alertType: string, platform: string, timestamp: Date): Promise<void>;
 
   // Dashboard stats
   getDashboardStats(): Promise<{
@@ -445,6 +457,151 @@ export class DatabaseStorage implements IStorage {
   async createOrganicRanking(ranking: InsertOrganicRanking): Promise<OrganicRanking> {
     const [created] = await db.insert(organicRankings).values(ranking).returning();
     return created;
+  }
+
+  // Combined Alert operations
+  async storeCombinedAlertLog(data: InsertCombinedAlertLog): Promise<CombinedAlertLog> {
+    const [log] = await db.insert(combinedAlertLogs).values(data).returning();
+    return log;
+  }
+
+  async getCombinedAlerts(range?: string): Promise<any[]> {
+    let whereClause;
+    
+    if (range && range !== 'all') {
+      const now = new Date();
+      const daysBack = range === '1d' ? 1 : range === '7d' ? 7 : range === '30d' ? 30 : null;
+      
+      if (daysBack) {
+        const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+        whereClause = gte(combinedAlertLogs.createdAt, startDate);
+      }
+    }
+
+    const logs = await db
+      .select({
+        id: combinedAlertLogs.id,
+        brandId: combinedAlertLogs.brandId,
+        keywordId: combinedAlertLogs.keywordId,
+        email: combinedAlertLogs.email,
+        combinedAt: combinedAlertLogs.combinedAt,
+        sent: combinedAlertLogs.sent,
+        createdAt: combinedAlertLogs.createdAt,
+        brandName: brands.name,
+        keyword: keywords.keyword,
+      })
+      .from(combinedAlertLogs)
+      .leftJoin(brands, eq(combinedAlertLogs.brandId, brands.id))
+      .leftJoin(keywords, eq(combinedAlertLogs.keywordId, keywords.id))
+      .where(whereClause)
+      .orderBy(desc(combinedAlertLogs.createdAt));
+
+    // Group by brand+keyword+email combination
+    const grouped = logs.reduce((acc: any, log: any) => {
+      const key = `${log.brandId}-${log.keywordId}-${log.email}`;
+      if (!acc[key]) {
+        acc[key] = {
+          id: log.id,
+          brandId: log.brandId,
+          keywordId: log.keywordId,
+          brandName: log.brandName,
+          keyword: log.keyword,
+          email: log.email,
+          combinedAt: log.combinedAt || log.createdAt,
+          sent: log.sent,
+          alerts: []
+        };
+      }
+      return acc;
+    }, {});
+
+    // Get individual alerts for each group
+    for (const groupKey of Object.keys(grouped)) {
+      const group = grouped[groupKey];
+      const alertDetails = await db
+        .select()
+        .from(combinedAlertLogs)
+        .where(
+          and(
+            eq(combinedAlertLogs.brandId, group.brandId),
+            eq(combinedAlertLogs.keywordId, group.keywordId),
+            eq(combinedAlertLogs.email, group.email)
+          )
+        )
+        .orderBy(desc(combinedAlertLogs.timestamp));
+
+      group.alerts = alertDetails.map((alert: any) => ({
+        type: alert.alertType,
+        platform: alert.platform,
+        previousValue: alert.previousValue,
+        currentValue: alert.currentValue,
+        timestamp: alert.timestamp
+      }));
+    }
+
+    return Object.values(grouped);
+  }
+
+  async getCombinedAlertStats(): Promise<{
+    totalCombined: number;
+    totalIndividual: number;
+    sentToday: number;
+    averagePerBatch: number;
+  }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [totalCombined] = await db
+      .select({ count: count() })
+      .from(combinedAlertLogs)
+      .where(eq(combinedAlertLogs.combined, true));
+
+    const [totalIndividual] = await db
+      .select({ count: count() })
+      .from(combinedAlertLogs);
+
+    const [sentToday] = await db
+      .select({ count: count() })
+      .from(combinedAlertLogs)
+      .where(
+        and(
+          eq(combinedAlertLogs.sent, true),
+          gte(combinedAlertLogs.createdAt, today)
+        )
+      );
+
+    const averagePerBatch = totalCombined.count > 0 ? totalIndividual.count / totalCombined.count : 0;
+
+    return {
+      totalCombined: totalCombined.count,
+      totalIndividual: totalIndividual.count,
+      sentToday: sentToday.count,
+      averagePerBatch
+    };
+  }
+
+  async markCombinedAlertAsSent(
+    brandId: string,
+    keywordId: string,
+    alertType: string,
+    platform: string,
+    timestamp: Date
+  ): Promise<void> {
+    await db
+      .update(combinedAlertLogs)
+      .set({ 
+        sent: true, 
+        combinedAt: new Date() 
+      })
+      .where(
+        and(
+          eq(combinedAlertLogs.brandId, brandId),
+          eq(combinedAlertLogs.keywordId, keywordId),
+          eq(combinedAlertLogs.alertType, alertType),
+          eq(combinedAlertLogs.platform, platform),
+          eq(combinedAlertLogs.timestamp, timestamp)
+        )
+      );
   }
 }
 

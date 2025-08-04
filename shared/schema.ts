@@ -136,6 +136,22 @@ export const alertLogs = pgTable("alert_logs", {
   triggeredAt: timestamp("triggered_at").defaultNow().notNull(),
 });
 
+export const combinedAlertLogs = pgTable("combined_alert_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  brandId: varchar("brand_id").references(() => brands.id).notNull(),
+  keywordId: varchar("keyword_id").references(() => keywords.id).notNull(),
+  alertType: text("alert_type").notNull(),
+  platform: text("platform").notNull(),
+  previousValue: text("previous_value"),
+  currentValue: text("current_value"),
+  email: text("email").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  combined: boolean("combined").default(true),
+  sent: boolean("sent").default(false),
+  combinedAt: timestamp("combined_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const brandsRelations = relations(brands, ({ many }) => ({
   keywords: many(keywords),
@@ -239,6 +255,12 @@ export const insertAlertLogSchema = createInsertSchema(alertLogs).omit({
   triggeredAt: true,
 });
 
+export const insertCombinedAlertLogSchema = createInsertSchema(combinedAlertLogs).omit({
+  id: true,
+  timestamp: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -259,6 +281,9 @@ export type Alert = typeof alerts.$inferSelect;
 export type InsertAlert = z.infer<typeof insertAlertSchema>;
 export type AlertLog = typeof alertLogs.$inferSelect;
 export type InsertAlertLog = z.infer<typeof insertAlertLogSchema>;
+
+export type CombinedAlertLog = typeof combinedAlertLogs.$inferSelect;
+export type InsertCombinedAlertLog = z.infer<typeof insertCombinedAlertLogSchema>;
 
 // Organic Keywords Insert Schemas
 export const insertOrganicKeywordSchema = createInsertSchema(organicKeywords).omit({

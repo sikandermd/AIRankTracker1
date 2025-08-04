@@ -237,6 +237,218 @@ export class NotificationService {
     };
   }
 
+  async sendCombinedAlertEmail(data: {
+    brandName: string;
+    keyword: string;
+    alertName: string;
+    email: string;
+    alerts: Array<{
+      type: 'mention_change' | 'position_improve' | 'new_platform' | 'mention_increase';
+      platform: string;
+      previousValue: string;
+      currentValue: string;
+      timestamp: Date;
+    }>;
+  }): Promise<boolean> {
+    if (!this.apiKey) {
+      console.warn('Brevo not configured, skipping combined alert email');
+      return false;
+    }
+
+    try {
+      const subject = this.generateCombinedEmailSubject(data);
+      const html = this.generateCombinedEmailHTML(data);
+
+      const emailData = {
+        to: [{ email: data.email }],
+        sender: { email: 'jason@notifyvisitorsmail.com', name: 'AI Ranking Tracker' },
+        subject: subject,
+        htmlContent: html,
+        textContent: this.generateCombinedTextContent(data)
+      };
+
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Brevo API error:', response.status, errorText);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('Combined alert email sent successfully:', result);
+      return true;
+    } catch (error) {
+      console.error('Combined alert email failed:', error);
+      return false;
+    }
+  }
+
+  private generateCombinedEmailSubject(data: {
+    brandName: string;
+    keyword: string;
+    alerts: Array<{ type: string; platform: string }>;
+  }): string {
+    const alertCount = data.alerts.length;
+    const platforms = [...new Set(data.alerts.map(a => a.platform))];
+    const platformText = platforms.length === 1 ? platforms[0] : `${platforms.length} platforms`;
+    
+    return `🔔 ${alertCount} Alert${alertCount > 1 ? 's' : ''}: ${data.brandName} activity on ${platformText}`;
+  }
+
+  private generateCombinedEmailHTML(data: {
+    brandName: string;
+    keyword: string;
+    alertName: string;
+    alerts: Array<{
+      type: 'mention_change' | 'position_improve' | 'new_platform' | 'mention_increase';
+      platform: string;
+      previousValue: string;
+      currentValue: string;
+      timestamp: Date;
+    }>;
+  }): string {
+    const getAlertIcon = (type: string) => {
+      switch (type) {
+        case 'mention_change': return '🎉';
+        case 'position_improve': return '📈';
+        case 'new_platform': return '🚀';
+        case 'mention_increase': return '📊';
+        default: return '🔔';
+      }
+    };
+
+    const getAlertTitle = (type: string) => {
+      switch (type) {
+        case 'mention_change': return 'New Mention';
+        case 'position_improve': return 'Position Improved';
+        case 'new_platform': return 'New Platform';
+        case 'mention_increase': return 'Mentions Increased';
+        default: return 'Alert';
+      }
+    };
+
+    const getAlertDescription = (alert: any) => {
+      switch (alert.type) {
+        case 'mention_change':
+          return `Now mentioned at <strong>${alert.currentValue}</strong> on ${alert.platform}`;
+        case 'position_improve':
+          return `Improved from <span style="color: #dc2626;">${alert.previousValue}</span> to <span style="color: #16a34a; font-weight: bold;">${alert.currentValue}</span> on ${alert.platform}`;
+        case 'new_platform':
+          return `Now visible at <strong>${alert.currentValue}</strong> on ${alert.platform}`;
+        case 'mention_increase':
+          return `Mentions increased from ${alert.previousValue} to <strong>${alert.currentValue}</strong> on ${alert.platform}`;
+        default:
+          return `Alert triggered on ${alert.platform}`;
+      }
+    };
+
+    const alertsHTML = data.alerts.map(alert => `
+      <div style="background: white; border: 1px solid #e5e7eb; border-left: 4px solid #FB9A4E; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 20px; margin-right: 10px;">${getAlertIcon(alert.type)}</span>
+          <h3 style="margin: 0; color: #333; font-size: 18px;">${getAlertTitle(alert.type)}</h3>
+          <span style="margin-left: auto; color: #6b7280; font-size: 12px;">${alert.timestamp.toLocaleString()}</span>
+        </div>
+        <p style="margin: 0; color: #555; line-height: 1.6;">
+          ${getAlertDescription(alert)}
+        </p>
+      </div>
+    `).join('');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Combined AI Ranking Alerts</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+          <div style="background: linear-gradient(135deg, #FB9A4E, #FF7F3F); color: white; padding: 30px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">🔔 Combined AI Ranking Alerts</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">
+              ${data.alerts.length} alert${data.alerts.length > 1 ? 's' : ''} for <strong>${data.brandName}</strong>
+            </p>
+          </div>
+          
+          <div style="background: #ffffff; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #333; margin-top: 0; border-bottom: 2px solid #FB9A4E; padding-bottom: 10px;">
+              Summary
+            </h2>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold;">Brand:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">${data.brandName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold;">Keyword:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">"${data.keyword}"</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-weight: bold;">Total Alerts:</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f3f4f6; color: #FB9A4E; font-weight: bold;">${data.alerts.length}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold;">Platforms:</td>
+                <td style="padding: 8px 0;">${[...new Set(data.alerts.map(a => a.platform))].join(', ')}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="background: #ffffff; padding: 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #333; margin-top: 0; border-bottom: 2px solid #FB9A4E; padding-bottom: 10px;">
+              Alert Details
+            </h2>
+            ${alertsHTML}
+          </div>
+
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 14px;">
+              This combined alert was generated by your AI Ranking Tracker.<br>
+              <a href="#" style="color: #FB9A4E; text-decoration: none;">Manage your alerts</a> | 
+              <a href="#" style="color: #FB9A4E; text-decoration: none;">View detailed analytics</a>
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  private generateCombinedTextContent(data: {
+    brandName: string;
+    keyword: string;
+    alerts: Array<{
+      type: string;
+      platform: string;
+      previousValue: string;
+      currentValue: string;
+    }>;
+  }): string {
+    let text = `Combined AI Ranking Alerts\n\n`;
+    text += `Brand: ${data.brandName}\n`;
+    text += `Keyword: "${data.keyword}"\n`;
+    text += `Total Alerts: ${data.alerts.length}\n\n`;
+
+    data.alerts.forEach((alert, index) => {
+      text += `Alert ${index + 1}:\n`;
+      text += `- Type: ${alert.type.replace('_', ' ')}\n`;
+      text += `- Platform: ${alert.platform}\n`;
+      text += `- Previous: ${alert.previousValue}\n`;
+      text += `- Current: ${alert.currentValue}\n\n`;
+    });
+
+    text += `This is an automated message from AI Ranking Tracker.`;
+    return text;
+  }
+
   async sendAlertCreationEmail(data: {
     email: string;
     alertName: string;

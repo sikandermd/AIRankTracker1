@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import { notificationService } from "./notificationService";
+import { combinedAlertService } from "./combinedAlertService";
 import type { InsertAlertLog } from "@shared/schema";
 
 interface TrackingResult {
@@ -182,6 +183,17 @@ export class AlertEngine {
 
       // Note: lastTriggered field update would require schema modification
       console.log(`Alert ${alert.id} triggered at ${new Date().toISOString()}`);
+
+      // Also add to combined alert system
+      await combinedAlertService.addAlert(
+        result.brandId!,
+        result.keywordId!,
+        alert.notificationMethods.email || 'default@example.com',
+        triggerType,
+        result.aiPlatform,
+        previousResult?.position || 'not mentioned',
+        result.position || 'not mentioned'
+      );
 
       console.log(`Alert triggered: ${alert.name} - ${triggerType} for ${brand.name} on ${result.aiPlatform}`);
     } catch (error) {

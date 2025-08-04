@@ -298,6 +298,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Alert routes
+  // Combined Alerts endpoints
+  app.get("/api/combined-alerts", async (req, res) => {
+    try {
+      const { range } = req.query;
+      const alerts = await storage.getCombinedAlerts(range as string);
+      res.json(alerts);
+    } catch (error: unknown) {
+      console.error("Error fetching combined alerts:", error);
+      res.status(500).json({ error: "Failed to fetch combined alerts" });
+    }
+  });
+
+  app.get("/api/combined-alerts/stats", async (req, res) => {
+    try {
+      const stats = await storage.getCombinedAlertStats();
+      res.json(stats);
+    } catch (error: unknown) {
+      console.error("Error fetching combined alert stats:", error);
+      res.status(500).json({ error: "Failed to fetch combined alert stats" });
+    }
+  });
+
+  app.post("/api/combined-alerts/force-send", async (req, res) => {
+    try {
+      const { combinedAlertService } = await import("./services/combinedAlertService");
+      await combinedAlertService.forceSendAllBatches();
+      res.json({ success: true, message: "All pending batches sent" });
+    } catch (error: unknown) {
+      console.error("Error force sending alerts:", error);
+      res.status(500).json({ error: "Failed to force send alerts" });
+    }
+  });
+
   // Password verification endpoint
   app.post('/api/verify-password', async (req, res) => {
     try {

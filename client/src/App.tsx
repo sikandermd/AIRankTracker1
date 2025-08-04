@@ -11,6 +11,7 @@ import Keywords from "@/pages/keywords";
 import OrganicKeywords from "@/pages/organic-keywords";
 import TopPages from "./pages/top-pages";
 import AlertsPage from "@/pages/AlertsPage";
+import CombinedAlerts from "./pages/CombinedAlerts";
 import NotFound from "@/pages/not-found";
 import PasswordGuard from "@/components/PasswordGuard";
 
@@ -27,6 +28,7 @@ function Router() {
             <Route path="/organic" component={OrganicKeywords} />
             <Route path="/organic/top-pages" component={TopPages} />
             <Route path="/alerts" component={AlertsPage} />
+            <Route path="/combined-alerts" component={CombinedAlerts} />
             <Route component={NotFound} />
           </Switch>
         </main>

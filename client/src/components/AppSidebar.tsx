@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Settings,
   Bot,
+  Mail,
 } from "lucide-react";
 import {
   Sidebar,
@@ -68,6 +69,7 @@ const AppSidebar = () => {
     { path: "/keywords", label: "Keywords", icon: Tag },
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
     { path: "/alerts", label: "Alerts", icon: Bell },
+    { path: "/combined-alerts", label: "Combined Alerts", icon: Mail },
   ];
 
   const organicSeoItems = [
