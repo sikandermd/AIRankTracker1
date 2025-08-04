@@ -436,7 +436,7 @@ export default function AIRecommendationsPage() {
                             <div>
                               <h4 className="font-medium mb-2">Content Structure</h4>
                               <ul className="text-sm space-y-1">
-                                {page.aiOptimizationSuggestions.contentStructure.slice(0, 3).map((item, idx) => (
+                                {page.aiOptimizationSuggestions?.contentStructure?.slice(0, 3).map((item, idx) => (
                                   <li key={idx} className="flex items-start gap-1">
                                     <span className="text-blue-500">•</span>
                                     {item}
@@ -447,7 +447,7 @@ export default function AIRecommendationsPage() {
                             <div>
                               <h4 className="font-medium mb-2">User Intent</h4>
                               <ul className="text-sm space-y-1">
-                                {page.aiOptimizationSuggestions.userIntent.slice(0, 3).map((item, idx) => (
+                                {page.aiOptimizationSuggestions?.userIntent?.slice(0, 3).map((item, idx) => (
                                   <li key={idx} className="flex items-start gap-1">
                                     <span className="text-green-500">•</span>
                                     {item}
