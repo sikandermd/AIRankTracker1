@@ -73,35 +73,64 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
   });
 
   const createAlertMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("/api/alerts/multi", { method: "POST", body: data }),
-    onSuccess: () => {
+    mutationFn: (data: any) => apiRequest("/api/alerts/multi", "POST", data),
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
       toast({
-        title: "Alert Created",
-        description: "Your brand alert has been set up successfully",
+        title: "Alerts Created Successfully",
+        description: response.message || `Successfully created ${response.count || 1} alerts`,
       });
       form.reset();
       onClose();
     },
     onError: (error: any) => {
+      console.error("Alert creation error:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create alert",
+        title: "Error Creating Alerts",
+        description: error.message || "Failed to create multi-brand alerts. Please check your selections.",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: z.infer<typeof alertSetupSchema>) => {
-    console.log("Creating alert:", data);
+    console.log("Creating multi-brand alert:", data);
+    
+    // Validate that at least one brand and keyword are selected
+    if (!data.selectedBrands || data.selectedBrands.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select at least one brand",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.customKeywords || data.customKeywords.length === 0) {
+      toast({
+        title: "Validation Error", 
+        description: "Please add at least one keyword",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const selectedPlatforms = Object.keys(data.platforms).filter(platform => data.platforms[platform as keyof typeof data.platforms]);
+    if (selectedPlatforms.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select at least one AI platform to monitor",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Convert form data to API format
     const alertData = {
       name: data.name,
-      brandId: data.selectedBrands[0], // Use first selected brand for now
       selectedBrands: data.selectedBrands,
       customKeywords: data.customKeywords,
-      platforms: Object.keys(data.platforms).filter(platform => data.platforms[platform as keyof typeof data.platforms]),
+      platforms: selectedPlatforms,
       triggerConditions: {
         mention_change: data.triggerConditions.newMentions,
         position_improve: data.triggerConditions.positionImprove,
@@ -115,6 +144,7 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
       isActive: true,
     };
     
+    console.log("Submitting alert data:", alertData);
     createAlertMutation.mutate(alertData);
   };
 
@@ -168,15 +198,15 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
 
             {/* Multi-Brand Selection */}
             <div className="space-y-3">
-              <FormLabel>Brand</FormLabel>
-              <div className="space-y-2">
+              <FormLabel>Brands (Select Multiple)</FormLabel>
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
                 {(brands as any[]).map((brand: any) => (
                   <FormField
                     key={brand.id}
                     control={form.control}
                     name="selectedBrands"
                     render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
+                      <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <Checkbox
                             checked={field.value?.includes(brand.id)}
@@ -190,7 +220,7 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
                             }}
                           />
                         </FormControl>
-                        <FormLabel className="text-sm font-normal">
+                        <FormLabel className="text-sm font-normal cursor-pointer">
                           {brand.name}
                         </FormLabel>
                       </FormItem>
@@ -198,17 +228,20 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
                   />
                 ))}
               </div>
+              <div className="text-xs text-gray-500">
+                Selected: {form.watch("selectedBrands")?.length || 0} brand(s)
+              </div>
             </div>
 
             {/* Multi-Keyword Addition */}
             <div className="space-y-3">
-              <FormLabel>Keyword</FormLabel>
+              <FormLabel>Keywords (Add Multiple)</FormLabel>
               <div className="space-y-2">
                 <div className="flex space-x-2">
                   <Input
                     value={newKeyword}
                     onChange={(e) => setNewKeyword(e.target.value)}
-                    placeholder="Enter custom keyword"
+                    placeholder="Enter custom keyword and press Enter or click +"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -216,26 +249,31 @@ export default function AlertSetupModal({ isOpen, onClose }: AlertSetupModalProp
                       }
                     }}
                   />
-                  <Button type="button" onClick={addCustomKeyword} size="sm">
+                  <Button type="button" onClick={addCustomKeyword} size="sm" className="bg-orange-500 hover:bg-orange-600">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
                 
                 {/* Display added keywords */}
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-32 overflow-y-auto">
                   {(form.watch("customKeywords") || []).map((keyword, index) => (
-                    <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                      <span className="text-sm">{keyword}</span>
+                    <div key={index} className="flex items-center justify-between bg-orange-50 border border-orange-200 p-2 rounded">
+                      <span className="text-sm font-medium">{keyword}</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => removeCustomKeyword(index)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
+                </div>
+                
+                <div className="text-xs text-gray-500">
+                  Added: {form.watch("customKeywords")?.length || 0} keyword(s)
                 </div>
               </div>
             </div>
