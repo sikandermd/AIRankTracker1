@@ -489,7 +489,18 @@ export class NotificationService {
 
   private generateMultiBrandAlertCreationHTML(data: {
     alertName: string;
-    brands: Array<{ brandName: string; keywords: string[] }>;
+    brands: Array<{ 
+      brandName: string; 
+      keywords: Array<{
+        keyword: string;
+        status?: {
+          mention_change: boolean;
+          position_improve: boolean;
+          new_platform: boolean;
+          mention_increase: boolean;
+        }
+      }> | string[]
+    }>;
     platforms: string[];
   }): string {
     const platformList = data.platforms.map(p => p.toUpperCase()).join(', ');
@@ -497,9 +508,34 @@ export class NotificationService {
     const totalKeywords = data.brands.reduce((sum, brand) => sum + brand.keywords.length, 0);
     
     const brandSections = data.brands.map(brand => {
-      const keywordList = brand.keywords.map(keyword => `
-        <span style="background: #FB9A4E; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 2px; display: inline-block;">${keyword}</span>
-      `).join('');
+      const keywordList = brand.keywords.map(keyword => {
+        // Handle both old format (string[]) and new format (keyword objects)
+        if (typeof keyword === 'string') {
+          return `
+            <span style="background: #FB9A4E; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 2px; display: inline-block;">${keyword}</span>
+          `;
+        } else {
+          // Enhanced format with status information
+          const statusIcons = [];
+          if (keyword.status?.mention_change) statusIcons.push('📈');
+          if (keyword.status?.position_improve) statusIcons.push('⬆️');
+          if (keyword.status?.new_platform) statusIcons.push('🆕');
+          if (keyword.status?.mention_increase) statusIcons.push('📊');
+          
+          return `
+            <div style="background: white; border: 1px solid #ddd; padding: 8px; border-radius: 4px; margin: 4px 0; font-size: 12px;">
+              <span style="background: #FB9A4E; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${keyword.keyword}</span>
+              ${statusIcons.length > 0 ? `<span style="margin-left: 8px;">${statusIcons.join(' ')}</span>` : ''}
+              <div style="margin-top: 4px; font-size: 10px; color: #666;">
+                ${keyword.status?.mention_change ? '• Mention Changes ' : ''}
+                ${keyword.status?.position_improve ? '• Position Improve ' : ''}
+                ${keyword.status?.new_platform ? '• New Platform ' : ''}
+                ${keyword.status?.mention_increase ? '• Mention Increase' : ''}
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
       
       return `
         <div style="background: white; padding: 20px; border-radius: 6px; border-left: 4px solid #FB9A4E; margin-bottom: 15px;">
@@ -714,7 +750,18 @@ export class NotificationService {
   async sendMultiBrandAlertCreationEmail(data: {
     email: string;
     alertName: string;
-    brands: Array<{ brandName: string; keywords: string[] }>;
+    brands: Array<{ 
+      brandName: string; 
+      keywords: Array<{
+        keyword: string;
+        status?: {
+          mention_change: boolean;
+          position_improve: boolean;
+          new_platform: boolean;
+          mention_increase: boolean;
+        }
+      }> | string[]
+    }>;
     platforms: string[];
   }): Promise<boolean> {
     console.log('sendMultiBrandAlertCreationEmail called with:', data);

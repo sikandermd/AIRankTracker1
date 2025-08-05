@@ -656,6 +656,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Send ONE consolidated email with enhanced keyword status
+      if (createdAlerts.length > 0) {
+        try {
+          const enhancedEmailData = {
+            email: validatedData.notificationMethods.email,
+            alertName: validatedData.name,
+            brands: [] as Array<{ 
+              brandName: string; 
+              keywords: Array<{
+                keyword: string;
+                status: {
+                  mention_change: boolean;
+                  position_improve: boolean;
+                  new_platform: boolean;
+                  mention_increase: boolean;
+                }
+              }>
+            }>,
+            platforms: validatedData.platforms
+          };
+
+          // Group keywords by brand with status for email
+          const enhancedBrandMap = new Map<string, { 
+            brandName: string; 
+            keywords: Array<{
+              keyword: string;
+              status: {
+                mention_change: boolean;
+                position_improve: boolean;
+                new_platform: boolean;
+                mention_increase: boolean;
+              }
+            }>
+          }>();
+          
+          for (const alert of createdAlerts) {
+            const brand = await storage.getBrand(alert.brandId);
+            const keyword = validatedData.customKeywords.find(kw => alert.name.includes(kw)) || 'Unknown';
+            
+            if (brand) {
+              if (!enhancedBrandMap.has(brand.id)) {
+                enhancedBrandMap.set(brand.id, { 
+                  brandName: brand.name, 
+                  keywords: [] 
+                });
+              }
+              enhancedBrandMap.get(brand.id)!.keywords.push({
+                keyword: keyword,
+                status: validatedData.triggerConditions
+              });
+            }
+          }
+
+          enhancedEmailData.brands = Array.from(enhancedBrandMap.values());
+          
+          console.log("Sending enhanced consolidated email with data:", enhancedEmailData);
+          const emailResult = await notificationService.sendMultiBrandAlertCreationEmail(enhancedEmailData);
+          console.log("Enhanced consolidated multi-brand alert creation email result:", emailResult);
+        } catch (emailError) {
+          console.error("Failed to send enhanced consolidated alert creation email:", emailError);
+          // Don't fail the alert creation if email fails
+        }
+      }
+
       console.log(`Successfully created ${createdAlerts.length} multi-brand alerts`);
       res.status(201).json({
         message: `Successfully created ${createdAlerts.length} alerts`,
