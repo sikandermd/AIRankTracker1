@@ -1,14 +1,7 @@
-# Migration-free deployment configuration
 [deployment]
-run = ["node", "deploy-fix.js"]
+run = ["npm", "start"]
 deploymentTarget = "cloudrun"
+build = ["npm", "run", "build"]
 
 [deployment.environment]
 NODE_ENV = "production"
-SKIP_MIGRATIONS = "true"
-USE_EXISTING_SCHEMA = "true"
-NO_DB_MIGRATIONS = "true"
-DATABASE_SKIP_MIGRATIONS = "true"
-
-# Build process without migrations
-build = ["npm", "run", "build"]
