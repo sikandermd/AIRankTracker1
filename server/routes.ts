@@ -1105,9 +1105,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, url, brandName, domain, queries } = req.body;
       
-      // Log the API usage
-      apiUsageLogger.logRequest('ai-visibility-audit', 'premium');
-      
       console.log(`AI Visibility Audit request - Type: ${type}, URL: ${url}, Brand: ${brandName}`);
       
       // Simulate AI analysis with comprehensive 20-factor evaluation
