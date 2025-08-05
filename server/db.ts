@@ -19,9 +19,15 @@ export const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-// Migration-free database connection
+// Migration-free database connection for deployment stability
 export const db = drizzle({ 
   client: pool, 
   schema,
   logger: process.env.NODE_ENV === 'development'
 });
+
+// Log deployment configuration for troubleshooting
+if (process.env.NODE_ENV === 'production') {
+  console.log('🗄️ Database: Using existing schema (migration-free deployment)');
+  console.log('⚠️ Platform Issue: Bypassing migration infrastructure problems');
+}

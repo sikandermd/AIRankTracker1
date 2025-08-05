@@ -1,7 +1,8 @@
 [deployment]
-run = ["npm", "start"]
+run = ["node", "start-production.js"]
 deploymentTarget = "cloudrun"
 build = ["npm", "run", "build"]
+ignorePorts = false
 
 [deployment.environment]
 NODE_ENV = "production"
