@@ -67,6 +67,7 @@ export default function AIRecommendationsPage() {
   const [domain, setDomain] = useState("");
   const [queries, setQueries] = useState("");
   const [report, setReport] = useState<AIVisibilityReport | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   const { toast } = useToast();
 
   const aiVisibilityFactors = [
@@ -175,38 +176,46 @@ export default function AIRecommendationsPage() {
         </div>
       </div>
 
-      {/* Explanatory Section */}
-      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-        <CardHeader>
-          <div className="flex items-start gap-3">
-            <Info className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
-            <div>
-              <CardTitle className="text-blue-800 dark:text-blue-200 text-lg mb-2">
-                How AI Visibility Auditor Works
-              </CardTitle>
-              <CardDescription className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">
-                <p className="mb-3">
-                  यह AI-powered tool आपके webpage या brand की <strong>AI search engines में visibility</strong> को analyze करता है। 
-                  यह ChatGPT, Claude, Gemini, और Perplexity जैसे LLM platforms में आपके content के citation chances को बढ़ाने के लिए 
-                  comprehensive 20-factor analysis provide करता है।
-                </p>
-                <p className="mb-3">
-                  <strong>URL Analysis:</strong> किसी भी webpage के AI citation factors को analyze करें - schema markup, 
-                  content quality, technical performance, और AI readability को measure करता है।
-                </p>
-                <p className="mb-3">
-                  <strong>Brand + Query Analysis:</strong> आपके brand का specific search queries के context में AI responses में 
-                  कैसा performance है, इसका detailed analysis करता है। Competitor comparison और brand sentiment भी include करता है।
-                </p>
-                <p>
-                  <strong>Real-time Results:</strong> Actionable recommendations के साथ detailed scoring system, 
-                  quick wins, और citations analysis प्रदान करता है जो immediately implement कर सकते हैं।
-                </p>
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+      {/* Click to Know How This Works */}
+      <div className="text-center">
+        <Button 
+          variant="outline" 
+          onClick={() => setShowExplanation(!showExplanation)}
+          className="mb-4 text-blue-600 border-blue-200 hover:bg-blue-50"
+        >
+          <Info className="h-4 w-4 mr-2" />
+          Click here to know how this works
+        </Button>
+      </div>
+
+      {showExplanation && (
+        <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mb-4">
+          <CardHeader>
+            <CardTitle className="text-blue-800 dark:text-blue-200 text-lg mb-2">
+              How AI Visibility Auditor Works
+            </CardTitle>
+            <CardDescription className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">
+              <p className="mb-3">
+                This AI-powered tool analyzes your webpage or brand's <strong>visibility in AI search engines</strong>. 
+                It provides comprehensive 20-factor analysis to improve your content's citation chances in LLM platforms 
+                like ChatGPT, Claude, Gemini, and Perplexity.
+              </p>
+              <p className="mb-3">
+                <strong>URL Analysis:</strong> Analyze any webpage's AI citation factors - schema markup, 
+                content quality, technical performance, and AI readability metrics.
+              </p>
+              <p className="mb-3">
+                <strong>Brand + Query Analysis:</strong> Detailed analysis of how your brand performs in AI responses 
+                for specific search queries. Includes competitor comparison and brand sentiment analysis.
+              </p>
+              <p>
+                <strong>Real-time Results:</strong> Provides detailed scoring system with actionable recommendations, 
+                quick wins, and citations analysis that you can implement immediately.
+              </p>
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Analysis Controls */}
