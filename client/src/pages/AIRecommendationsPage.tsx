@@ -77,7 +77,7 @@ export default function AIRecommendationsPage() {
     { id: 5, name: "Accuracy & Query Intent Relevance", icon: <Target className="h-4 w-4" /> },
     { id: 6, name: "Clarity & Readability (bullets, headings, short paragraphs)", icon: <FileText className="h-4 w-4" /> },
     { id: 7, name: "Freshness / Content Recency", icon: <Clock className="h-4 w-4" /> },
-    { id: 8, name: "Semantic Relevance / Intent Recognition (LSI keywords)", icon: <Brain className="h-4 w-4" /> },
+    { id: 8, name: "Semantic Relevance / Intent Recognition (LSI keywords)", icon: <Bot className="h-4 w-4" /> },
     { id: 9, name: "User Engagement Signals (if available)", icon: <Eye className="h-4 w-4" /> },
     { id: 10, name: "Citation Depth & Source Authority", icon: <Shield className="h-4 w-4" /> },
     { id: 11, name: "Internal Linking & Topical Hub Structure", icon: <Link className="h-4 w-4" /> },
@@ -86,7 +86,7 @@ export default function AIRecommendationsPage() {
     { id: 14, name: "Topical Focus vs Generic Content", icon: <Target className="h-4 w-4" /> },
     { id: 15, name: "Brand Mentions on reliable domains", icon: <Globe className="h-4 w-4" /> },
     { id: 16, name: "Entity Signals / Knowledge Graph Metadata", icon: <Database className="h-4 w-4" /> },
-    { id: 17, name: "Retrieval-Augmented Generation compatibility (RAG format)", icon: <Brain className="h-4 w-4" /> },
+    { id: 17, name: "Retrieval-Augmented Generation compatibility (RAG format)", icon: <Bot className="h-4 w-4" /> },
     { id: 18, name: "Multi-format layout (tables, quick facts, visuals)", icon: <BarChart3 className="h-4 w-4" /> },
     { id: 19, name: "Proper HTML Tag Hierarchy (h1/h2/h3)", icon: <FileText className="h-4 w-4" /> },
     { id: 20, name: "Human Feedback / Upvotes or Community Ratings", icon: <Users className="h-4 w-4" /> }
@@ -306,7 +306,7 @@ export default function AIRecommendationsPage() {
           <CardContent>
             {!report ? (
               <div className="text-center py-12">
-                <Brain className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <Bot className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   No Analysis Yet
                 </h3>
