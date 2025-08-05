@@ -12,7 +12,7 @@ import OrganicKeywords from "@/pages/organic-keywords";
 import TopPages from "./pages/top-pages";
 import AlertsPage from "@/pages/AlertsPage";
 import CombinedAlerts from "./pages/CombinedAlerts";
-import SeoRecommendations from "./pages/SeoRecommendations";
+
 import AIRecommendationsPage from "./pages/AIRecommendationsPage";
 import NotFound from "@/pages/not-found";
 import PasswordGuard from "@/components/PasswordGuard";
@@ -31,7 +31,7 @@ function Router() {
             <Route path="/organic/top-pages" component={TopPages} />
             <Route path="/alerts" component={AlertsPage} />
             <Route path="/combined-alerts" component={CombinedAlerts} />
-            <Route path="/ml-recommendations" component={SeoRecommendations} />
+
             <Route path="/ai-recommendations" component={AIRecommendationsPage} />
             <Route component={NotFound} />
           </Switch>

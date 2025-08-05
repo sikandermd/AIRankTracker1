@@ -8,9 +8,7 @@ import {
   type Alert, type InsertAlert, type AlertLog, type InsertAlertLog,
   type CombinedAlertLog, type InsertCombinedAlertLog,
   type OrganicKeyword, type InsertOrganicKeyword, type OrganicRanking, type InsertOrganicRanking,
-  type SelectUserProfile, type InsertUserProfile,
-  type SelectSeoRecommendation, type InsertSeoRecommendation,
-  type SelectMlInsight, type InsertMlInsight,
+
   type SelectPerformanceMetric, type InsertPerformanceMetric
 } from "@shared/schema";
 import { db } from "./db";
@@ -92,15 +90,7 @@ export interface IStorage {
   getOrganicRankings(keywordId?: string): Promise<OrganicRanking[]>;
   createOrganicRanking(ranking: InsertOrganicRanking): Promise<OrganicRanking>;
 
-  // ML Recommendation System operations
-  createUserProfile(profile: InsertUserProfile): Promise<SelectUserProfile>;
-  getUserProfile(userId: string): Promise<SelectUserProfile | null>;
-  updateUserProfile(userId: string, updates: Partial<InsertUserProfile>): Promise<SelectUserProfile>;
-  createSeoRecommendation(recommendation: InsertSeoRecommendation): Promise<SelectSeoRecommendation>;
-  getSeoRecommendations(userId: string, filters?: { type?: string; priority?: string; status?: string; }): Promise<SelectSeoRecommendation[]>;
-  updateSeoRecommendation(id: string, updates: Partial<InsertSeoRecommendation>): Promise<SelectSeoRecommendation>;
-  createMlInsight(insight: InsertMlInsight): Promise<SelectMlInsight>;
-  getMlInsights(userId: string): Promise<SelectMlInsight[]>;
+
   createPerformanceMetric(metric: InsertPerformanceMetric): Promise<SelectPerformanceMetric>;
   getPerformanceMetrics(userId: string, filters?: { metricType?: string; brandId?: string; period?: string; }): Promise<SelectPerformanceMetric[]>;
 }
@@ -621,79 +611,7 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
-  // ML Recommendation System implementation
-  async createUserProfile(profile: InsertUserProfile): Promise<SelectUserProfile> {
-    const [created] = await db.insert(userProfiles).values(profile).returning();
-    return created;
-  }
 
-  async getUserProfile(userId: string): Promise<SelectUserProfile | null> {
-    const [profile] = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, userId))
-      .limit(1);
-    return profile || null;
-  }
-
-  async updateUserProfile(userId: string, updates: Partial<InsertUserProfile>): Promise<SelectUserProfile> {
-    const [updated] = await db
-      .update(userProfiles)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(userProfiles.userId, userId))
-      .returning();
-    return updated;
-  }
-
-  async createSeoRecommendation(recommendation: InsertSeoRecommendation): Promise<SelectSeoRecommendation> {
-    const [created] = await db.insert(seoRecommendations).values(recommendation).returning();
-    return created;
-  }
-
-  async getSeoRecommendations(userId: string, filters?: {
-    type?: string;
-    priority?: string;
-    status?: string;
-  }): Promise<SelectSeoRecommendation[]> {
-    let query = db
-      .select()
-      .from(seoRecommendations)
-      .where(eq(seoRecommendations.userId, userId));
-
-    if (filters?.type) {
-      query = query.where(eq(seoRecommendations.type, filters.type));
-    }
-    if (filters?.priority) {
-      query = query.where(eq(seoRecommendations.priority, filters.priority));
-    }
-    if (filters?.status) {
-      query = query.where(eq(seoRecommendations.status, filters.status));
-    }
-
-    return await query.orderBy(desc(seoRecommendations.createdAt));
-  }
-
-  async updateSeoRecommendation(id: string, updates: Partial<InsertSeoRecommendation>): Promise<SelectSeoRecommendation> {
-    const [updated] = await db
-      .update(seoRecommendations)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(seoRecommendations.id, id))
-      .returning();
-    return updated;
-  }
-
-  async createMlInsight(insight: InsertMlInsight): Promise<SelectMlInsight> {
-    const [created] = await db.insert(mlInsights).values(insight).returning();
-    return created;
-  }
-
-  async getMlInsights(userId: string): Promise<SelectMlInsight[]> {
-    return await db
-      .select()
-      .from(mlInsights)
-      .where(eq(mlInsights.userId, userId))
-      .orderBy(desc(mlInsights.createdAt));
-  }
 
   async createPerformanceMetric(metric: InsertPerformanceMetric): Promise<SelectPerformanceMetric> {
     const [created] = await db.insert(performanceMetrics).values(metric).returning();
