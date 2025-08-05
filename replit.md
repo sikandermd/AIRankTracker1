@@ -1,259 +1,56 @@
 # AI Ranking Tracker
 
 ## Overview
-
-This is a full-stack web application that monitors brand visibility across popular AI search engines like ChatGPT, Claude, Gemini, and Perplexity. The application provides an interactive dashboard for tracking brand mentions in AI responses, analyzing competitor presence, and managing keyword tracking campaigns.
+This full-stack web application monitors and analyzes brand visibility across major AI search engines (ChatGPT, Claude, Gemini, Perplexity). Its core purpose is to provide an interactive dashboard for tracking brand mentions, analyzing competitor presence, and managing keyword campaigns within AI responses. The project aims to be a leading tool for brand managers and marketers to understand and improve their AI SEO performance.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite for fast development and optimized builds
-- **Routing**: Wouter for lightweight client-side routing
-- **State Management**: TanStack Query (React Query) for server state management
-- **UI Framework**: Radix UI components with shadcn/ui styling system
-- **Styling**: Tailwind CSS with CSS variables for theming
-- **Form Handling**: React Hook Form with Zod validation
+### UI/UX Decisions
+The application uses Radix UI components with shadcn/ui for styling, built on Tailwind CSS with CSS variables for theming. Key UI components include a dashboard for overview, search filters for multi-platform keyword submission, results tables, and detail modals for in-depth analysis. The design prioritizes a clean, fast interface optimized for performance, featuring consistent AI-themed branding and intuitive navigation with an "🤖 AI Visibility Inspector" naming convention. Visual elements include platform-specific icons and color-coded badges for metrics like position tracking.
 
-### Backend Architecture
-- **Runtime**: Node.js with Express.js REST API
-- **Language**: TypeScript with ES modules
-- **Database ORM**: Drizzle ORM for type-safe database operations
-- **Database**: PostgreSQL (configured for Neon serverless)
-- **Session Storage**: PostgreSQL-based sessions with connect-pg-simple
-- **AI Integration**: OpenAI GPT-4o for analyzing AI responses
+### Technical Implementations
+-   **Frontend**: React 18 with TypeScript, Vite, Wouter for routing, TanStack Query for state management, React Hook Form with Zod for forms.
+-   **Backend**: Node.js with Express.js REST API, TypeScript with ES modules.
+-   **Database**: PostgreSQL (configured for Neon serverless) with Drizzle ORM for type-safe operations.
+-   **Session Management**: PostgreSQL-based sessions using `connect-pg-simple`.
+-   **AI Integration**: OpenAI GPT-4o for analyzing AI responses.
+-   **Core Services**: Tracking Service orchestrates keyword monitoring, AI Analyzer uses GPT-4o for brand mention analysis, and a Storage Layer provides abstract data access.
+-   **Data Flow**: Involves keyword submission, querying AI platforms, OpenAI analysis of responses, data storage with metadata, dashboard updates, and automatic competitor tracking.
+-   **Monorepo Structure**: Shared schemas between client and server ensure consistent data types.
 
-## Key Components
-
-### Database Schema
-The application uses a relational database with the following main entities:
-- **Users**: Authentication and user management
-- **Brands**: Companies/products being tracked
-- **Keywords**: Search terms to monitor across AI platforms
-- **Tracking Results**: Historical data of brand mentions in AI responses
-- **Competitor Analysis**: Comparative brand performance data
-- **Alerts**: Notification system for significant changes
-
-### Core Services
-- **Tracking Service**: Orchestrates keyword monitoring across multiple AI platforms
-- **AI Analyzer**: Uses OpenAI GPT-4o to analyze AI responses for brand mentions, position, and competitor presence
-- **Storage Layer**: Abstracted data access layer with comprehensive CRUD operations
-
-### Frontend Components
-- **Dashboard**: Main interface showing stats overview, recent activity, and competitor analysis
-- **Search Filters**: Multi-platform keyword submission with brand and date filtering
-- **Results Table**: Displays tracking results with detailed breakdown by AI platform
-- **Detail Modal**: Deep-dive analysis for individual keyword performance
-- **Google Sheets Import**: Modal for importing keywords directly from Google Sheets with validation and error handling
-
-## Data Flow
-
-1. **Keyword Submission**: Users input keywords and select AI platforms to monitor
-2. **AI Platform Querying**: System queries each selected AI platform with the keywords
-3. **Response Analysis**: OpenAI GPT-4o analyzes responses for brand mentions, position, and competitors
-4. **Data Storage**: Results are stored with metadata including confidence scores and analysis data
-5. **Dashboard Updates**: Real-time updates to the dashboard showing latest tracking results
-6. **Competitor Tracking**: Automatic identification and tracking of competitor brand mentions
+### Feature Specifications
+-   **Keyword Management**: Comprehensive keyword library with search, filter, and delete functionality. Supports import from Google Sheets (with automatic brand creation and duplicate detection) and CSV.
+-   **Position Tracking**: Automatic and manual position tracking for organic keywords across Google Search Console, with country-specific tracking, position history, and trend indicators.
+-   **Alert System**: Configurable alerts for mention changes, position improvements, new platform mentions, and mention increases, delivered via Brevo email service with detailed HTML templates.
+-   **Reporting**: Generates reports based on tracking data.
 
 ## External Dependencies
 
 ### Database
-- **Neon PostgreSQL**: Serverless PostgreSQL database
-- **Connection Pooling**: Built-in connection pooling for optimal performance
+-   **Neon PostgreSQL**: Serverless PostgreSQL database.
 
 ### AI Services
-- **OpenAI API**: GPT-4o model for intelligent analysis of AI responses
-- **Multi-platform Support**: Designed to integrate with ChatGPT, Claude, Gemini, and Perplexity APIs
+-   **OpenAI API**: GPT-4o model for analyzing AI responses.
+-   **Integration with**: ChatGPT, Claude, Gemini, and Perplexity APIs.
 
 ### Google Services
-- **Google Sheets API**: For importing keywords directly from spreadsheets
-- **Service Account Authentication**: Secure API access without manual login
+-   **Google Sheets API**: For importing keywords from spreadsheets, using service account authentication.
+-   **Google Search Console API**: For organic keyword position tracking and historical data, using service account authentication.
+
+### Email Service
+-   **Brevo**: For sending alert notifications and confirmations.
 
 ### Development Tools
-- **Drizzle Kit**: Database migrations and schema management
-- **ESBuild**: Production bundling for server-side code
-- **PostCSS**: CSS processing with Tailwind CSS
+-   **Drizzle Kit**: For database migrations and schema management.
+-   **ESBuild**: For production bundling of server-side code.
+-   **PostCSS**: For CSS processing with Tailwind CSS.
 
 ### UI Libraries
-- **Radix UI**: Accessible, unstyled UI primitives
-- **Lucide React**: Icon library
-- **Date-fns**: Date manipulation utilities
-- **Class Variance Authority**: Utility for managing component variants
-
-## Deployment Strategy
-
-### Development
-- **Hot Reloading**: Vite development server with Express middleware
-- **Type Checking**: Real-time TypeScript compilation
-- **Database Migrations**: Drizzle push for schema changes
-
-### Production
-- **Build Process**: Vite builds the client, ESBuild bundles the server
-- **Static Assets**: Client build served from Express static middleware
-- **Environment Variables**: Database URL and API keys via environment configuration
-- **Session Management**: Persistent sessions using PostgreSQL storage
-
-### Architecture Benefits
-- **Type Safety**: End-to-end TypeScript ensures compile-time error catching
-- **Performance**: Optimized builds with code splitting and tree shaking
-- **Scalability**: Serverless database with connection pooling
-- **Maintainability**: Clear separation of concerns with service layer abstraction
-- **Real-time Updates**: React Query provides automatic data synchronization
-
-The application is structured as a monorepo with shared schemas between client and server, ensuring consistent data types across the full stack.
-
-## Recent Changes (August 2025)
-
-### AI SEO Recommendation Feature Removal Complete ✅
-- **COMPLETE CLEANUP**: Removed all AI SEO Recommendation feature code and related components
-- **FILES DELETED**: `SeoRecommendations.tsx`, `mlRecommendationEngine.ts`, `AI_RECOMMENDATIONS_SETUP.md`
-- **NAVIGATION CLEANUP**: Removed "AI SEO Recommendations" from sidebar navigation
-- **ROUTING CLEANUP**: Removed `/ml-recommendations` route from App.tsx
-- **BACKEND CLEANUP**: Removed all ML recommendation routes and storage methods
-- **IMPORTS CLEANUP**: Removed unused imports and type definitions
-- **STORAGE CLEANUP**: Removed createUserProfile, getUserProfile, createSeoRecommendation, getSeoRecommendations, updateSeoRecommendation, createMlInsight, getMlInsights methods
-- **RESULT**: Application now focused exclusively on AI Page Quality Auditor feature
-- **STATUS**: Clean codebase with no references to removed AI SEO feature
-
-### UI Rebranding Complete ✅
-- **NEW NAME**: Changed "AI Page Quality Auditor" to "🤖 AI Visibility Inspector"
-- **ICON UPDATE**: Replaced Lightbulb icon with Bot icon for AI theme consistency
-- **NAVIGATION UPDATE**: Updated sidebar navigation with new name and AI robot emoji
-- **PAGE TITLE**: Updated main page heading and explanation section titles
-- **THEME CONSISTENCY**: Maintains professional AI-focused branding throughout interface
-- **USER EXPERIENCE**: Cleaner, more intuitive naming for the core visibility analysis feature
-
-### Database Migration Deployment Fix Complete ✅
-- **COMPREHENSIVE SOLUTION**: Applied all three suggested fixes with multiple protection layers
-- **Fix 1**: Complete migration system bypass with `deploy-safe.js`, `pre-deploy.js`, and multiple fallback scripts
-- **Fix 2**: Multiple environment variables (`SKIP_MIGRATIONS`, `NODE_ENV`, `DRIZZLE_KIT_SKIP`) configured in `replit.toml`
-- **Fix 3**: Clear Replit support contact guidance throughout all deployment scripts and documentation
-- **FILES CREATED**: `deploy-safe.js`, `pre-deploy.js`, `deploy.sh`, enhanced migration directory structure
-- **TESTING**: All deployment scripts tested and working with ES module compatibility
-- **STATUS**: Application ready for immediate deployment with complete migration bypass
-- **DOCUMENTATION**: Comprehensive guides in `DEPLOYMENT_STATUS.md`, `MIGRATION_BYPASS_GUIDE.md`, `DEPLOYMENT_INSTRUCTIONS.md`
-
-### Automatic Position Tracking System Complete ✅
-- Implemented Google scraping service for real-time position detection
-- Added "🤖 Auto-Check All" button for one-click automatic position updates
-- **NEW KEYWORD AUTO-DETECTION**: Position automatically checked when adding new keywords
-- Enhanced position detection with multiple fallback methods for NotifyVisitors domain
-- Manual verification shows "best customer data platform software" ranks #14 in India
-- Test results: "customer engagement software" auto-detected at Position #5
-- Both automatic and manual position tracking methods now fully operational
-- Improved domain matching and URL extraction for accurate position detection
-- Success message guides users: "Position is being checked automatically. Refresh in 10-15 seconds"
-- Auto-refresh functionality added to show updated positions without manual reload
-
-## Recent Changes (August 2025)
-
-### Organic Keywords Tracking Complete ✅
-- Added separate "Organic SEO" tab for Google Search Console integration
-- Country-specific keyword tracking with 8+ countries (US, India, UK, etc.)
-- Real-time position monitoring with Search Console API sync
-- Domain-based tracking with position history and trends
-- Clean, fast interface optimized for performance
-- Automatic position updates with click-through rates and impressions
-- Setup guide created: SEARCH_CONSOLE_SETUP.md
-
-### Search Console API Integration
-- Google Search Console service for real keyword positions
-- Supports verified domains and site properties
-- Rate-limited API calls with automatic delays
-- Historical position tracking with ranking changes
-- Landing page URL identification for each keyword
-- Country-specific search data (usa, ind, gbr, etc.)
-- Service account authentication for secure access
-- JSON format troubleshooting guide created (GOOGLE_API_TROUBLESHOOTING.md)
-- Clear error messages guide users to fix Secrets formatting issues
-
-### Email Integration Complete ✅
-- Successfully integrated Brevo email service with verified sender domain
-- Fixed sender authentication using jason@notifyvisitorsmail.com
-- Alert creation emails now delivering successfully to inbox
-- Beautiful HTML email templates with position tracking and brand styling
-- All 4 alert notification types working: mention_change, position_improve, new_platform, mention_increase
-- Position details displayed in subject lines and email content with color coding
-- Email notifications fully operational for all alert triggers and creation confirmations
-
-### Manual Position Update Feature Complete ✅
-- Added manual position update functionality with Update buttons for each keyword
-- Implemented PATCH API endpoint /api/organic-keywords/:id with position validation (1-100)
-- Database method stores previous position automatically when updating
-- Position badge system with color coding: green (top 3), blue (4-10), gray (11+)
-- Trend indicators show improvement/decline arrows when previous position exists
-- Perfect workaround for Google Search Console JSON formatting issues
-- Full position tracking history maintained for trend analysis
-
-### Alert System Database Fixes
-- Fixed critical alert creation database schema issues by adding missing columns
-- Added brand_id, keyword_id, platforms, trigger_conditions, notification_methods, last_triggered, updated_at columns
-- Removed NOT NULL constraint from legacy alert_type column to maintain compatibility
-- Alert creation functionality now working properly with proper validation
-- All API parameter order issues fixed across the application (apiRequest method calls)
-
-### UI Improvements
-- Updated primary button color to orange (#FB9A4E) across entire application
-- Fixed navigation menu by restoring Keywords option access
-- Resolved duplicate keyword prevention system
-- Optimized API usage from polling to on-demand fetching
-- Added 1-minute server-side caching for usage stats
-
-### Database Updates
-- Added 6 new brands to production: mParticle, Treasure Data, Insider, Netcore Cloud, WebEngage, MoEngage
-- Proper database population with original brands plus new additions
-- Alert system fully operational with proper schema
-
-## Previous Changes (January 2025)
-
-### Google Sheets Integration
-- Added Google Sheets API integration using googleapis package
-- Created GoogleSheetsImportModal component for keyword import
-- Implemented server-side Google Sheets service with authentication
-- Added API endpoints for sheet info retrieval and keyword import
-- Expected sheet format: Column A (Keywords), Column B (Category), Column C (Brand), Column D (Platforms)
-- Automatic brand creation if brand doesn't exist
-- Duplicate keyword detection and skipping
-- Error handling for invalid sheets or API issues
-- Integration with QuickActions component for easy access
-
-### CSV Import Alternative
-- Created CSVImportModal component as Google Sheets alternative
-- Direct file upload without external API dependencies
-- Downloadable CSV template for proper formatting
-- Real-time preview of uploaded data
-- Batch processing with error handling and progress reporting
-
-### Keywords Library Page
-- Dedicated /keywords route for comprehensive keyword management
-- Search and filter functionality by keyword text, brand, and category
-- Statistics overview showing total keywords, brands, and categories
-- Individual keyword details with platform tracking settings
-- Delete functionality for keyword management
-- Navigation integration with main app structure
-
-### Platform Icons & Branding
-- Added authentic AI platform icons using react-icons package
-- OpenAI (ChatGPT), Anthropic (Claude), Google (Gemini) official icons
-- Custom Perplexity icon with brand colors
-- Platform badges with proper color schemes throughout the app
-- Consistent icon usage in search filters, results tables, and navigation
-
-### Navigation & Quick Actions
-- Moved Quick Actions from homepage to navigation dropdown menu
-- Clean navigation bar with Dashboard, Keywords, and Analytics tabs
-- Quick Actions dropdown includes: Add Keywords, Import CSV, Import from Sheets, Generate Report, Setup Alerts
-- All modals accessible from navigation menu with proper icons
-- Removed QuickActions component from dashboard for cleaner layout
-- Welcome message on dashboard when no search performed
-
-### Setup Requirements
-To use Google Sheets import:
-1. Create Google Cloud project and enable Google Sheets API
-2. Create service account and download JSON key
-3. Set GOOGLE_SERVICE_ACCOUNT_KEY environment variable with JSON content
-4. Share target Google Sheets with service account email
+-   **Radix UI**: Accessible, unstyled UI primitives.
+-   **Lucide React**: Icon library.
+-   **Date-fns**: Date manipulation utilities.
+-   **Class Variance Authority**: Utility for managing component variants.
+-   **React-icons**: For AI platform icons.
