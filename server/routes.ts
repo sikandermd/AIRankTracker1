@@ -463,6 +463,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Send ONE consolidated email with all brands and keywords
+      if (createdAlerts.length > 0) {
+        try {
+          const emailData = {
+            email: validatedData.notificationMethods.email,
+            alertName: validatedData.name,
+            brands: [] as Array<{ brandName: string; keywords: string[] }>,
+            platforms: validatedData.platforms
+          };
+
+          // Group keywords by brand for email
+          const brandMap = new Map<string, { brandName: string; keywords: string[] }>();
+          
+          for (const alert of createdAlerts) {
+            const brand = await storage.getBrand(alert.brandId);
+            const keyword = validatedData.customKeywords.find(kw => alert.name.includes(kw)) || 'Unknown';
+            
+            if (brand) {
+              if (!brandMap.has(brand.id)) {
+                brandMap.set(brand.id, { brandName: brand.name, keywords: [] });
+              }
+              brandMap.get(brand.id)!.keywords.push(keyword);
+            }
+          }
+
+          emailData.brands = Array.from(brandMap.values());
+          
+          await notificationService.sendMultiBrandAlertCreationEmail(emailData);
+          console.log("Consolidated multi-brand alert creation email sent successfully");
+        } catch (emailError) {
+          console.error("Failed to send consolidated alert creation email:", emailError);
+          // Don't fail the alert creation if email fails
+        }
+      }
+
       console.log(`Successfully created ${createdAlerts.length} alerts`);
       res.status(201).json({
         message: `Successfully created ${createdAlerts.length} alerts`,
