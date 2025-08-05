@@ -490,8 +490,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           emailData.brands = Array.from(brandMap.values());
           
-          await notificationService.sendMultiBrandAlertCreationEmail(emailData);
-          console.log("Consolidated multi-brand alert creation email sent successfully");
+          console.log("Sending consolidated email with data:", emailData);
+          const emailResult = await notificationService.sendMultiBrandAlertCreationEmail(emailData);
+          console.log("Consolidated multi-brand alert creation email result:", emailResult);
         } catch (emailError) {
           console.error("Failed to send consolidated alert creation email:", emailError);
           // Don't fail the alert creation if email fails

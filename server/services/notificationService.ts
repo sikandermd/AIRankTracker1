@@ -717,6 +717,7 @@ export class NotificationService {
     brands: Array<{ brandName: string; keywords: string[] }>;
     platforms: string[];
   }): Promise<boolean> {
+    console.log('sendMultiBrandAlertCreationEmail called with:', data);
     if (!this.apiKey) {
       console.warn('Brevo not configured, skipping multi-brand alert creation email');
       return false;
