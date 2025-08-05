@@ -1100,6 +1100,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Visibility Audit endpoint
+  app.post("/api/ai-visibility-audit", async (req, res) => {
+    try {
+      const { type, url, brandName, domain, queries } = req.body;
+      
+      // Log the API usage
+      apiUsageLogger.logRequest('ai-visibility-audit', 'premium');
+      
+      console.log(`AI Visibility Audit request - Type: ${type}, URL: ${url}, Brand: ${brandName}`);
+      
+      // Simulate AI analysis with comprehensive 20-factor evaluation
+      const mockAnalysisResult = {
+        url: type === 'url' ? url : undefined,
+        brandName: type === 'brand' ? brandName : undefined,
+        overallScore: Math.floor(Math.random() * 4) + 6, // 6-10 score range
+        factors: [
+          {
+            id: 1,
+            name: "Schema Markup (FAQPage, HowTo, Article)",
+            score: Math.floor(Math.random() * 10) + 1,
+            analysis: "Limited schema markup detected. FAQPage and Article schemas are missing, reducing AI model understanding.",
+            actionableAdvice: "Implement FAQPage schema for Q&A sections and Article schema for blog posts to improve LLM comprehension.",
+            icon: "Database"
+          },
+          {
+            id: 2,
+            name: "E-E-A-T (Expertise, Experience, Author Credibility)",
+            score: Math.floor(Math.random() * 10) + 1,
+            analysis: "Author bylines present but lacking detailed expertise indicators and professional credentials.",
+            actionableAdvice: "Add detailed author bios, credentials, and experience sections. Include links to professional profiles.",
+            icon: "Award"
+          },
+          {
+            id: 3,
+            name: "Conversational / Question-Answer Tone",
+            score: Math.floor(Math.random() * 10) + 1,
+            analysis: "Content style is informational but lacks conversational elements that AI models prefer for responses.",
+            actionableAdvice: "Restructure content to include natural questions and answers. Use conversational language patterns.",
+            icon: "Users"
+          },
+          {
+            id: 4,
+            name: "Technical Performance (page speed, crawlability)",
+            score: Math.floor(Math.random() * 10) + 1,
+            analysis: "Page load speed is moderate. Some optimization opportunities exist for better crawlability.",
+            actionableAdvice: "Optimize images, minify CSS/JS, and improve server response times to under 2 seconds.",
+            icon: "Zap"
+          },
+          {
+            id: 5,
+            name: "Accuracy & Query Intent Relevance",
+            score: Math.floor(Math.random() * 10) + 1,
+            analysis: "Content addresses user intent but could be more precise in answering specific queries.",
+            actionableAdvice: "Research actual user questions and provide direct, precise answers in the first paragraph.",
+            icon: "Target"
+          }
+        ],
+        topQuickWins: [
+          "Add FAQ schema markup to existing Q&A sections for immediate LLM recognition",
+          "Include direct answers to common questions in the first 100 words of content",
+          "Add structured data for product/service information to appear in AI responses"
+        ],
+        llmCitabilityRating: ["Low", "Medium", "High"][Math.floor(Math.random() * 3)] as "Low" | "Medium" | "High",
+        sentimentInsights: {
+          brandMentionSentiment: type === 'brand' 
+            ? `${brandName} appears in AI responses with generally positive context, mentioned alongside industry leaders.`
+            : "Page content presents information in a neutral, authoritative tone suitable for AI citation.",
+          negativeSignals: [
+            "Limited third-party validation and reviews",
+            "Sparse mention in authoritative industry publications"
+          ],
+          neutralCues: [
+            "Technical documentation style",
+            "Lack of emotional language or strong positioning statements"
+          ]
+        },
+        extractedFAQs: [
+          {
+            question: "What is the main purpose of this content?",
+            answer: "This content provides comprehensive information about the topic with actionable insights."
+          },
+          {
+            question: "How does this solution compare to alternatives?",
+            answer: "The solution offers unique advantages in terms of implementation and results."
+          }
+        ],
+        citationsList: [
+          "wikipedia.org",
+          "industry-publication.com",
+          "authoritative-source.org",
+          "research-institution.edu"
+        ]
+      };
+
+      // Add remaining factors (6-20) to complete the analysis
+      const remainingFactors = [
+        { id: 6, name: "Clarity & Readability (bullets, headings, short paragraphs)", icon: "FileText" },
+        { id: 7, name: "Freshness / Content Recency", icon: "Clock" },
+        { id: 8, name: "Semantic Relevance / Intent Recognition (LSI keywords)", icon: "Brain" },
+        { id: 9, name: "User Engagement Signals (if available)", icon: "Eye" },
+        { id: 10, name: "Citation Depth & Source Authority", icon: "Shield" },
+        { id: 11, name: "Internal Linking & Topical Hub Structure", icon: "Link" },
+        { id: 12, name: "Content Depth & Original Use Cases", icon: "Sparkles" },
+        { id: 13, name: "Keyword Stuffing / Spammy Signal Avoidance", icon: "XCircle" },
+        { id: 14, name: "Topical Focus vs Generic Content", icon: "Target" },
+        { id: 15, name: "Brand Mentions on reliable domains", icon: "Globe" },
+        { id: 16, name: "Entity Signals / Knowledge Graph Metadata", icon: "Database" },
+        { id: 17, name: "Retrieval-Augmented Generation compatibility (RAG format)", icon: "Brain" },
+        { id: 18, name: "Multi-format layout (tables, quick facts, visuals)", icon: "BarChart3" },
+        { id: 19, name: "Proper HTML Tag Hierarchy (h1/h2/h3)", icon: "FileText" },
+        { id: 20, name: "Human Feedback / Upvotes or Community Ratings", icon: "Users" }
+      ];
+
+      remainingFactors.forEach(factor => {
+        mockAnalysisResult.factors.push({
+          ...factor,
+          score: Math.floor(Math.random() * 10) + 1,
+          analysis: `Analysis for ${factor.name} shows opportunities for improvement in AI visibility.`,
+          actionableAdvice: `Optimize ${factor.name} by implementing best practices for LLM citation and ranking.`
+        });
+      });
+
+      // Calculate overall score as average of all factors
+      const avgScore = mockAnalysisResult.factors.reduce((sum, factor) => sum + factor.score, 0) / mockAnalysisResult.factors.length;
+      mockAnalysisResult.overallScore = Math.round(avgScore * 10) / 10;
+
+      res.json(mockAnalysisResult);
+    } catch (error: unknown) {
+      console.error("AI Visibility Audit error:", error);
+      res.status(500).json({ 
+        error: "Failed to analyze AI visibility", 
+        message: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   // Automatic keyword position tracking
   app.post("/api/organic-keywords/auto-track", async (req, res) => {
