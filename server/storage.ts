@@ -231,7 +231,7 @@ export class DatabaseStorage implements IStorage {
   async createTrackingResult(result: InsertTrackingResult): Promise<TrackingResult> {
     const [newResult] = await db
       .insert(trackingResults)
-      .values(result)
+      .values(result as any)
       .returning();
     return newResult;
   }
@@ -344,15 +344,16 @@ export class DatabaseStorage implements IStorage {
   async createAlert(alert: InsertAlert): Promise<Alert> {
     const [newAlert] = await db
       .insert(alerts)
-      .values(alert)
+      .values(alert as any)
       .returning();
     return newAlert;
   }
 
   async updateAlert(id: string, updates: Partial<InsertAlert>): Promise<Alert> {
+    const updateData: any = { ...updates, updatedAt: new Date() };
     const [updatedAlert] = await db
       .update(alerts)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(alerts.id, id))
       .returning();
     return updatedAlert;
@@ -623,22 +624,23 @@ export class DatabaseStorage implements IStorage {
     brandId?: string;
     period?: string;
   }): Promise<SelectPerformanceMetric[]> {
-    let query = db
-      .select()
-      .from(performanceMetrics)
-      .where(eq(performanceMetrics.userId, userId));
-
+    const conditions = [eq(performanceMetrics.userId, userId)];
+    
     if (filters?.metricType) {
-      query = query.where(eq(performanceMetrics.metricType, filters.metricType));
+      conditions.push(eq(performanceMetrics.metricType, filters.metricType));
     }
     if (filters?.brandId) {
-      query = query.where(eq(performanceMetrics.brandId, filters.brandId));
+      conditions.push(eq(performanceMetrics.brandId, filters.brandId));
     }
     if (filters?.period) {
-      query = query.where(eq(performanceMetrics.period, filters.period));
+      conditions.push(eq(performanceMetrics.period, filters.period));
     }
 
-    return await query.orderBy(desc(performanceMetrics.date));
+    return await db
+      .select()
+      .from(performanceMetrics)
+      .where(and(...conditions))
+      .orderBy(desc(performanceMetrics.date));
   }
 }
 

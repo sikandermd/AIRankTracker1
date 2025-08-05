@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   AlertCircle, 
   Bot, 
+  Brain,
   Search, 
   Globe, 
   CheckCircle,
