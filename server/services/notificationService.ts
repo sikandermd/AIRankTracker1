@@ -770,11 +770,9 @@ export class NotificationService {
     keyword: string;
     platforms: string[];
   }): Promise<boolean> {
-    // Skip individual emails during multi-brand alert creation
-    if (data.alertName.includes(' - ') && data.alertName.toLowerCase().includes('alert')) {
-      console.log('Skipping individual email for multi-brand alert:', data.alertName);
-      return true; // Return success but don't actually send
-    }
+    // Skip ALL individual emails - only send consolidated emails
+    console.log('Skipping individual email for:', data.alertName);
+    return true; // Always skip individual emails
     if (!this.apiKey) {
       console.warn('Brevo not configured, skipping alert creation email');
       return false;
