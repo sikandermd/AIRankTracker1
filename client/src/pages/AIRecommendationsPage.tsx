@@ -174,6 +174,39 @@ export default function AIRecommendationsPage() {
         </div>
       </div>
 
+      {/* Explanatory Section */}
+      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <Info className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
+            <div>
+              <CardTitle className="text-blue-800 dark:text-blue-200 text-lg mb-2">
+                How AI Visibility Auditor Works
+              </CardTitle>
+              <CardDescription className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">
+                <p className="mb-3">
+                  यह AI-powered tool आपके webpage या brand की <strong>AI search engines में visibility</strong> को analyze करता है। 
+                  यह ChatGPT, Claude, Gemini, और Perplexity जैसे LLM platforms में आपके content के citation chances को बढ़ाने के लिए 
+                  comprehensive 20-factor analysis provide करता है।
+                </p>
+                <p className="mb-3">
+                  <strong>URL Analysis:</strong> किसी भी webpage के AI citation factors को analyze करें - schema markup, 
+                  content quality, technical performance, और AI readability को measure करता है।
+                </p>
+                <p className="mb-3">
+                  <strong>Brand + Query Analysis:</strong> आपके brand का specific search queries के context में AI responses में 
+                  कैसा performance है, इसका detailed analysis करता है। Competitor comparison और brand sentiment भी include करता है।
+                </p>
+                <p>
+                  <strong>Real-time Results:</strong> Actionable recommendations के साथ detailed scoring system, 
+                  quick wins, और citations analysis प्रदान करता है जो immediately implement कर सकते हैं।
+                </p>
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Analysis Controls */}
         <Card className="lg:col-span-1">
