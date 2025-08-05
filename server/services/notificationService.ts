@@ -292,6 +292,76 @@ export class NotificationService {
     }
   }
 
+  async sendMultiBrandAlertEmail(data: {
+    email: string;
+    alertName: string;
+    totalAlerts: number;
+    brandReports: Array<{
+      brandName: string;
+      keyword: string;
+      alerts: Array<{
+        type: 'mention_change' | 'position_improve' | 'new_platform' | 'mention_increase';
+        platform: string;
+        previousValue: string;
+        currentValue: string;
+        timestamp: Date;
+      }>;
+    }>;
+  }): Promise<boolean> {
+    if (!this.apiKey) {
+      console.warn('Brevo not configured, skipping multi-brand alert email');
+      return false;
+    }
+
+    try {
+      const subject = this.generateMultiBrandEmailSubject(data);
+      const html = this.generateMultiBrandEmailHTML(data);
+
+      const emailData = {
+        to: [{ email: data.email }],
+        sender: { email: 'jason@notifyvisitorsmail.com', name: 'AI Ranking Tracker' },
+        subject: subject,
+        htmlContent: html,
+        textContent: this.generateMultiBrandTextContent(data)
+      };
+
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Brevo API error:', response.status, errorText);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('Multi-brand alert email sent successfully:', result);
+      return true;
+    } catch (error) {
+      console.error('Multi-brand alert email failed:', error);
+      return false;
+    }
+  }
+
+  private generateMultiBrandEmailSubject(data: {
+    alertName: string;
+    totalAlerts: number;
+    brandReports: Array<{ brandName: string }>;
+  }): string {
+    const brandCount = data.brandReports.length;
+    const brandNames = data.brandReports.slice(0, 2).map(b => b.brandName).join(', ');
+    const moreBrands = brandCount > 2 ? ` and ${brandCount - 2} more` : '';
+    
+    return `🔔 ${data.totalAlerts} Alerts: ${brandNames}${moreBrands} - ${data.alertName}`;
+  }
+
   private generateCombinedEmailSubject(data: {
     brandName: string;
     keyword: string;
@@ -302,6 +372,119 @@ export class NotificationService {
     const platformText = platforms.length === 1 ? platforms[0] : `${platforms.length} platforms`;
     
     return `🔔 ${alertCount} Alert${alertCount > 1 ? 's' : ''}: ${data.brandName} activity on ${platformText}`;
+  }
+
+  private generateMultiBrandEmailHTML(data: {
+    alertName: string;
+    totalAlerts: number;
+    brandReports: Array<{
+      brandName: string;
+      keyword: string;
+      alerts: Array<{
+        type: 'mention_change' | 'position_improve' | 'new_platform' | 'mention_increase';
+        platform: string;
+        previousValue: string;
+        currentValue: string;
+        timestamp: Date;
+      }>;
+    }>;
+  }): string {
+    const getAlertIcon = (type: string) => {
+      switch (type) {
+        case 'mention_change': return '🎉';
+        case 'position_improve': return '📈';
+        case 'new_platform': return '🚀';
+        case 'mention_increase': return '📊';
+        default: return '🔔';
+      }
+    };
+
+    const getAlertDescription = (alert: any) => {
+      switch (alert.type) {
+        case 'mention_change':
+          return `Now mentioned at <strong>${alert.currentValue}</strong> on ${alert.platform}`;
+        case 'position_improve':
+          return `Improved from <span style="color: #dc2626;">${alert.previousValue}</span> to <span style="color: #16a34a; font-weight: bold;">${alert.currentValue}</span> on ${alert.platform}`;
+        case 'new_platform':
+          return `First mention detected on <strong>${alert.platform}</strong> at ${alert.currentValue}`;
+        case 'mention_increase':
+          return `Mentions increased from ${alert.previousValue} to <strong>${alert.currentValue}</strong> on ${alert.platform}`;
+        default:
+          return `Alert triggered on ${alert.platform}`;
+      }
+    };
+
+    const brandSections = data.brandReports.map(brand => {
+      const brandAlerts = brand.alerts.map(alert => `
+        <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #FB9A4E; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 20px; margin-right: 10px;">${getAlertIcon(alert.type)}</span>
+            <strong style="color: #333;">${alert.platform}</strong>
+            <span style="color: #666; margin-left: auto; font-size: 12px;">${alert.timestamp.toLocaleTimeString()}</span>
+          </div>
+          <p style="margin: 0; color: #555; font-size: 14px;">${getAlertDescription(alert)}</p>
+        </div>
+      `).join('');
+
+      return `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #333; margin: 0 0 15px 0; display: flex; align-items: center;">
+            <span style="background: #FB9A4E; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 10px;">BRAND</span>
+            ${brand.brandName}
+          </h3>
+          <p style="color: #666; margin: 0 0 15px 0;"><strong>Keyword:</strong> "${brand.keyword}"</p>
+          <div>${brandAlerts}</div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #FB9A4E, #FF7F3F); padding: 30px; border-radius: 8px; color: white; text-align: center;">
+          <h1 style="margin: 0; font-size: 24px;">🔔 Multi-Brand Alert Report</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">${data.totalAlerts} alerts detected across ${data.brandReports.length} brands</p>
+        </div>
+        
+        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #e5e5e5;">
+          <h2 style="color: #333; margin: 0 0 10px 0;">Alert: ${data.alertName}</h2>
+          <p style="color: #666; margin: 0 0 20px 0;">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        </div>
+
+        ${brandSections}
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px;">
+          <p style="color: #666; margin: 0; font-size: 12px;">
+            Powered by AI Ranking Tracker | 
+            <a href="mailto:jason@notifyvisitorsmail.com" style="color: #FB9A4E;">Contact Support</a>
+          </p>
+        </div>
+      </div>
+    `;
+  }
+
+  private generateMultiBrandTextContent(data: {
+    alertName: string;
+    totalAlerts: number;
+    brandReports: Array<{
+      brandName: string;
+      keyword: string;
+      alerts: Array<{
+        type: string;
+        platform: string;
+        previousValue: string;
+        currentValue: string;
+      }>;
+    }>;
+  }): string {
+    const brandSummaries = data.brandReports.map(brand => {
+      const alertSummaries = brand.alerts.map(alert => 
+        `- ${alert.platform}: ${alert.type} (${alert.currentValue})`
+      ).join('\n');
+      
+      return `${brand.brandName} (${brand.keyword}):\n${alertSummaries}`;
+    }).join('\n\n');
+
+    return `Multi-Brand Alert Report\n\nAlert: ${data.alertName}\nTotal Alerts: ${data.totalAlerts}\nBrands: ${data.brandReports.length}\n\n${brandSummaries}\n\nGenerated by AI Ranking Tracker`;
   }
 
   private generateCombinedEmailHTML(data: {
