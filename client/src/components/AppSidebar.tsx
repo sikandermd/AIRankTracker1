@@ -13,8 +13,7 @@ import {
   Settings,
   Bot,
   Mail,
-
-  Lightbulb,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -71,7 +70,7 @@ const AppSidebar = () => {
     { path: "/keywords", label: "Keywords", icon: Tag },
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
 
-    { path: "/ai-recommendations", label: "🧠 AI Page Quality Auditor", icon: Lightbulb },
+    { path: "/ai-recommendations", label: "🤖 AI Visibility Inspector", icon: Bot },
     { path: "/alerts", label: "Alerts", icon: Bell },
     { path: "/combined-alerts", label: "Combined Alerts", icon: Mail },
   ];

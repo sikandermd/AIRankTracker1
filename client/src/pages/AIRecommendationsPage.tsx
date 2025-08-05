@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   AlertCircle, 
-  Brain, 
+  Bot, 
   Search, 
   Globe, 
   CheckCircle,
@@ -29,7 +29,6 @@ import {
   Database,
   Sparkles,
   BarChart3,
-  Lightbulb,
   Info
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -167,8 +166,8 @@ export default function AIRecommendationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Brain className="h-8 w-8 text-blue-600" />
-            AI Visibility Auditor Agent
+            <Bot className="h-8 w-8 text-blue-600" />
+            🤖 AI Visibility Inspector
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">
             Professional 20-Factor Analysis for LLM Citation Optimization (ChatGPT, Perplexity, Claude, Gemini, AI Overviews)
@@ -192,7 +191,7 @@ export default function AIRecommendationsPage() {
         <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mb-4">
           <CardHeader>
             <CardTitle className="text-blue-800 dark:text-blue-200 text-lg mb-2">
-              How AI Visibility Auditor Works
+              How AI Visibility Inspector Works
             </CardTitle>
             <CardDescription className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">
               <p className="mb-3">
