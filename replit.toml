@@ -1,20 +1,14 @@
-# Schema-safe deployment - Platform issue workaround
+# Migration-free deployment configuration
 [deployment]
-run = ["node", "deployment-schema-safe.js"]
+run = ["node", "deploy-fix.js"]
 deploymentTarget = "cloudrun"
 
 [deployment.environment]
 NODE_ENV = "production"
+SKIP_MIGRATIONS = "true"
 USE_EXISTING_SCHEMA = "true"
-SKIP_MIGRATION_CHECKS = "true"
-PRESERVE_DATABASE_STATE = "true"
-DISABLE_PACKAGE_CACHE = "true"
-NPM_CONFIG_CACHE = "false"
-YARN_CACHE_FOLDER = "/tmp/yarn-cache"
+NO_DB_MIGRATIONS = "true"
+DATABASE_SKIP_MIGRATIONS = "true"
 
-# Build without migration dependencies
-build = ["sh", "-c", "echo 'Schema-safe build: Using existing database schema' && npm run build"]
-
-# Normal deployment with migrations enabled
-[deployment.ignorePorts]
-value = false
+# Build process without migrations
+build = ["npm", "run", "build"]

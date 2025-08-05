@@ -11,12 +11,17 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  // Optimize for deployment stability
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
 
-// Create database connection optimized for existing schema
+// Migration-free database connection
 export const db = drizzle({ 
   client: pool, 
   schema,
-  // Optimized for platform compatibility
   logger: process.env.NODE_ENV === 'development'
 });
