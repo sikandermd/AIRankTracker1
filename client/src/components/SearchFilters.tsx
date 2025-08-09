@@ -57,6 +57,9 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
   });
 
   const onSubmit = async (data: z.infer<typeof searchSchema>) => {
+    console.log("Form submitted with data:", data);
+    console.log("Form errors:", form.formState.errors);
+    
     try {
       const keywords = data.keywords.split(',').map(k => k.trim()).filter(k => k);
       
@@ -85,6 +88,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
         description: `Tracking ${keywords.length} keywords for ${data.brandIds.length} brands across ${data.platforms.length} platforms`,
       });
     } catch (error) {
+      console.error("Form submission error:", error);
       toast({
         title: "Search Failed",
         description: "Failed to start keyword tracking",
@@ -99,7 +103,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
       : [...selectedPlatforms, platformId];
     
     setSelectedPlatforms(newPlatforms);
-    form.setValue('platforms', newPlatforms);
+    form.setValue('platforms', newPlatforms, { shouldValidate: true });
   };
 
   const removePlatform = (platformId: string) => {
@@ -114,7 +118,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
       : [...selectedBrands, brandId];
     
     setSelectedBrands(newBrands);
-    form.setValue('brandIds', newBrands);
+    form.setValue('brandIds', newBrands, { shouldValidate: true });
   };
 
   const clearFilters = () => {
@@ -159,7 +163,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
                 <div>
                   <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Brands</FormLabel>
                   <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3 bg-gray-50">
-                    {brands?.map((brand: any) => (
+                    {(brands as any[] || []).map((brand: any) => (
                       <div key={brand.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`brand-${brand.id}`}
@@ -178,7 +182,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
                   {selectedBrands.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {selectedBrands.map((brandId) => {
-                        const brand = brands?.find((b: any) => b.id === brandId);
+                        const brand = (brands as any[] || []).find((b: any) => b.id === brandId);
                         return (
                           <Badge key={brandId} variant="secondary" className="text-xs">
                             {brand?.name}
