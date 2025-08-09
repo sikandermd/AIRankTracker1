@@ -40,6 +40,7 @@ const AI_PLATFORMS = [
 export default function SearchFilters({ onSearch, isSearching = false }: SearchFiltersProps) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const { data: brands } = useQuery({
@@ -59,6 +60,8 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
   const onSubmit = async (data: z.infer<typeof searchSchema>) => {
     console.log("Form submitted with data:", data);
     console.log("Form errors:", form.formState.errors);
+    
+    setIsSubmitting(true);
     
     try {
       const keywords = data.keywords.split(',').map(k => k.trim()).filter(k => k);
@@ -94,6 +97,8 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
         description: "Failed to start keyword tracking",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,7 +114,7 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
   const removePlatform = (platformId: string) => {
     const newPlatforms = selectedPlatforms.filter(p => p !== platformId);
     setSelectedPlatforms(newPlatforms);
-    form.setValue('platforms', newPlatforms);
+    form.setValue('platforms', newPlatforms, { shouldValidate: true });
   };
 
   const handleBrandToggle = (brandId: string) => {
@@ -275,13 +280,20 @@ export default function SearchFilters({ onSearch, isSearching = false }: SearchF
                 <div className="flex space-x-3">
                   <Button 
                     type="submit" 
-                    className="bg-primary hover:bg-blue-700"
-                    disabled={isSearching}
+                    className="bg-primary hover:bg-blue-700 transition-all duration-200"
+                    disabled={isSearching || isSubmitting}
+                    onClick={(e) => {
+                      // Force form validation and submission
+                      console.log("Button clicked");
+                      console.log("Form valid:", form.formState.isValid);
+                      console.log("Form values:", form.getValues());
+                      console.log("Form errors:", form.formState.errors);
+                    }}
                   >
-                    {isSearching ? (
+                    {(isSearching || isSubmitting) ? (
                       <>
                         <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Tracking...
+                        {isSubmitting ? "Processing..." : "Tracking..."}
                       </>
                     ) : (
                       <>
