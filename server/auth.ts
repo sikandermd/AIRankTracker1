@@ -34,12 +34,17 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Google OAuth Strategy
-  passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: "/api/auth/google/callback"
-  }, async (accessToken, refreshToken, profile, done) => {
+  // Only setup Google OAuth if credentials are available
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  
+  if (googleClientId && googleClientSecret) {
+    // Google OAuth Strategy
+    passport.use(new GoogleStrategy({
+      clientID: googleClientId,
+      clientSecret: googleClientSecret,
+      callbackURL: "/api/auth/google/callback"
+    }, async (accessToken, refreshToken, profile, done) => {
     try {
       // Extract user info from Google profile
       const userData = {
@@ -74,7 +79,7 @@ export function setupAuth(app: Express) {
       return done(null, user);
     } catch (error) {
       console.error('Google OAuth error:', error);
-      return done(error, null);
+      return done(error, false);
     }
   }));
 
@@ -93,18 +98,30 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Auth routes
-  app.get('/api/auth/google', 
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
+    // Auth routes
+    app.get('/api/auth/google', 
+      passport.authenticate('google', { scope: ['profile', 'email'] })
+    );
 
-  app.get('/api/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-      // Successful authentication, redirect to dashboard
-      res.redirect('/');
-    }
-  );
+    app.get('/api/auth/google/callback',
+      passport.authenticate('google', { failureRedirect: '/login' }),
+      (req, res) => {
+        // Successful authentication, redirect to dashboard
+        res.redirect('/');
+      }
+    );
+  } else {
+    console.warn('Google OAuth credentials not found. Google authentication will be disabled.');
+    
+    // Provide fallback routes when OAuth is disabled
+    app.get('/api/auth/google', (req, res) => {
+      res.status(500).json({ message: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.' });
+    });
+
+    app.get('/api/auth/google/callback', (req, res) => {
+      res.status(500).json({ message: 'Google OAuth not configured.' });
+    });
+  }
 
   app.get('/api/auth/user', (req, res) => {
     if (req.isAuthenticated()) {

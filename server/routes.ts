@@ -209,10 +209,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/keywords", async (req, res) => {
     try {
       const { keyword, brandId, category } = req.body;
+      const user = getCurrentUser(req);
       const newKeyword = await storage.createKeyword({
         keyword,
         brandId,
         category: category || 'General',
+        userId: user.id, // Add required userId
       });
       res.json(newKeyword);
     } catch (error: unknown) {
@@ -385,10 +387,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customKeywords: z.array(z.string()).min(1, "At least one keyword must be added"),
         platforms: z.array(z.string()).min(1, "At least one platform must be selected"),
         triggerConditions: z.object({
-          mention_change: z.boolean().default(false),
-          position_improve: z.boolean().default(false),
-          new_platform: z.boolean().default(false),
-          mention_increase: z.boolean().default(false),
+          mentionChange: z.boolean().default(false),
+          positionImprove: z.boolean().default(false),
+          newPlatform: z.boolean().default(false),
+          mentionIncrease: z.boolean().default(false),
         }),
         notificationMethods: z.object({
           email: z.string().email("Please enter a valid email"),
@@ -542,10 +544,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customKeywords: z.array(z.string()).min(1, "At least one keyword must be added"),
         platforms: z.array(z.string()).min(1, "At least one platform must be selected"),
         triggerConditions: z.object({
-          mention_change: z.boolean().default(false),
-          position_improve: z.boolean().default(false),
-          new_platform: z.boolean().default(false),
-          mention_increase: z.boolean().default(false),
+          mentionChange: z.boolean().default(false),
+          positionImprove: z.boolean().default(false),
+          newPlatform: z.boolean().default(false),
+          mentionIncrease: z.boolean().default(false),
         }),
         notificationMethods: z.object({
           email: z.string().email("Please enter a valid email"),
@@ -1444,10 +1446,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
         case 'report':
           // Generate summary report
-          result = await storage.getTrackingResultsByDateRange(
-            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-            new Date()
-          );
+          result = await storage.getTrackingResults({
+            startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+            endDate: new Date()
+          });
           break;
         case 'monitor':
           // Get dashboard stats for monitoring
