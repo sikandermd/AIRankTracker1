@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, requireAuth, getCurrentUser } from "./auth";
 import { insertBrandSchema, insertKeywordSchema, insertTrackingResultSchema, insertOrganicKeywordSchema, alerts } from "@shared/schema";
 
 import { createInsertSchema } from "drizzle-zod";
@@ -13,20 +14,28 @@ import { z } from "zod";
 import { apiUsageLogger } from "./apiUsageLogger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Brand routes
-  app.get("/api/brands", async (req, res) => {
+  // Setup authentication
+  setupAuth(app);
+
+  // Brand routes - protected
+  app.get("/api/brands", requireAuth, async (req, res) => {
     try {
-      const brands = await storage.getAllBrands();
+      const user = getCurrentUser(req);
+      const brands = await storage.getAllBrands(user?.id);
       res.json(brands);
     } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch brands" });
     }
   });
 
-  app.post("/api/brands", async (req, res) => {
+  app.post("/api/brands", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       console.log('Creating brand with data:', req.body);
-      const validatedData = insertBrandSchema.parse(req.body);
+      const validatedData = insertBrandSchema.parse({
+        ...req.body,
+        userId: user.id // Ensure brand belongs to current user
+      });
       console.log('Validated data:', validatedData);
       const brand = await storage.createBrand(validatedData);
       res.status(201).json(brand);
@@ -36,22 +45,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Keyword routes
-  app.get("/api/keywords", async (req, res) => {
+  // Keyword routes - protected
+  app.get("/api/keywords", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { brandId } = req.query;
       const keywords = brandId 
         ? await storage.getKeywordsByBrand(brandId as string)
-        : await storage.getAllKeywords();
+        : await storage.getAllKeywords(user?.id);
       res.json(keywords);
     } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch keywords" });
     }
   });
 
-  app.post("/api/keywords", async (req, res) => {
+  app.post("/api/keywords", requireAuth, async (req, res) => {
     try {
-      const validatedData = insertKeywordSchema.parse(req.body);
+      const user = getCurrentUser(req);
+      const validatedData = insertKeywordSchema.parse({
+        ...req.body,
+        userId: user.id // Ensure keyword belongs to current user
+      });
       const keyword = await storage.createKeyword(validatedData);
       res.status(201).json(keyword);
     } catch (error: unknown) {

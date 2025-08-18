@@ -4,17 +4,34 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for user sessions
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Google OAuth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const brands = pgTable("brands", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull().unique(),
+  name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
+  userId: varchar("user_id").references(() => users.id).notNull(), // Each brand belongs to a user
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -23,6 +40,7 @@ export const keywords = pgTable("keywords", {
   keyword: text("keyword").notNull(),
   category: text("category"),
   brandId: varchar("brand_id").references(() => brands.id),
+  userId: varchar("user_id").references(() => users.id).notNull(), // Keywords belong to users
   trackGpt: boolean("track_gpt").default(true),
   trackClaude: boolean("track_claude").default(true),
   trackGemini: boolean("track_gemini").default(true),
@@ -31,6 +49,7 @@ export const keywords = pgTable("keywords", {
 }, (table) => ({
   keywordIdx: index("keyword_idx").on(table.keyword),
   brandIdx: index("brand_idx").on(table.brandId),
+  userIdx: index("user_idx").on(table.userId),
 }));
 
 export const trackingResults = pgTable("tracking_results", {
@@ -264,6 +283,7 @@ export const insertCombinedAlertLogSchema = createInsertSchema(combinedAlertLogs
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 
 export type Brand = typeof brands.$inferSelect;
 export type InsertBrand = z.infer<typeof insertBrandSchema>;

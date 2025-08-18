@@ -15,18 +15,19 @@ import { db } from "./db";
 import { eq, desc, and, sql, inArray, gte, count } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations
+  // User operations for authentication
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: string, updates: Partial<InsertUser>): Promise<User>;
 
-  // Brand operations
-  getAllBrands(): Promise<Brand[]>;
+  // Brand operations (user-specific)
+  getAllBrands(userId?: string): Promise<Brand[]>;
   getBrand(id: string): Promise<Brand | undefined>;
   createBrand(brand: InsertBrand): Promise<Brand>;
 
-  // Keyword operations
-  getAllKeywords(): Promise<Keyword[]>;
+  // Keyword operations (user-specific)
+  getAllKeywords(userId?: string): Promise<Keyword[]>;
   getKeywordsByBrand(brandId: string): Promise<Keyword[]>;
   getKeyword(id: string): Promise<Keyword | undefined>;
   createKeyword(keyword: InsertKeyword): Promise<Keyword>;
@@ -101,9 +102,18 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
+  }
+
+  async updateUser(id: string, updates: Partial<InsertUser>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -114,7 +124,12 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getAllBrands(): Promise<Brand[]> {
+  async getAllBrands(userId?: string): Promise<Brand[]> {
+    if (userId) {
+      return await db.select().from(brands)
+        .where(eq(brands.userId, userId))
+        .orderBy(brands.name);
+    }
     return await db.select().from(brands).orderBy(brands.name);
   }
 
@@ -138,7 +153,12 @@ export class DatabaseStorage implements IStorage {
     return newBrand;
   }
 
-  async getAllKeywords(): Promise<Keyword[]> {
+  async getAllKeywords(userId?: string): Promise<Keyword[]> {
+    if (userId) {
+      return await db.select().from(keywords)
+        .where(eq(keywords.userId, userId))
+        .orderBy(desc(keywords.createdAt));
+    }
     return await db.select().from(keywords).orderBy(desc(keywords.createdAt));
   }
 
