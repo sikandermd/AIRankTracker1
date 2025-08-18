@@ -1403,5 +1403,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // n8n Integration endpoint - Webhook for external automation
+  app.post("/api/webhooks/n8n/trigger", async (req, res) => {
+    try {
+      const schema = z.object({
+        action: z.enum(['track', 'analyze', 'report', 'monitor']),
+        data: z.any(),
+        webhookUrl: z.string().url().optional(),
+      });
+      
+      const { action, data, webhookUrl } = schema.parse(req.body);
+      
+      // Process different actions for n8n workflows
+      let result;
+      switch (action) {
+        case 'track':
+          // Trigger tracking workflow
+          if (!data.keywords || !data.brandId || !data.platforms) {
+            throw new Error('Missing required fields for tracking: keywords, brandId, platforms');
+          }
+          result = await trackingService.trackKeywords(data.keywords, data.brandId, data.platforms);
+          break;
+        case 'analyze':
+          // Analyze existing results
+          result = await storage.getLatestResults();
+          break;
+        case 'report':
+          // Generate summary report
+          result = await storage.getTrackingResultsByDateRange(
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+            new Date()
+          );
+          break;
+        case 'monitor':
+          // Get dashboard stats for monitoring
+          result = await storage.getDashboardStats();
+          break;
+        default:
+          throw new Error('Invalid action');
+      }
+      
+      // If webhook URL provided, send result there (for n8n callback)
+      if (webhookUrl) {
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              action, 
+              result, 
+              timestamp: new Date().toISOString(),
+              success: true 
+            })
+          });
+        } catch (webhookError) {
+          console.error('n8n webhook delivery failed:', webhookError);
+        }
+      }
+      
+      res.json({ success: true, action, result, timestamp: new Date().toISOString() });
+    } catch (error: unknown) {
+      console.error('n8n webhook error:', error);
+      res.status(400).json({ 
+        success: false,
+        message: "n8n webhook failed", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
   return httpServer;
 }
