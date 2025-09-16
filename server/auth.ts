@@ -38,6 +38,21 @@ export function setupAuth(app: Express) {
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
   
+  // Serialize user for session (always needed)
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+
+  // Deserialize user from session (always needed)
+  passport.deserializeUser(async (id: string, done) => {
+    try {
+      const user = await storage.getUser(id);
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  });
+
   if (googleClientId && googleClientSecret) {
     // Google OAuth Strategy
     passport.use(new GoogleStrategy({
@@ -71,8 +86,7 @@ export function setupAuth(app: Express) {
         user = await storage.updateUser(user.id, {
           firstName: userData.firstName,
           lastName: userData.lastName,
-          profileImageUrl: userData.profileImageUrl,
-          updatedAt: new Date()
+          profileImageUrl: userData.profileImageUrl
         });
       }
 
@@ -82,21 +96,6 @@ export function setupAuth(app: Express) {
       return done(error, false);
     }
   }));
-
-  // Serialize user for session
-  passport.serializeUser((user: any, done) => {
-    done(null, user.id);
-  });
-
-  // Deserialize user from session
-  passport.deserializeUser(async (id: string, done) => {
-    try {
-      const user = await storage.getUser(id);
-      done(null, user);
-    } catch (error) {
-      done(error, null);
-    }
-  });
 
     // Auth routes
     app.get('/api/auth/google', 
