@@ -237,8 +237,10 @@ export const organicRankingsRelations = relations(organicRankings, ({ one }) => 
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
 });
 
 export const insertBrandSchema = createInsertSchema(brands).omit({

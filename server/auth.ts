@@ -112,6 +112,36 @@ export function setupAuth(app: Express) {
     );
   } else {
     console.warn('Google OAuth credentials not found. Google authentication will be disabled.');
+    console.log('Development mode: Auto-authenticating demo user');
+    
+    // Development authentication - automatically login demo user
+    app.use(async (req, res, next) => {
+      if (!req.isAuthenticated()) {
+        try {
+          // Get or create demo user
+          let demoUser = await storage.getUser('demo-user-id');
+          if (!demoUser) {
+            demoUser = await storage.createUser({
+              email: 'demo@example.com',
+              firstName: 'Demo',
+              lastName: 'User'
+            });
+          }
+          
+          // Manually set up session for demo user
+          req.login(demoUser, (err) => {
+            if (err) {
+              console.error('Demo user login error:', err);
+            } else {
+              console.log('Demo user automatically authenticated');
+            }
+          });
+        } catch (error) {
+          console.error('Failed to setup demo authentication:', error);
+        }
+      }
+      next();
+    });
     
     // Provide fallback routes when OAuth is disabled
     app.get('/api/auth/google', (req, res) => {
