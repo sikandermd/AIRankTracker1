@@ -15,7 +15,7 @@ import { apiUsageLogger } from "./apiUsageLogger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
-  setupAuth(app);
+  await setupAuth(app);
 
   // Brand routes - protected
   app.get("/api/brands", requireAuth, async (req, res) => {
