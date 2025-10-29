@@ -410,10 +410,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // First create the keyword if it doesn't exist
           let keywordRecord;
           try {
+            const user = getCurrentUser(req);
+            if (!user) {
+              return res.status(401).json({ error: "User not authenticated" });
+            }
+            
             keywordRecord = await storage.createKeyword({
               keyword: keyword,
               brandId: brandId,
               category: "alert-keyword", // Special category for alert keywords
+              userId: user.id,
               trackGpt: validatedData.platforms.includes('gpt') || validatedData.platforms.includes('chatgpt'),
               trackClaude: validatedData.platforms.includes('claude'),
               trackGemini: validatedData.platforms.includes('gemini'),
@@ -573,13 +579,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validatedData.customBrands && validatedData.customBrands.length > 0) {
         for (const customBrand of validatedData.customBrands) {
           try {
-            const createdBrand = await storage.createBrand({
-              name: customBrand.name,
-              description: `Custom brand: ${customBrand.name}`,
-              userId: user.id
-            });
-            customBrandIdMap.set(customBrand.id, createdBrand.id);
-            console.log(`Created custom brand: ${customBrand.name} with ID: ${createdBrand.id}`);
+            // Check if brand already exists by name
+            const allBrands = await storage.getAllBrands();
+            const existingBrand = allBrands.find(
+              b => b.name.toLowerCase() === customBrand.name.toLowerCase() && b.userId === user.id
+            );
+            
+            if (existingBrand) {
+              // Brand already exists, use it
+              customBrandIdMap.set(customBrand.id, existingBrand.id);
+              console.log(`Using existing brand: ${customBrand.name} with ID: ${existingBrand.id}`);
+            } else {
+              // Create new brand
+              const createdBrand = await storage.createBrand({
+                name: customBrand.name,
+                description: `Custom brand: ${customBrand.name}`,
+                userId: user.id
+              });
+              customBrandIdMap.set(customBrand.id, createdBrand.id);
+              console.log(`Created custom brand: ${customBrand.name} with ID: ${createdBrand.id}`);
+            }
           } catch (error) {
             console.error(`Failed to create custom brand ${customBrand.name}:`, error);
           }
@@ -750,7 +769,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
               enhancedBrandMap.get(brand.id)!.keywords.push({
                 keyword: keyword,
-                status: validatedData.triggerConditions
+                status: {
+                  mention_change: validatedData.triggerConditions.mentionChange,
+                  position_improve: validatedData.triggerConditions.positionImprove,
+                  new_platform: validatedData.triggerConditions.newPlatform,
+                  mention_increase: validatedData.triggerConditions.mentionIncrease
+                }
               });
             }
           }
