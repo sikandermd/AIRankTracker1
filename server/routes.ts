@@ -210,7 +210,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/keywords/:id", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { id } = req.params;
+      
+      // Verify ownership before deleting
+      const keyword = await storage.getKeyword(id);
+      if (!keyword) {
+        return res.status(404).json({ message: "Keyword not found" });
+      }
+      if (keyword.userId !== user?.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
       await storage.deleteKeyword(id);
       res.json({ message: "Keyword deleted successfully" });
     } catch (error: unknown) {
@@ -235,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const trackingResults = await storage.getTrackingResults({ keywordId: id, userId: user!.id });
-      const competitorAnalysis = await storage.getCompetitorAnalysis(id);
+      const competitorAnalysis = await storage.getCompetitorAnalysis(id, user!.id);
       const brand = await storage.getBrand(keyword.brandId!);
 
       // Verify brand ownership
@@ -800,6 +811,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/alerts/:id", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
+      
+      // Verify ownership before deleting
+      const alert = await storage.getAlert(req.params.id);
+      if (!alert) {
+        return res.status(404).json({ error: "Alert not found" });
+      }
+      if (alert.userId !== user?.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       await storage.deleteAlert(req.params.id);
       res.status(204).send();
     } catch (error: unknown) {
@@ -997,13 +1019,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/organic-keywords/:id", async (req, res) => {
+  app.patch("/api/organic-keywords/:id", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { id } = req.params;
       const { currentPosition } = req.body;
       
       if (typeof currentPosition !== 'number' || currentPosition < 1 || currentPosition > 100) {
         return res.status(400).json({ message: "Position must be a number between 1 and 100" });
+      }
+      
+      // Verify ownership before updating
+      const organicKeyword = await storage.getOrganicKeyword(id);
+      if (!organicKeyword) {
+        return res.status(404).json({ message: "Organic keyword not found" });
+      }
+      if (organicKeyword.userId !== user?.id) {
+        return res.status(403).json({ message: "Access denied" });
       }
       
       const updatedKeyword = await storage.updateOrganicKeywordPosition(id, currentPosition);

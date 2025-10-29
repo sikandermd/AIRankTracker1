@@ -47,7 +47,7 @@ export interface IStorage {
   getLatestResults(keywordId?: string, userId?: string): Promise<TrackingResult[]>;
 
   // Competitor analysis operations
-  getCompetitorAnalysis(keywordId?: string): Promise<CompetitorAnalysis[]>;
+  getCompetitorAnalysis(keywordId?: string, userId?: string): Promise<CompetitorAnalysis[]>;
   createCompetitorAnalysis(analysis: InsertCompetitorAnalysis): Promise<CompetitorAnalysis>;
 
   // Alert operations
@@ -297,12 +297,20 @@ export class DatabaseStorage implements IStorage {
       .limit(100);
   }
 
-  async getCompetitorAnalysis(keywordId?: string): Promise<CompetitorAnalysis[]> {
+  async getCompetitorAnalysis(keywordId?: string, userId?: string): Promise<CompetitorAnalysis[]> {
+    const conditions = [];
     if (keywordId) {
+      conditions.push(eq(competitorAnalysis.keywordId, keywordId));
+    }
+    if (userId) {
+      conditions.push(eq(competitorAnalysis.userId, userId));
+    }
+
+    if (conditions.length > 0) {
       return await db
         .select()
         .from(competitorAnalysis)
-        .where(eq(competitorAnalysis.keywordId, keywordId))
+        .where(and(...conditions))
         .orderBy(desc(competitorAnalysis.analysisDate));
     }
 
