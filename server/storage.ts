@@ -41,16 +41,17 @@ export interface IStorage {
     aiPlatform?: string;
     startDate?: Date;
     endDate?: Date;
+    userId?: string;
   }): Promise<TrackingResult[]>;
   createTrackingResult(result: InsertTrackingResult): Promise<TrackingResult>;
-  getLatestResults(keywordId?: string): Promise<TrackingResult[]>;
+  getLatestResults(keywordId?: string, userId?: string): Promise<TrackingResult[]>;
 
   // Competitor analysis operations
   getCompetitorAnalysis(keywordId?: string): Promise<CompetitorAnalysis[]>;
   createCompetitorAnalysis(analysis: InsertCompetitorAnalysis): Promise<CompetitorAnalysis>;
 
   // Alert operations
-  getAllAlerts(): Promise<Alert[]>;
+  getAllAlerts(userId?: string): Promise<Alert[]>;
   getAlert(id: string): Promise<Alert | undefined>;
   getAlertsForKeywordAndBrand(keywordId: string, brandId: string): Promise<Alert[]>;
   createAlert(alert: InsertAlert): Promise<Alert>;
@@ -58,13 +59,13 @@ export interface IStorage {
   deleteAlert(id: string): Promise<void>;
 
   // Alert log operations
-  getAlertLogs(alertId?: string): Promise<AlertLog[]>;
+  getAlertLogs(alertId?: string, userId?: string): Promise<AlertLog[]>;
   createAlertLog(log: InsertAlertLog): Promise<AlertLog>;
   updateAlertLog(id: string, updates: Partial<InsertAlertLog>): Promise<AlertLog>;
 
   // Combined Alert operations
   storeCombinedAlertLog(data: InsertCombinedAlertLog): Promise<CombinedAlertLog>;
-  getCombinedAlerts(range?: string): Promise<any[]>;
+  getCombinedAlerts(range?: string, userId?: string): Promise<any[]>;
   getCombinedAlertStats(): Promise<{
     totalCombined: number;
     totalIndividual: number;
@@ -82,14 +83,14 @@ export interface IStorage {
   }>;
 
   // Organic Keywords operations
-  getAllOrganicKeywords(): Promise<OrganicKeyword[]>;
+  getAllOrganicKeywords(userId?: string): Promise<OrganicKeyword[]>;
   getOrganicKeyword(id: string): Promise<OrganicKeyword | undefined>;
   createOrganicKeyword(keyword: InsertOrganicKeyword): Promise<OrganicKeyword>;
   updateOrganicKeyword(id: string, updates: Partial<InsertOrganicKeyword>): Promise<OrganicKeyword>;
   updateOrganicKeywordPosition(id: string, currentPosition: number): Promise<OrganicKeyword>;
   
   // Organic Rankings operations
-  getOrganicRankings(keywordId?: string): Promise<OrganicRanking[]>;
+  getOrganicRankings(keywordId?: string, userId?: string): Promise<OrganicRanking[]>;
   createOrganicRanking(ranking: InsertOrganicRanking): Promise<OrganicRanking>;
 
 
@@ -272,19 +273,22 @@ export class DatabaseStorage implements IStorage {
     return newResult;
   }
 
-  async getLatestResults(keywordId?: string): Promise<TrackingResult[]> {
+  async getLatestResults(keywordId?: string, userId?: string): Promise<TrackingResult[]> {
+    let query = db.select().from(trackingResults);
+
+    const conditions = [];
     if (keywordId) {
-      return await db
-        .select()
-        .from(trackingResults)
-        .where(eq(trackingResults.keywordId, keywordId))
-        .orderBy(desc(trackingResults.trackedAt))
-        .limit(100);
+      conditions.push(eq(trackingResults.keywordId, keywordId));
+    }
+    if (userId) {
+      conditions.push(eq(trackingResults.userId, userId));
     }
 
-    return await db
-      .select()
-      .from(trackingResults)
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return await query
       .orderBy(desc(trackingResults.trackedAt))
       .limit(100);
   }
@@ -349,7 +353,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Alert operations
-  async getAllAlerts(): Promise<Alert[]> {
+  async getAllAlerts(userId?: string): Promise<Alert[]> {
+    if (userId) {
+      return await db
+        .select()
+        .from(alerts)
+        .where(eq(alerts.userId, userId))
+        .orderBy(desc(alerts.createdAt));
+    }
     return await db
       .select()
       .from(alerts)
@@ -402,18 +413,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Alert log operations
-  async getAlertLogs(alertId?: string): Promise<AlertLog[]> {
+  async getAlertLogs(alertId?: string, userId?: string): Promise<AlertLog[]> {
+    let query = db.select().from(alertLogs);
+
+    const conditions = [];
     if (alertId) {
-      return await db
-        .select()
-        .from(alertLogs)
-        .where(eq(alertLogs.alertId, alertId))
-        .orderBy(desc(alertLogs.triggeredAt));
+      conditions.push(eq(alertLogs.alertId, alertId));
+    }
+    if (userId) {
+      conditions.push(eq(alertLogs.userId, userId));
     }
 
-    return await db
-      .select()
-      .from(alertLogs)
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return await query
       .orderBy(desc(alertLogs.triggeredAt))
       .limit(100);
   }
@@ -439,7 +454,12 @@ export class DatabaseStorage implements IStorage {
 
 
   // Organic Keywords operations
-  async getAllOrganicKeywords(): Promise<OrganicKeyword[]> {
+  async getAllOrganicKeywords(userId?: string): Promise<OrganicKeyword[]> {
+    if (userId) {
+      return await db.select().from(organicKeywords)
+        .where(eq(organicKeywords.userId, userId))
+        .orderBy(desc(organicKeywords.createdAt));
+    }
     return await db.select().from(organicKeywords).orderBy(desc(organicKeywords.createdAt));
   }
 
@@ -487,15 +507,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Organic Rankings operations
-  async getOrganicRankings(keywordId?: string): Promise<OrganicRanking[]> {
+  async getOrganicRankings(keywordId?: string, userId?: string): Promise<OrganicRanking[]> {
+    let query = db.select().from(organicRankings);
+
+    const conditions = [];
     if (keywordId) {
-      return await db
-        .select()
-        .from(organicRankings)
-        .where(eq(organicRankings.keywordId, keywordId))
-        .orderBy(desc(organicRankings.checkedAt));
+      conditions.push(eq(organicRankings.keywordId, keywordId));
     }
-    return await db.select().from(organicRankings).orderBy(desc(organicRankings.checkedAt));
+    if (userId) {
+      conditions.push(eq(organicRankings.userId, userId));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return await query.orderBy(desc(organicRankings.checkedAt));
   }
 
   async createOrganicRanking(ranking: InsertOrganicRanking): Promise<OrganicRanking> {
@@ -509,8 +536,8 @@ export class DatabaseStorage implements IStorage {
     return log;
   }
 
-  async getCombinedAlerts(range?: string): Promise<any[]> {
-    let whereClause;
+  async getCombinedAlerts(range?: string, userId?: string): Promise<any[]> {
+    const conditions = [];
     
     if (range && range !== 'all') {
       const now = new Date();
@@ -518,11 +545,15 @@ export class DatabaseStorage implements IStorage {
       
       if (daysBack) {
         const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
-        whereClause = gte(combinedAlertLogs.createdAt, startDate);
+        conditions.push(gte(combinedAlertLogs.createdAt, startDate));
       }
     }
 
-    const logs = await db
+    if (userId) {
+      conditions.push(eq(combinedAlertLogs.userId, userId));
+    }
+
+    let query = db
       .select({
         id: combinedAlertLogs.id,
         brandId: combinedAlertLogs.brandId,
@@ -536,9 +567,13 @@ export class DatabaseStorage implements IStorage {
       })
       .from(combinedAlertLogs)
       .leftJoin(brands, eq(combinedAlertLogs.brandId, brands.id))
-      .leftJoin(keywords, eq(combinedAlertLogs.keywordId, keywords.id))
-      .where(whereClause)
-      .orderBy(desc(combinedAlertLogs.createdAt));
+      .leftJoin(keywords, eq(combinedAlertLogs.keywordId, keywords.id));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    const logs = await query.orderBy(desc(combinedAlertLogs.createdAt));
 
     // Group by brand+keyword+email combination
     const grouped = logs.reduce((acc: any, log: any) => {

@@ -98,9 +98,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Tracking results routes
   app.get("/api/tracking-results", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { keywordId, brandId, aiPlatform, startDate, endDate } = req.query;
       
-      const filters: any = {};
+      const filters: any = { userId: user?.id };
       if (keywordId) filters.keywordId = keywordId as string;
       if (brandId) filters.brandId = brandId as string;
       if (aiPlatform) filters.aiPlatform = aiPlatform as string;
@@ -117,7 +118,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get latest tracking results with keyword and brand details
   app.get("/api/tracking-results/latest", requireAuth, async (req, res) => {
     try {
-      const results = await storage.getLatestResults();
+      const user = getCurrentUser(req);
+      const results = await storage.getLatestResults(undefined, user?.id);
       
       // Enrich with keyword and brand data
       const enrichedResults = await Promise.all(results.map(async (result) => {
@@ -318,8 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Combined Alerts endpoints
   app.get("/api/combined-alerts", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { range } = req.query;
-      const alerts = await storage.getCombinedAlerts(range as string);
+      const alerts = await storage.getCombinedAlerts(range as string, user?.id);
       res.json(alerts);
     } catch (error: unknown) {
       console.error("Error fetching combined alerts:", error);
@@ -367,7 +370,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/alerts", requireAuth, async (req, res) => {
     try {
-      const alerts = await storage.getAllAlerts();
+      const user = getCurrentUser(req);
+      const alerts = await storage.getAllAlerts(user?.id);
       res.json(alerts);
     } catch (error: unknown) {
       console.error("Error fetching alerts:", error);
@@ -819,7 +823,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/alerts/:id/logs", requireAuth, async (req, res) => {
     try {
-      const logs = await storage.getAlertLogs(req.params.id);
+      const user = getCurrentUser(req);
+      const logs = await storage.getAlertLogs(req.params.id, user?.id);
       res.json(logs);
     } catch (error: unknown) {
       console.error("Error fetching alert logs:", error);
@@ -961,7 +966,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Organic Keywords routes
   app.get("/api/organic-keywords", requireAuth, async (req, res) => {
     try {
-      const organicKeywords = await storage.getAllOrganicKeywords();
+      const user = getCurrentUser(req);
+      const organicKeywords = await storage.getAllOrganicKeywords(user?.id);
       res.json(organicKeywords);
     } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch organic keywords" });
@@ -1022,8 +1028,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/organic-rankings/:keywordId?", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { keywordId } = req.params;
-      const rankings = await storage.getOrganicRankings(keywordId);
+      const rankings = await storage.getOrganicRankings(keywordId, user?.id);
       res.json(rankings);
     } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch organic rankings" });
