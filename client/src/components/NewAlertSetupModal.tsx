@@ -41,6 +41,8 @@ export default function NewAlertSetupModal({ isOpen, onClose }: NewAlertSetupMod
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newKeyword, setNewKeyword] = useState("");
+  const [newBrandName, setNewBrandName] = useState("");
+  const [customBrands, setCustomBrands] = useState<Array<{ id: string; name: string }>>([]);
 
   // Fetch brands
   const { data: brands = [] } = useQuery({
@@ -160,6 +162,24 @@ export default function NewAlertSetupModal({ isOpen, onClose }: NewAlertSetupMod
     form.setValue("customKeywords", currentKeywords.filter((_, i) => i !== index));
   };
 
+  const addCustomBrand = () => {
+    if (newBrandName.trim()) {
+      const brandId = `custom-${Date.now()}`;
+      setCustomBrands([...customBrands, { id: brandId, name: newBrandName.trim() }]);
+      setNewBrandName("");
+    }
+  };
+
+  const removeCustomBrand = (brandId: string) => {
+    setCustomBrands(customBrands.filter(brand => brand.id !== brandId));
+    // Also remove from selection if selected
+    const currentSelection = form.getValues("selectedBrands") || [];
+    form.setValue("selectedBrands", currentSelection.filter(id => id !== brandId));
+  };
+
+  // Combine predefined and custom brands
+  const allBrands = [...(brands as any[]), ...customBrands];
+
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -198,34 +218,78 @@ export default function NewAlertSetupModal({ isOpen, onClose }: NewAlertSetupMod
               <FormLabel className="text-base font-semibold text-blue-800">
                 📋 Brands (Select Multiple)
               </FormLabel>
+              
+              {/* Add Custom Brand Input */}
+              <div className="flex space-x-2 mb-3">
+                <Input
+                  value={newBrandName}
+                  onChange={(e) => setNewBrandName(e.target.value)}
+                  placeholder="Add custom brand name"
+                  className="text-base bg-white"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomBrand();
+                    }
+                  }}
+                  data-testid="input-custom-brand"
+                />
+                <Button 
+                  type="button" 
+                  onClick={addCustomBrand} 
+                  size="sm" 
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  data-testid="button-add-custom-brand"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
-                {(brands as any[]).map((brand: any) => (
-                  <FormField
-                    key={brand.id}
-                    control={form.control}
-                    name="selectedBrands"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-3 space-y-0 p-2 bg-white rounded border">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(brand.id)}
-                            onCheckedChange={(checked) => {
-                              const currentSelection = field.value || [];
-                              if (checked) {
-                                field.onChange([...currentSelection, brand.id]);
-                              } else {
-                                field.onChange(currentSelection.filter((id: string) => id !== brand.id));
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-medium cursor-pointer">
-                          {brand.name}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                {allBrands.map((brand: any) => {
+                  const isCustomBrand = brand.id.startsWith('custom-');
+                  return (
+                    <FormField
+                      key={brand.id}
+                      control={form.control}
+                      name="selectedBrands"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-3 space-y-0 p-2 bg-white rounded border">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(brand.id)}
+                              onCheckedChange={(checked) => {
+                                const currentSelection = field.value || [];
+                                if (checked) {
+                                  field.onChange([...currentSelection, brand.id]);
+                                } else {
+                                  field.onChange(currentSelection.filter((id: string) => id !== brand.id));
+                                }
+                              }}
+                              data-testid={`checkbox-brand-${brand.id}`}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-medium cursor-pointer flex-1">
+                            {brand.name}
+                            {isCustomBrand && <span className="ml-1 text-xs text-blue-600">(Custom)</span>}
+                          </FormLabel>
+                          {isCustomBrand && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCustomBrand(brand.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
+                              data-testid={`button-remove-custom-brand-${brand.id}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  );
+                })}
               </div>
               <div className="text-sm text-blue-700 font-medium">
                 Selected: {form.watch("selectedBrands")?.length || 0} brand(s)
