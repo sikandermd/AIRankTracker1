@@ -122,6 +122,7 @@ export class TrackingService {
       const competitorAnalysis: InsertCompetitorAnalysis = {
         competitorBrand: competitor,
         keywordId,
+        userId,
         aiPlatform: platform,
         mentionCount: 1, // Simplified for now
         visibilityScore: Math.floor(Math.random() * 100), // Would be calculated based on actual analysis
@@ -162,9 +163,9 @@ export class TrackingService {
     return 'General';
   }
 
-  async getRecentActivity(limit: number = 10) {
+  async getRecentActivity(limit: number = 10, userId?: string) {
     try {
-      const results = await storage.getLatestResults();
+      const results = await storage.getLatestResults(undefined, userId);
       
       return results.slice(0, limit).map((result: any) => {
         let message = "";

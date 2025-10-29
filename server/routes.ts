@@ -50,10 +50,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = getCurrentUser(req);
       const { brandId } = req.query;
-      const keywords = brandId 
-        ? await storage.getKeywordsByBrand(brandId as string)
-        : await storage.getAllKeywords(user?.id);
-      res.json(keywords);
+      
+      if (brandId) {
+        // Verify brand ownership before fetching keywords
+        const brand = await storage.getBrand(brandId as string);
+        if (!brand) {
+          return res.status(404).json({ message: "Brand not found" });
+        }
+        if (brand.userId !== user?.id) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+        const keywords = await storage.getKeywordsByBrand(brandId as string);
+        res.json(keywords);
+      } else {
+        const keywords = await storage.getAllKeywords(user?.id);
+        res.json(keywords);
+      }
     } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch keywords" });
     }
@@ -142,8 +154,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Competitor analysis routes
   app.get("/api/competitor-analysis", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { keywordId } = req.query;
-      const analysis = await storage.getCompetitorAnalysis(keywordId as string);
+      const analysis = await storage.getCompetitorAnalysis(keywordId as string, user?.id);
       res.json(analysis);
     } catch (error: unknown) {
       res.status(500).json({ message: "Failed to fetch competitor analysis" });
@@ -200,7 +213,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recent activity
   app.get("/api/dashboard/recent-activity", requireAuth, async (req, res) => {
     try {
-      const activity = await trackingService.getRecentActivity(10);
+      const user = getCurrentUser(req);
+      const activity = await trackingService.getRecentActivity(10, user?.id);
       res.json(activity);
     } catch (error: unknown) {
       console.error("Recent activity error:", error);

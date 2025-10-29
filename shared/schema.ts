@@ -76,6 +76,7 @@ export const competitorAnalysis = pgTable("competitor_analysis", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   competitorBrand: text("competitor_brand").notNull(),
   keywordId: varchar("keyword_id").references(() => keywords.id),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   aiPlatform: text("ai_platform").notNull(),
   mentionCount: integer("mention_count").default(0),
   visibilityScore: integer("visibility_score").default(0), // 0-100
@@ -84,6 +85,7 @@ export const competitorAnalysis = pgTable("competitor_analysis", {
 }, (table) => ({
   competitorIdx: index("competitor_idx").on(table.competitorBrand),
   keywordIdx: index("competitor_keyword_idx").on(table.keywordId),
+  userIdx: index("competitor_user_idx").on(table.userId),
 }));
 
 // Organic Keywords Tracking Tables
