@@ -14,7 +14,10 @@ import {
   Bot,
   Mail,
   Zap,
+  LogOut,
+  User,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -59,10 +62,15 @@ const AppSidebar = () => {
   const [showSheetsModal, setShowSheetsModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [apiEnabled, setApiEnabled] = useState(true);
+  const { user } = useAuth();
 
   const handleApiToggle = (checked: boolean) => {
     setApiEnabled(checked);
     localStorage.setItem('openai-api-enabled', checked.toString());
+  };
+
+  const handleLogout = () => {
+    window.location.href = '/api/logout';
   };
 
   const mainNavItems = [
@@ -170,6 +178,35 @@ const AppSidebar = () => {
 
         <SidebarFooter>
           <SidebarMenu>
+            {/* User Profile */}
+            {user && (
+              <SidebarMenuItem>
+                <div className="px-3 py-2 border-b border-border mb-2">
+                  <div className="flex items-center gap-2">
+                    {user.profileImageUrl ? (
+                      <img 
+                        src={user.profileImageUrl} 
+                        alt="Profile" 
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                        <User className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {user.firstName || user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </SidebarMenuItem>
+            )}
+
             <SidebarMenuItem>
               {/* API Toggle */}
               <div className="px-3 py-2 space-y-2">
@@ -225,6 +262,18 @@ const AppSidebar = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            </SidebarMenuItem>
+
+            {/* Logout Button */}
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                onClick={handleLogout}
+                data-testid="button-logout"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>

@@ -2,7 +2,7 @@ import {
   users, brands, keywords, trackingResults, competitorAnalysis, alerts, alertLogs,
   organicKeywords, organicRankings, combinedAlertLogs,
   userProfiles, seoRecommendations, mlInsights, performanceMetrics,
-  type User, type InsertUser, type Brand, type InsertBrand, 
+  type User, type InsertUser, type UpsertUser, type Brand, type InsertBrand, 
   type Keyword, type InsertKeyword, type TrackingResult, type InsertTrackingResult,
   type CompetitorAnalysis, type InsertCompetitorAnalysis,
   type Alert, type InsertAlert, type AlertLog, type InsertAlertLog,
@@ -20,6 +20,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<InsertUser>): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Brand operations (user-specific)
   getAllBrands(userId?: string): Promise<Brand[]>;
@@ -120,6 +121,21 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .insert(users)
       .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
       .returning();
     return user;
   }

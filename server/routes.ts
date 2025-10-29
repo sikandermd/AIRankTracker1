@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search and track keywords
-  app.post("/api/keywords/track", async (req, res) => {
+  app.post("/api/keywords/track", requireAuth, async (req, res) => {
     try {
       const schema = z.object({
         keywords: z.array(z.string()).min(1),
@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Tracking results routes
-  app.get("/api/tracking-results", async (req, res) => {
+  app.get("/api/tracking-results", requireAuth, async (req, res) => {
     try {
       const { keywordId, brandId, aiPlatform, startDate, endDate } = req.query;
       
@@ -115,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get latest tracking results with keyword and brand details
-  app.get("/api/tracking-results/latest", async (req, res) => {
+  app.get("/api/tracking-results/latest", requireAuth, async (req, res) => {
     try {
       const results = await storage.getLatestResults();
       
@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Competitor analysis routes
-  app.get("/api/competitor-analysis", async (req, res) => {
+  app.get("/api/competitor-analysis", requireAuth, async (req, res) => {
     try {
       const { keywordId } = req.query;
       const analysis = await storage.getCompetitorAnalysis(keywordId as string);
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard stats
-  app.get("/api/dashboard/stats", async (req, res) => {
+  app.get("/api/dashboard/stats", requireAuth, async (req, res) => {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let usageStatsCacheTime = 0;
   const USAGE_CACHE_TTL = 60000; // 1 minute cache
 
-  app.get("/api/usage/stats", async (req, res) => {
+  app.get("/api/usage/stats", requireAuth, async (req, res) => {
     try {
       const now = Date.now();
       
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Recent activity
-  app.get("/api/dashboard/recent-activity", async (req, res) => {
+  app.get("/api/dashboard/recent-activity", requireAuth, async (req, res) => {
     try {
       const activity = await trackingService.getRecentActivity(10);
       res.json(activity);
@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/keywords/:id", async (req, res) => {
+  app.delete("/api/keywords/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       await storage.deleteKeyword(id);
@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Keyword detail with full analysis
-  app.get("/api/keywords/:id/analysis", async (req, res) => {
+  app.get("/api/keywords/:id/analysis", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -268,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Google Sheets integration routes
-  app.post("/api/sheets/import", async (req, res) => {
+  app.post("/api/sheets/import", requireAuth, async (req, res) => {
     try {
       const schema = z.object({
         spreadsheetUrl: z.string().url(),
@@ -292,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/sheets/info", async (req, res) => {
+  app.post("/api/sheets/info", requireAuth, async (req, res) => {
     try {
       const schema = z.object({
         spreadsheetUrl: z.string().url(),
@@ -316,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Alert routes
   // Combined Alerts endpoints
-  app.get("/api/combined-alerts", async (req, res) => {
+  app.get("/api/combined-alerts", requireAuth, async (req, res) => {
     try {
       const { range } = req.query;
       const alerts = await storage.getCombinedAlerts(range as string);
@@ -327,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/combined-alerts/stats", async (req, res) => {
+  app.get("/api/combined-alerts/stats", requireAuth, async (req, res) => {
     try {
       const stats = await storage.getCombinedAlertStats();
       res.json(stats);
@@ -337,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/combined-alerts/force-send", async (req, res) => {
+  app.post("/api/combined-alerts/force-send", requireAuth, async (req, res) => {
     try {
       const { combinedAlertService } = await import("./services/combinedAlertService");
       await combinedAlertService.forceSendAllBatches();
@@ -365,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/alerts", async (req, res) => {
+  app.get("/api/alerts", requireAuth, async (req, res) => {
     try {
       const alerts = await storage.getAllAlerts();
       res.json(alerts);
@@ -375,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/alerts", async (req, res) => {
+  app.post("/api/alerts", requireAuth, async (req, res) => {
     try {
       console.log("Alert creation request:", req.body);
       
@@ -539,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // New multi-brand multi-keyword alert creation endpoint
-  app.post("/api/alerts/multi", async (req, res) => {
+  app.post("/api/alerts/multi", requireAuth, async (req, res) => {
     try {
       console.log("Multi-brand alert creation request:", req.body);
       
@@ -807,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/alerts/:id", async (req, res) => {
+  app.delete("/api/alerts/:id", requireAuth, async (req, res) => {
     try {
       await storage.deleteAlert(req.params.id);
       res.status(204).send();
@@ -817,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/alerts/:id/logs", async (req, res) => {
+  app.get("/api/alerts/:id/logs", requireAuth, async (req, res) => {
     try {
       const logs = await storage.getAlertLogs(req.params.id);
       res.json(logs);
@@ -959,7 +959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Organic Keywords routes
-  app.get("/api/organic-keywords", async (req, res) => {
+  app.get("/api/organic-keywords", requireAuth, async (req, res) => {
     try {
       const organicKeywords = await storage.getAllOrganicKeywords();
       res.json(organicKeywords);
@@ -968,7 +968,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/organic-keywords", async (req, res) => {
+  app.post("/api/organic-keywords", requireAuth, async (req, res) => {
     try {
       const validatedData = insertOrganicKeywordSchema.parse(req.body);
       const organicKeyword = await storage.createOrganicKeyword(validatedData);
@@ -1020,7 +1020,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/organic-rankings/:keywordId?", async (req, res) => {
+  app.get("/api/organic-rankings/:keywordId?", requireAuth, async (req, res) => {
     try {
       const { keywordId } = req.params;
       const rankings = await storage.getOrganicRankings(keywordId);
@@ -1031,7 +1031,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Top Pages route for Search Console data
-  app.get("/api/top-pages", async (req, res) => {
+  app.get("/api/top-pages", requireAuth, async (req, res) => {
     try {
       const dateRange = parseInt(req.query.dateRange as string) || 30;
       const directoryFilter = req.query.directory as string || 'all';
@@ -1074,7 +1074,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get NotifyVisitors directories
-  app.get("/api/notifyvisitors-directories", async (req, res) => {
+  app.get("/api/notifyvisitors-directories", requireAuth, async (req, res) => {
     try {
       const directories = searchConsoleService.getNotifyVisitorsDirectories();
       res.json(directories);
@@ -1085,7 +1085,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search Console integration routes
-  app.post("/api/organic-keywords/sync", async (req, res) => {
+  app.post("/api/organic-keywords/sync", requireAuth, async (req, res) => {
     try {
       const { domain, keywords, country } = req.body;
       
@@ -1151,7 +1151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/search-console/sites", async (req, res) => {
+  app.get("/api/search-console/sites", requireAuth, async (req, res) => {
     try {
       if (!searchConsoleService.isServiceConfigured()) {
         return res.status(400).json({ 
@@ -1171,7 +1171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Visibility Audit endpoint
-  app.post("/api/ai-visibility-audit", async (req, res) => {
+  app.post("/api/ai-visibility-audit", requireAuth, async (req, res) => {
     try {
       const { type, url, brandName, domain, queries } = req.body;
       
@@ -1305,7 +1305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   // Automatic keyword position tracking
-  app.post("/api/organic-keywords/auto-track", async (req, res) => {
+  app.post("/api/organic-keywords/auto-track", requireAuth, async (req, res) => {
     try {
       console.log("Starting automatic position tracking for all keywords...");
       
@@ -1333,7 +1333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check single keyword position automatically
-  app.post("/api/organic-keywords/:id/check-position", async (req, res) => {
+  app.post("/api/organic-keywords/:id/check-position", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -1388,7 +1388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // AI-Powered Page Analysis and SEO Recommendations
-  app.post("/api/analyze-pages", async (req, res) => {
+  app.post("/api/analyze-pages", requireAuth, async (req, res) => {
     try {
       const { searchConsoleAnalysisService } = await import("./services/searchConsoleAnalysisService");
       const { siteUrl, days = 30 } = req.body;
@@ -1418,7 +1418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/analyze-single-page", async (req, res) => {
+  app.post("/api/analyze-single-page", requireAuth, async (req, res) => {
     try {
       const { searchConsoleAnalysisService } = await import("./services/searchConsoleAnalysisService");
       const { siteUrl, pageUrl } = req.body;
@@ -1446,7 +1446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Recommendations Dashboard Data
-  app.get("/api/ai-recommendations/summary", async (req, res) => {
+  app.get("/api/ai-recommendations/summary", requireAuth, async (req, res) => {
     try {
       const { pageAnalysisService } = await import("./services/pageAnalysisService");
       

@@ -12,12 +12,24 @@ import OrganicKeywords from "@/pages/organic-keywords";
 import TopPages from "./pages/top-pages";
 import AlertsPage from "@/pages/AlertsPage";
 import CombinedAlerts from "./pages/CombinedAlerts";
-
 import AIRecommendationsPage from "./pages/AIRecommendationsPage";
+import Landing from "@/pages/Landing";
 import NotFound from "@/pages/not-found";
-import PasswordGuard from "@/components/PasswordGuard";
+import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Show landing page while loading or when not authenticated
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Switch>
+        <Route component={Landing} />
+      </Switch>
+    );
+  }
+
+  // Show full app with sidebar when authenticated
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -31,7 +43,6 @@ function Router() {
             <Route path="/organic/top-pages" component={TopPages} />
             <Route path="/alerts" component={AlertsPage} />
             <Route path="/combined-alerts" component={CombinedAlerts} />
-
             <Route path="/ai-recommendations" component={AIRecommendationsPage} />
             <Route component={NotFound} />
           </Switch>
@@ -46,9 +57,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <PasswordGuard>
-          <Router />
-        </PasswordGuard>
+        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );
