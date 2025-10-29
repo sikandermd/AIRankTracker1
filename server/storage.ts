@@ -233,6 +233,7 @@ export class DatabaseStorage implements IStorage {
     aiPlatform?: string;
     startDate?: Date;
     endDate?: Date;
+    userId?: string;
   }): Promise<TrackingResult[]> {
     const conditions = [];
     if (filters?.keywordId) {
@@ -249,6 +250,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters?.endDate) {
       conditions.push(sql`${trackingResults.trackedAt} <= ${filters.endDate}`);
+    }
+    if (filters?.userId) {
+      conditions.push(eq(trackingResults.userId, filters.userId));
     }
 
     if (conditions.length > 0) {

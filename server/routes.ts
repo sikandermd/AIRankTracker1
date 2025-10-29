@@ -80,6 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Search and track keywords
   app.post("/api/keywords/track", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const schema = z.object({
         keywords: z.array(z.string()).min(1),
         brandId: z.string(),
@@ -88,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { keywords: keywordTexts, brandId, platforms } = schema.parse(req.body);
       
-      const results = await trackingService.trackKeywords(keywordTexts, brandId, platforms);
+      const results = await trackingService.trackKeywords(keywordTexts, brandId, platforms, user!.id);
       res.json(results);
     } catch (error: unknown) {
       res.status(400).json({ message: "Invalid tracking request" });
@@ -207,33 +208,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Keywords management
-  app.post("/api/keywords", async (req, res) => {
-    try {
-      const { keyword, brandId, category } = req.body;
-      const user = getCurrentUser(req);
-      const newKeyword = await storage.createKeyword({
-        keyword,
-        brandId,
-        category: category || 'General',
-        userId: user.id, // Add required userId
-      });
-      res.json(newKeyword);
-    } catch (error: unknown) {
-      console.error("Create keyword error:", error);
-      res.status(500).json({ message: "Failed to create keyword" });
-    }
-  });
-
-  app.get("/api/keywords", async (req, res) => {
-    try {
-      const keywords = await storage.getAllKeywords();
-      res.json(keywords);
-    } catch (error: unknown) {
-      res.status(500).json({ message: "Failed to fetch keywords" });
-    }
-  });
-
   app.delete("/api/keywords/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
@@ -247,6 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Keyword detail with full analysis
   app.get("/api/keywords/:id/analysis", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const { id } = req.params;
       
       const keyword = await storage.getKeyword(id);
@@ -254,9 +229,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Keyword not found" });
       }
 
-      const trackingResults = await storage.getTrackingResults({ keywordId: id });
+      // Verify ownership
+      if (keyword.userId !== user?.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const trackingResults = await storage.getTrackingResults({ keywordId: id, userId: user!.id });
       const competitorAnalysis = await storage.getCompetitorAnalysis(id);
       const brand = await storage.getBrand(keyword.brandId!);
+
+      // Verify brand ownership
+      if (brand && brand.userId !== user?.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
 
       res.json({
         keyword,
@@ -448,6 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: `${validatedData.name} - ${keyword}`,
             brandId: brandId,
             keywordId: keywordRecord.id,
+            userId: user.id,
             platforms: validatedData.platforms,
             triggerConditions: validatedData.triggerConditions,
             notificationMethods: validatedData.notificationMethods,
@@ -648,6 +634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: `${validatedData.name} - ${keyword}`,
             brandId: actualBrandId,
             keywordId: keywordRecord.id,
+            userId: user.id,
             platforms: validatedData.platforms,
             triggerConditions: validatedData.triggerConditions,
             notificationMethods: validatedData.notificationMethods,
@@ -976,8 +963,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/organic-keywords", requireAuth, async (req, res) => {
     try {
+      const user = getCurrentUser(req);
       const validatedData = insertOrganicKeywordSchema.parse(req.body);
-      const organicKeyword = await storage.createOrganicKeyword(validatedData);
+      const organicKeyword = await storage.createOrganicKeyword({ ...validatedData, userId: user!.id });
       
       // Immediately check position after creating keyword
       console.log(`Auto-checking position for new keyword: ${organicKeyword.keyword}`);
@@ -1133,6 +1121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create ranking history record
           await storage.createOrganicRanking({
             keywordId: existingKeyword.id,
+            userId: existingKeyword.userId,
             position: position.position > 0 ? position.position : null,
             url: position.url,
             clicks: position.clicks,

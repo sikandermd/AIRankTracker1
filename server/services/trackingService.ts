@@ -7,7 +7,8 @@ export class TrackingService {
   async trackKeywords(
     keywordTexts: string[], 
     brandId: string, 
-    platforms: string[]
+    platforms: string[],
+    userId: string
   ): Promise<any[]> {
     const results = [];
     const brand = await storage.getBrand(brandId);
@@ -18,7 +19,7 @@ export class TrackingService {
 
     for (const keywordText of keywordTexts) {
       // Create or find existing keyword
-      let keyword = await this.findOrCreateKeyword(keywordText, brandId);
+      let keyword = await this.findOrCreateKeyword(keywordText, brandId, userId);
       
       // Track across all selected platforms
       for (const platform of platforms) {
@@ -28,7 +29,8 @@ export class TrackingService {
             brandId, 
             keywordText, 
             brand.name, 
-            platform
+            platform,
+            userId
           );
           results.push(platformResult);
         } catch (error) {
@@ -45,11 +47,12 @@ export class TrackingService {
     return results;
   }
 
-  private async findOrCreateKeyword(keywordText: string, brandId: string) {
-    const keywords = await storage.getAllKeywords();
+  private async findOrCreateKeyword(keywordText: string, brandId: string, userId: string) {
+    const keywords = await storage.getAllKeywords(userId);
     const existing = keywords.find(k => 
       k.keyword.toLowerCase() === keywordText.toLowerCase() && 
-      k.brandId === brandId
+      k.brandId === brandId &&
+      k.userId === userId
     );
 
     if (existing) {
@@ -59,6 +62,7 @@ export class TrackingService {
     return await storage.createKeyword({
       keyword: keywordText,
       brandId,
+      userId,
       category: this.categorizeKeyword(keywordText),
     });
   }
@@ -68,7 +72,8 @@ export class TrackingService {
     brandId: string, 
     keywordText: string, 
     brandName: string, 
-    platform: string
+    platform: string,
+    userId: string
   ) {
     // Get AI platform response
     const responseText = await aiAnalyzer.getAIPlatformResponse(keywordText, platform);
@@ -85,6 +90,7 @@ export class TrackingService {
     const trackingResult: InsertTrackingResult = {
       keywordId,
       brandId,
+      userId,
       aiPlatform: platform,
       mentioned: analysis.mentioned,
       position: analysis.position,
