@@ -56,6 +56,7 @@ export const trackingResults = pgTable("tracking_results", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   keywordId: varchar("keyword_id").references(() => keywords.id),
   brandId: varchar("brand_id").references(() => brands.id),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   aiPlatform: text("ai_platform").notNull(), // 'gpt', 'claude', 'gemini', 'perplexity'
   mentioned: boolean("mentioned").default(false),
   position: text("position"), // 'top', 'middle', 'bottom'
@@ -68,6 +69,7 @@ export const trackingResults = pgTable("tracking_results", {
   keywordIdx: index("tracking_keyword_idx").on(table.keywordId),
   platformIdx: index("tracking_platform_idx").on(table.aiPlatform),
   dateIdx: index("tracking_date_idx").on(table.trackedAt),
+  userIdx: index("tracking_user_idx").on(table.userId),
 }));
 
 export const competitorAnalysis = pgTable("competitor_analysis", {
@@ -97,12 +99,14 @@ export const organicKeywords = pgTable("organic_keywords", {
   difficulty: integer("difficulty"), // 0-100
   url: text("url"), // landing page URL for this keyword
   isActive: boolean("is_active").default(true),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   keywordIdx: index("organic_keyword_idx").on(table.keyword),
   domainIdx: index("organic_domain_idx").on(table.domain),
   countryIdx: index("organic_country_idx").on(table.country),
+  userIdx: index("organic_user_idx").on(table.userId),
 }));
 
 export const organicRankings = pgTable("organic_rankings", {
@@ -114,11 +118,13 @@ export const organicRankings = pgTable("organic_rankings", {
   clicks: integer("clicks").default(0),
   impressions: integer("impressions").default(0),
   ctr: text("ctr"), // click-through rate as percentage
+  userId: varchar("user_id").references(() => users.id).notNull(),
   checkedAt: timestamp("checked_at").defaultNow().notNull(),
 }, (table) => ({
   keywordIdx: index("organic_ranking_keyword_idx").on(table.keywordId),
   dateIdx: index("organic_ranking_date_idx").on(table.checkedAt),
   positionIdx: index("organic_ranking_position_idx").on(table.position),
+  userIdx: index("organic_ranking_user_idx").on(table.userId),
 }));
 
 export const alerts = pgTable("alerts", {
@@ -126,6 +132,7 @@ export const alerts = pgTable("alerts", {
   name: text("name").notNull(),
   brandId: varchar("brand_id").references(() => brands.id).notNull(),
   keywordId: varchar("keyword_id").references(() => keywords.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   platforms: text("platforms").array().notNull(), // ['gpt', 'claude', 'gemini', 'perplexity']
   triggerConditions: jsonb("trigger_conditions").$type<{
     mentionChange: boolean;
@@ -141,11 +148,14 @@ export const alerts = pgTable("alerts", {
   lastTriggered: timestamp("last_triggered"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  userIdx: index("alert_user_idx").on(table.userId),
+}));
 
 export const alertLogs = pgTable("alert_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   alertId: varchar("alert_id").references(() => alerts.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   platform: text("platform").notNull(),
   triggerType: text("trigger_type").notNull(), // 'mention_change', 'position_improve', 'new_platform', 'mention_increase'
   previousValue: text("previous_value"),
@@ -153,12 +163,15 @@ export const alertLogs = pgTable("alert_logs", {
   notificationSent: boolean("notification_sent").default(false),
   notificationError: text("notification_error"),
   triggeredAt: timestamp("triggered_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  userIdx: index("alert_log_user_idx").on(table.userId),
+}));
 
 export const combinedAlertLogs = pgTable("combined_alert_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   brandId: varchar("brand_id").references(() => brands.id).notNull(),
   keywordId: varchar("keyword_id").references(() => keywords.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   alertType: text("alert_type").notNull(),
   platform: text("platform").notNull(),
   previousValue: text("previous_value"),
@@ -169,7 +182,9 @@ export const combinedAlertLogs = pgTable("combined_alert_logs", {
   sent: boolean("sent").default(false),
   combinedAt: timestamp("combined_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  userIdx: index("combined_alert_log_user_idx").on(table.userId),
+}));
 
 // Relations
 export const brandsRelations = relations(brands, ({ many }) => ({
