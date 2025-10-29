@@ -541,6 +541,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const alertSetupSchema = z.object({
         name: z.string().min(1, "Alert name is required"),
         selectedBrands: z.array(z.string()).min(1, "At least one brand must be selected"),
+        customBrands: z.array(z.object({
+          id: z.string(),
+          name: z.string()
+        })).optional().default([]),
         customKeywords: z.array(z.string()).min(1, "At least one keyword must be added"),
         platforms: z.array(z.string()).min(1, "At least one platform must be selected"),
         triggerConditions: z.object({
@@ -558,19 +562,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = alertSetupSchema.parse(req.body);
       console.log("Validated multi-alert data:", validatedData);
+
+      const user = getCurrentUser(req);
+      if (!user) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      // Create custom brands in the database first
+      const customBrandIdMap = new Map<string, string>(); // Maps custom ID to real DB ID
+      if (validatedData.customBrands && validatedData.customBrands.length > 0) {
+        for (const customBrand of validatedData.customBrands) {
+          try {
+            const createdBrand = await storage.createBrand({
+              name: customBrand.name,
+              description: `Custom brand: ${customBrand.name}`,
+              userId: user.id
+            });
+            customBrandIdMap.set(customBrand.id, createdBrand.id);
+            console.log(`Created custom brand: ${customBrand.name} with ID: ${createdBrand.id}`);
+          } catch (error) {
+            console.error(`Failed to create custom brand ${customBrand.name}:`, error);
+          }
+        }
+      }
       
       // Create alerts for each brand-keyword combination
       const createdAlerts = [];
       
       for (const brandId of validatedData.selectedBrands) {
+        // Get the real brand ID (if it was a custom brand)
+        const actualBrandId = customBrandIdMap.get(brandId) || brandId;
         for (const keyword of validatedData.customKeywords) {
           // First create the keyword if it doesn't exist
           let keywordRecord;
           try {
             keywordRecord = await storage.createKeyword({
               keyword: keyword,
-              brandId: brandId,
+              brandId: actualBrandId,
               category: "alert-keyword", // Special category for alert keywords
+              userId: user.id,
               trackGpt: validatedData.platforms.includes('gpt') || validatedData.platforms.includes('chatgpt'),
               trackClaude: validatedData.platforms.includes('claude'),
               trackGemini: validatedData.platforms.includes('gemini'),
@@ -581,11 +611,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const existingKeywords = await storage.getAllKeywords();
             keywordRecord = existingKeywords.find(kw => 
               kw.keyword.toLowerCase() === keyword.toLowerCase() && 
-              kw.brandId === brandId
+              kw.brandId === actualBrandId
             );
             
             if (!keywordRecord) {
-              console.error(`Could not create or find keyword: ${keyword} for brand: ${brandId}`);
+              console.error(`Could not create or find keyword: ${keyword} for brand: ${actualBrandId}`);
               continue;
             }
           }
@@ -593,7 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create the alert
           const alertData = {
             name: `${validatedData.name} - ${keyword}`,
-            brandId: brandId,
+            brandId: actualBrandId,
             keywordId: keywordRecord.id,
             platforms: validatedData.platforms,
             triggerConditions: validatedData.triggerConditions,
@@ -604,7 +634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             const alert = await storage.createAlert(alertData);
             createdAlerts.push(alert);
-            console.log(`Created alert for brand: ${brandId}, keyword: ${keyword}`);
+            console.log(`Created alert for brand: ${actualBrandId}, keyword: ${keyword}`);
             
             // Send alert creation confirmation email
             if (alert.notificationMethods && alert.notificationMethods.email) {

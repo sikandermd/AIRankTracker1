@@ -127,9 +127,19 @@ export default function NewAlertSetupModal({ isOpen, onClose }: NewAlertSetupMod
     }
     
     // Convert form data to API format
+    // Include custom brand names for brands that need to be created
+    const customBrandData = data.selectedBrands
+      .filter(id => id.startsWith('custom-'))
+      .map(id => {
+        const brand = customBrands.find(b => b.id === id);
+        return brand ? { id: brand.id, name: brand.name } : null;
+      })
+      .filter(Boolean);
+
     const alertData = {
       name: data.name,
       selectedBrands: data.selectedBrands,
+      customBrands: customBrandData,
       customKeywords: data.customKeywords,
       platforms: selectedPlatforms,
       triggerConditions: {
